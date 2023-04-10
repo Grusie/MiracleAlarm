@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">MiracleAlarm</string>
+    <string name="holiday_title">공휴일엔 알람 끄기</string>
+    <string name="holiday_sub">대체 공휴일이나 임시 공휴일 포함 안 함</string>
+    <string name="title_hint">알람 이름</string>
+    <string name="offWay_title">알림 종료 방법</string>
+    <string name="sound_title">알람음</string>
+    <string name="sound_sub">Homecoming</string>
+    <string name="vibe_title">진동</string>
+    <string name="vibe_sub">Basic call</string>
+    <string name="repeat_title">다시 울림</string>
+    <string name="repeat_sub">5분,3회</string>
+    <string name="string_save">저장</string>
+    <string name="string_cancel">취소</string>
 </resources>
