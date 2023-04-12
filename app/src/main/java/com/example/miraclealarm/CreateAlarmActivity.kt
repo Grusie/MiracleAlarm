@@ -1,33 +1,29 @@
 package com.example.miraclealarm
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import com.example.miraclealarm.databinding.ActivityCreateAlarmBinding
 
 class CreateAlarmActivity : AppCompatActivity() {
     lateinit var binding: ActivityCreateAlarmBinding
+    lateinit var alarmViewModel: AlarmViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityCreateAlarmBinding.inflate(layoutInflater)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_create_alarm)
         setContentView(binding.root)
 
         initUi()
     }
 
     private fun initUi() {
+        alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         binding.apply {
+            var alarm = AlarmData( title = "",time = "", date = "23-04-11", flag = true, sound = "", vibrate = "", off_way = null, repeat = null)
             btnSave.setOnClickListener {
-                val intent = Intent(this@CreateAlarmActivity, MainActivity::class.java).apply {
-                    val bundle = Bundle()
-                    bundle.putParcelable(
-                        Constant.KEY_ALARM_DATA,
-                        AlarmData(10, "asdgfghghjgj", "16:30", "23-04-11", true, "", "", null, null)
-                    )
-                    putExtra(Constant.KEY_ALARM_DATA, bundle)
-                }
-                setResult(RESULT_OK, intent)
+                alarmViewModel.insert(alarm)
                 finish()
             }
             btnCancel.setOnClickListener {

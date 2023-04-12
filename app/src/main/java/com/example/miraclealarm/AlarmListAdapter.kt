@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.miraclealarm.databinding.ItemAlarmListBinding
 
 class AlarmListAdapter : RecyclerView.Adapter<AlarmListAdapter.AlarmListViewHolder>() {
-    val alarmList: MutableList<AlarmData> = arrayListOf()
+    var alarmList: MutableList<AlarmData> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmListViewHolder {
         return AlarmListViewHolder(
