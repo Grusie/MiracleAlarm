@@ -20,7 +20,8 @@
             android:layout_height="wrap_content"
             android:background="@color/gray"
             android:timePickerMode="spinner"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            android:onTimeChanged="@{(view, hour, minute) -> viewModel.time(hour, minute)}" />
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -85,8 +86,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/title_hint"
+                        android:text="@{viewModel.alarm.title}"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:layout_editor_absoluteX="8dp" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -109,7 +112,7 @@
                         android:id="@+id/tv_offWay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="offway"
+                        android:text="@{viewModel.alarm.off_way}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_offWay_title" />
@@ -143,7 +146,7 @@
                         android:id="@+id/tv_sound_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/sound_sub"
+                        android:text="@{viewModel.alarm.sound}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_sound_title" />
@@ -178,7 +181,7 @@
                         android:id="@+id/tv_vibe_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/vibe_sub"
+                        android:text="@{viewModel.alarm.vibrate}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_vibe_title" />
@@ -213,7 +216,7 @@
                         android:id="@+id/tv_repeat_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/repeat_sub"
+                        android:text="@{viewModel.alarm.repeat}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_repeat_title" />
@@ -251,7 +254,8 @@
                 android:layout_weight="1"
                 android:backgroundTint="@color/gray"
                 android:text="@string/string_save"
-                android:textColor="@color/black"/>
+                android:textColor="@color/black"
+                />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
