@@ -11,6 +11,7 @@ data class AlarmData(
     @PrimaryKey(autoGenerate = true) val id : Int = 0,
     var title : String = "",
     var time : String = "",
+    var holiday : Boolean = false,
     var date : String = "",
     var flag : Boolean = true,
     var sound : String = "",

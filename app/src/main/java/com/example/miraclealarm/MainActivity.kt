@@ -16,7 +16,7 @@ import com.example.miraclealarm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private var adapter = AlarmListAdapter()
+    private lateinit var adapter :AlarmListAdapter
     private lateinit var alarmViewModel: AlarmViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,9 +26,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUi() {
+        adapter = AlarmListAdapter(alarmViewModel)
         alarmViewModel.allAlarms.observe(this, Observer<MutableList<AlarmData>> { alarm ->
             adapter.alarmList = alarm
-            adapter.notifyDataSetChanged()
         })
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
