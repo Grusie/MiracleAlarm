@@ -2,6 +2,8 @@ package com.example.miraclealarm
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -29,6 +31,23 @@ class CreateAlarmActivity : AppCompatActivity() {
                     swVibe.value = vibrate.isNotEmpty()
                     swOffWay.value = off_way.isNotEmpty()
                     swRepeat.value = repeat.isNotEmpty()
+
+                    etAlarmTitle.addTextChangedListener(object : TextWatcher {
+                        override fun beforeTextChanged(
+                            p0: CharSequence?,
+                            p1: Int,
+                            p2: Int,
+                            p3: Int
+                        ) {
+                        }
+
+                        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                        }
+
+                        override fun afterTextChanged(p0: Editable?) {
+                            title = p0.toString()
+                        }
+                    })
 
                     if (time != "") {
                         val displayTime = time.split(' ', ':')
