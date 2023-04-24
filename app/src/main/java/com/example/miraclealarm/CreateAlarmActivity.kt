@@ -1,17 +1,27 @@
 package com.example.miraclealarm
 
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.example.miraclealarm.databinding.ActivityCreateAlarmBinding
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.properties.Delegates
 
 class CreateAlarmActivity : AppCompatActivity() {
-    lateinit var binding: ActivityCreateAlarmBinding
-    lateinit var alarmViewModel: AlarmViewModel
+    private lateinit var binding: ActivityCreateAlarmBinding
+    private lateinit var alarmViewModel: AlarmViewModel
+    private var alarmId by Delegates.notNull<Int>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -22,65 +32,63 @@ class CreateAlarmActivity : AppCompatActivity() {
     }
 
     private fun initUi() {
+        alarmId = intent.getIntExtra("id", -1)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
-        binding.viewModel = alarmViewModel
+/*        alarmViewModel.getAlarmById(alarmId).observe(this){it ->
+            alarmViewModel.alarm.value = it
+        }*/
+
         binding.apply {
-            viewModel?.apply {
-                alarm.value?.apply {
-                    swSound.value = sound.isNotEmpty()
-                    swVibe.value = vibrate.isNotEmpty()
-                    swOffWay.value = off_way.isNotEmpty()
-                    swRepeat.value = repeat.isNotEmpty()
+            viewModel = alarmViewModel
+            alarmViewModel.initAlarmData(alarmId)
 
-                    etAlarmTitle.addTextChangedListener(object : TextWatcher {
-                        override fun beforeTextChanged(
-                            p0: CharSequence?,
-                            p1: Int,
-                            p2: Int,
-                            p3: Int
-                        ) {
+            viewModel?.timePickerToTime(tpAlarmTime.hour, tpAlarmTime.minute)
+            tpAlarmTime.setOnTimeChangedListener { timePicker, hour, minute ->
+                viewModel?.timePickerToTime(hour, minute)
+            }
+
+            viewModel?.alarm?.observe(this@CreateAlarmActivity){it ->
+                if(it != null) {
+                    viewModel?.logLine("alarm Object : ", "$it")
+                    if (it.time.isNotEmpty()) {
+                        val cal = Calendar.getInstance()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            val formatter =
+                                DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
+                            val localTime =
+                                LocalTime.parse(it.time.toString(), formatter)
+                            val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
+                            val zoneId = ZoneId.systemDefault()
+                            val date = Date.from(localDateTime.atZone(zoneId).toInstant())
+                            cal.time = date
+                        } else {
+                            val formatter = SimpleDateFormat("a hh:mm", Locale.KOREAN)
+                            val date = it.time.let { formatter.parse(it) }
+                            cal.time = date
                         }
-
-                        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        }
-
-                        override fun afterTextChanged(p0: Editable?) {
-                            title = p0.toString()
-                        }
-                    })
-
-                    if (time != "") {
-                        val displayTime = time.split(' ', ':')
-                        if (displayTime[0] == "오전") {
-                            tpAlarmTime.hour = displayTime[1].toInt()
-                        } else
-                            tpAlarmTime.hour = displayTime[1].toInt() + 12
-
-                        tpAlarmTime.minute = displayTime[2].toInt()
+                        tpAlarmTime.hour = cal.get(Calendar.HOUR_OF_DAY)
+                        tpAlarmTime.minute = cal.get(Calendar.MINUTE)
                     }
-
-                    time(tpAlarmTime.hour, tpAlarmTime.minute)
-                    btnSave.setOnClickListener {
-                        title = etAlarmTitle.text.toString()
-                        //date = lvAlarmDate
-                        holiday = swHoliday.value!!
-                        flag = false
-                        sound =
-                            if (swSound.value == true) tvSoundSub.text.toString() else ""
-                        vibrate =
-                            if (swVibe.value == true) tvVibeSub.text.toString() else ""
-                        off_way =
-                            if (swOffWay.value == true) tvOffWaySub.text.toString() else ""
-                        repeat = if (swRepeat.value == true)
-                            tvRepeatSub.text.toString()
-                        else ""
-                        insert()
-                        finish()
-                    }
-                    btnCancel.setOnClickListener {
-                        finish()
-                    }
+                    executePendingBindings()
                 }
+            }
+
+            btnSave.setOnClickListener {
+                viewModel?.alarm?.value?.apply {
+                    title = etAlarmTitle.text.toString()
+                    //date = lvAlarmDate
+                    holiday = viewModel?.flagHoliday?.value == true
+                    flag = false
+                    sound = if (binding.viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else ""
+                    vibrate = if (binding.viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else ""
+                    off_way = if (binding.viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else ""
+                    repeat = if (binding.viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else ""
+                }
+                viewModel?.updateAlarmData()
+                finish()
+            }
+            btnCancel.setOnClickListener {
+                finish()
             }
         }
     }

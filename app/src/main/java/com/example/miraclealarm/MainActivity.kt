@@ -3,6 +3,7 @@ package com.example.miraclealarm
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -27,9 +28,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun initUi() {
         adapter = AlarmListAdapter(alarmViewModel)
-        alarmViewModel.allAlarms.observe(this, Observer<MutableList<AlarmData>> { alarm ->
+        alarmViewModel.allAlarms.observe(this) { alarm ->
+            Log.d("alarmList : ", "$alarm")
             adapter.alarmList = alarm
-        })
+            adapter.notifyDataSetChanged()
+        }
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
         binding.apply {

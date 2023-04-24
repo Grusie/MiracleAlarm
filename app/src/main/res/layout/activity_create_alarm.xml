@@ -20,8 +20,7 @@
             android:layout_height="wrap_content"
             android:background="@color/gray"
             android:timePickerMode="spinner"
-            app:layout_constraintTop_toTopOf="parent"
-            android:onTimeChanged="@{(view, hour, minute) -> viewModel.time(hour, minute)}" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -72,6 +71,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        android:checked="@{viewModel.alarm.holiday}"
                         android:onClick="@{() -> viewModel.onSwHolidayClicked()}"/>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -111,11 +111,12 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
+                    <EditText
                         android:id="@+id/tv_offWay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{viewModel.alarm.off_way}"
+                        android:hint="흔들어서 끄기"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_offWay_title" />
@@ -127,6 +128,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        android:checked="@{!viewModel.alarm.off_way.isEmpty()}"
                         android:onClick="@{() -> viewModel.onSwOffWayClicked()}"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -151,6 +153,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{viewModel.alarm.sound}"
+                        android:hint="horizontal"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_sound_title" />
@@ -162,6 +165,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        android:checked="@{!viewModel.alarm.sound.isEmpty()}"
                         android:onClick="@{() -> viewModel.onSwSoundClicked()}"/>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -187,6 +191,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{viewModel.alarm.vibrate}"
+                        android:hint="기본 진동"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_vibe_title" />
@@ -198,6 +203,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        android:checked="@{!viewModel.alarm.vibrate.isEmpty()}"
                         android:onClick="@{() -> viewModel.onSwVibeClicked()}"/>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -223,6 +229,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@{viewModel.alarm.repeat}"
+                        android:hint="5분에 한 번"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_repeat_title" />
@@ -234,6 +241,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        android:checked="@{!viewModel.alarm.repeat.isEmpty()}"
                         android:onClick="@{() -> viewModel.onSwRepeatClicked()}"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>

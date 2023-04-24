@@ -1,6 +1,7 @@
 package com.example.miraclealarm
 
 import androidx.lifecycle.LiveData
+import com.example.miraclealarm.AlarmDatabase.Companion.id
 
 class AlarmRepository(private val alarmDao: AlarmDao) {
     val allAlarms: LiveData<MutableList<AlarmData>> = alarmDao.getAllAlarms()
@@ -15,5 +16,9 @@ class AlarmRepository(private val alarmDao: AlarmDao) {
 
     suspend fun delete(alarm: AlarmData){
         alarmDao.delete(alarm)
+    }
+
+    fun getAlarmById(id: Int) : LiveData<AlarmData>{
+        return alarmDao.getAlarmById(id)
     }
 }

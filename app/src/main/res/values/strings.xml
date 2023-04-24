@@ -12,4 +12,5 @@
     <string name="repeat_sub">5분,3회</string>
     <string name="string_save">저장</string>
     <string name="string_cancel">취소</string>
+    <string name="string_disabled">사용 안함</string>
 </resources>
