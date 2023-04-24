@@ -13,4 +13,14 @@
     <string name="string_save">저장</string>
     <string name="string_cancel">취소</string>
     <string name="string_disabled">사용 안함</string>
+
+    <string-array name="array_date">
+        <item>일</item>
+        <item>월</item>
+        <item>화</item>
+        <item>수</item>
+        <item>목</item>
+        <item>금</item>
+        <item>토</item>
+    </string-array>
 </resources>

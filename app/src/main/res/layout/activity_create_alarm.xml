@@ -33,11 +33,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <ListView
-                    android:id="@+id/lv_alarm_date"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_alarm_date"
                     android:layout_width="match_parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:listitem="@layout/item_alarm_date" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/cl_holiday"
@@ -45,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/lv_alarm_date">
+                    app:layout_constraintTop_toBottomOf="@id/rv_alarm_date">
 
                     <TextView
                         android:id="@+id/tv_holiday_title"
@@ -111,7 +114,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <EditText
+                    <TextView
                         android:id="@+id/tv_offWay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
