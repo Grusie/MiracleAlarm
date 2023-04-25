@@ -84,15 +84,20 @@ class CreateAlarmActivity : AppCompatActivity() {
                     title = etAlarmTitle.text.toString()
                     //date = lvAlarmDate
                     holiday = viewModel?.flagHoliday?.value == true
-                    flag = false
+                    flagSound = viewModel?.flagSound?.value == true
+                    flagVibrate = viewModel?.flagVibe?.value == true
+                    flagOffWay = viewModel?.flagOffWay?.value == true
+                    flagRepeat = viewModel?.flagRepeat?.value == true
+
+                    enabled = true
                     sound =
-                        if (binding.viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else ""
+                        if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
                     vibrate =
-                        if (binding.viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else ""
+                        if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
                     off_way =
-                        if (binding.viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else ""
+                        if (viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else off_way
                     repeat =
-                        if (binding.viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else ""
+                        if (viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else repeat
                 }
                 viewModel?.updateAlarmData()
                 finish()

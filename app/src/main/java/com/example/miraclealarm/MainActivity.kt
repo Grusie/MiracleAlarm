@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     private fun initUi() {
         adapter = AlarmListAdapter(alarmViewModel)
         alarmViewModel.allAlarms.observe(this) { alarm ->
-            Log.d("alarmList : ", "$alarm")
+            alarmViewModel.logLine("alarmList : ", "$alarm")
             adapter.alarmList = alarm
             adapter.notifyDataSetChanged()
         }

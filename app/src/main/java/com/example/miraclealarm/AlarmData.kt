@@ -13,9 +13,13 @@ data class AlarmData(
     var time : String = "",
     var holiday : Boolean = false,
     var date : String = "",
-    var flag : Boolean = true,
-    var sound : String = "",
-    var vibrate : String = "",
-    var off_way : String = "",
-    var repeat : String = ""
+    var enabled : Boolean = true,
+    var sound : String = "Homecoming",
+    var vibrate : String = "Basic call",
+    var off_way : String = "흔들어서 끄기",
+    var repeat : String = "5분,3회",
+    var flagSound : Boolean = true,
+    var flagVibrate : Boolean = true,
+    var flagOffWay : Boolean = true,
+    var flagRepeat : Boolean = false,
 )

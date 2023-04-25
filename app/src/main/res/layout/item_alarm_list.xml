@@ -55,7 +55,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:checked="@{alarm.flag}"
+            android:checked="@{alarm.enabled}"
             android:onClick="@{() -> viewModel.onAlarmFlagClicked(alarm)}"
             />
 

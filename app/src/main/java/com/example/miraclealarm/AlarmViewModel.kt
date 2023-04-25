@@ -22,11 +22,11 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             logLine("initAlarmData", "${this.alarm.value}")
 
             alarm.apply {
-                flagHoliday.value = holiday
-                flagVibe.value = vibrate.isNotEmpty()
-                flagSound.value = sound.isNotEmpty()
-                flagRepeat.value = repeat.isNotEmpty()
-                flagOffWay.value = off_way.isNotEmpty()
+                this@AlarmViewModel.flagHoliday.value = holiday
+                this@AlarmViewModel.flagVibe.value = flagVibrate
+                this@AlarmViewModel.flagSound.value = flagSound
+                this@AlarmViewModel.flagRepeat.value = flagRepeat
+                this@AlarmViewModel.flagOffWay.value = flagOffWay
             }
         }
     }
@@ -78,9 +78,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onAlarmFlagClicked(alarm: AlarmData) {
-        alarm.flag = !alarm.flag
+        alarm.enabled = !alarm.enabled
         update(alarm)
-        logLine("flag confirm", "${alarm.flag}")
+        logLine("flag confirm", "${alarm.enabled}")
     }
 
     fun timePickerToTime(hour: Int, minute: Int) {
@@ -97,11 +97,11 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         if (alarmId != -1) getAlarmById(alarmId).observeForever(alarmObserver)
         else {
             this.alarm.value = AlarmData().apply {
-                flagHoliday.value = holiday
-                flagVibe.value = vibrate.isNotEmpty() == true
-                flagSound.value = sound.isNotEmpty() == true
-                flagRepeat.value = repeat.isNotEmpty() == true
-                flagOffWay.value = off_way.isNotEmpty() == true
+                this@AlarmViewModel.flagHoliday.value = holiday
+                this@AlarmViewModel.flagVibe.value = flagVibrate
+                this@AlarmViewModel.flagSound.value = flagSound
+                this@AlarmViewModel.flagRepeat.value = flagRepeat
+                this@AlarmViewModel.flagOffWay.value = flagOffWay
             }
         }
     }
