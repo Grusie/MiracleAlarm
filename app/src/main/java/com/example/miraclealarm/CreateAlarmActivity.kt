@@ -34,60 +34,62 @@ class CreateAlarmActivity : AppCompatActivity() {
         alarmId = intent.getIntExtra("id", -1)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
 
-        alarmViewModel.initAlarmData(alarmId)
-
         binding.lifecycleOwner = this
+        binding.viewModel = alarmViewModel
+
+        if (!alarmViewModel.instanceFlag) {
+            alarmViewModel.initAlarmData(alarmId)
+            binding.viewModel?.timePickerToTime(binding.tpAlarmTime.hour, binding.tpAlarmTime.minute)
+        }
+
         binding.apply {
             val date = resources.getStringArray(R.array.array_date)
 
-            val adapter = AlarmDateAdapter(this@CreateAlarmActivity, date)
+            val adapter = AlarmDateAdapter(alarmViewModel,date, this@CreateAlarmActivity)
             rvAlarmDate.adapter = adapter
-            rvAlarmDate.layoutManager = LinearLayoutManager(this@CreateAlarmActivity, LinearLayoutManager.HORIZONTAL, false)
+            rvAlarmDate.layoutManager =
+                LinearLayoutManager(this@CreateAlarmActivity, LinearLayoutManager.HORIZONTAL, false)
 
-
-            viewModel = alarmViewModel
-
-
-            viewModel?.timePickerToTime(tpAlarmTime.hour, tpAlarmTime.minute)
             tpAlarmTime.setOnTimeChangedListener { timePicker, hour, minute ->
                 viewModel?.timePickerToTime(hour, minute)
             }
 
-            viewModel?.alarm?.observe(this@CreateAlarmActivity) { it ->
-                if (it != null) {
-                    viewModel?.logLine("alarm Object : ", "$it")
-                    if (it.time.isNotEmpty()) {
-                        val cal = Calendar.getInstance()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            val formatter =
-                                DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
-                            val localTime =
-                                LocalTime.parse(it.time.toString(), formatter)
-                            val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
-                            val zoneId = ZoneId.systemDefault()
-                            val date = Date.from(localDateTime.atZone(zoneId).toInstant())
-                            cal.time = date
-                        } else {
-                            val formatter = SimpleDateFormat("a hh:mm", Locale.KOREAN)
-                            val date = it.time.let { formatter.parse(it) }
-                            cal.time = date
-                        }
-                        tpAlarmTime.hour = cal.get(Calendar.HOUR_OF_DAY)
-                        tpAlarmTime.minute = cal.get(Calendar.MINUTE)
-                    }
-                    executePendingBindings()
+            viewModel?.time?.observe(this@CreateAlarmActivity) { it ->
+                val cal = Calendar.getInstance()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val formatter =
+                        DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
+                    val localTime =
+                        LocalTime.parse(it.toString(), formatter)
+                    val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
+                    val zoneId = ZoneId.systemDefault()
+                    val date = Date.from(localDateTime.atZone(zoneId).toInstant())
+                    cal.time = date
+                } else {
+                    val formatter = SimpleDateFormat("a hh:mm", Locale.KOREAN)
+                    val date = formatter.parse(it)
+                    cal.time = date
                 }
+                tpAlarmTime.hour = cal.get(Calendar.HOUR_OF_DAY)
+                tpAlarmTime.minute = cal.get(Calendar.MINUTE)
+                viewModel?.logLine(
+                    "confirm Time",
+                    "time = ${it}, hour = ${tpAlarmTime.hour}, minute = ${tpAlarmTime.minute}"
+                )
+                executePendingBindings()
             }
 
             btnSave.setOnClickListener {
                 viewModel?.alarm?.value?.apply {
                     title = etAlarmTitle.text.toString()
-                    //date = lvAlarmDate
                     holiday = viewModel?.flagHoliday?.value == true
                     flagSound = viewModel?.flagSound?.value == true
                     flagVibrate = viewModel?.flagVibe?.value == true
                     flagOffWay = viewModel?.flagOffWay?.value == true
                     flagRepeat = viewModel?.flagRepeat?.value == true
+
+                    time = viewModel?.time?.value.toString()
+                    this.date = viewModel?.sortDate()!!
 
                     enabled = true
                     sound =

@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: AlarmRepository
@@ -16,6 +17,19 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     val flagVibe = MutableLiveData<Boolean>()
     val flagOffWay = MutableLiveData<Boolean>()
     val flagRepeat = MutableLiveData<Boolean>()
+    val time = MutableLiveData<String>()
+    val date = MutableLiveData<MutableList<String>>()
+    val dayOfWeekMap = mapOf(
+        "월" to 1,
+        "화" to 2,
+        "수" to 3,
+        "목" to 4,
+        "금" to 5,
+        "토" to 6,
+        "일" to 7
+    )
+
+    var instanceFlag = false
     private val alarmObserver = Observer<AlarmData> { alarm ->
         alarm.let {
             this.alarm.value = alarm
@@ -27,6 +41,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 this@AlarmViewModel.flagSound.value = flagSound
                 this@AlarmViewModel.flagRepeat.value = flagRepeat
                 this@AlarmViewModel.flagOffWay.value = flagOffWay
+                this@AlarmViewModel.date.value = if(date.isNotEmpty()) date.split(",").toMutableList() else mutableListOf()
             }
         }
     }
@@ -35,6 +50,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         val alarmDao = AlarmDatabase.getDatabase(application).alarmDao()
         repository = AlarmRepository(alarmDao)
         allAlarms = repository.allAlarms
+        logLine("confirm instance", "인스턴스 생성 완료")
     }
 
     fun insert(alarm: AlarmData) = viewModelScope.launch {
@@ -77,6 +93,13 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         flagHoliday.value = !flagHoliday.value!!
     }
 
+    fun onSwDateClicked(dateItem: String) {
+        if(date.value?.contains(dateItem) == false)
+            date.value?.add(dateItem)
+        else date.value?.remove(dateItem)
+        logLine("confirm date", "${date.value}, $dateItem")
+    }
+
     fun onAlarmFlagClicked(alarm: AlarmData) {
         alarm.enabled = !alarm.enabled
         update(alarm)
@@ -89,11 +112,12 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         val displayHour = if (hour > 12) hour - 12 else hour
 
         timeString = String.format("$amPm %02d:%02d", displayHour, minute)
-        alarm.value?.time = timeString
-        logLine("time.value", "${alarm.value?.time}")
+        time.value = timeString
+        logLine("confirm time - timePickerToTime", "${time.value}")
     }
 
     fun initAlarmData(alarmId: Int) {
+        instanceFlag = true
         if (alarmId != -1) getAlarmById(alarmId).observeForever(alarmObserver)
         else {
             this.alarm.value = AlarmData().apply {
@@ -102,6 +126,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 this@AlarmViewModel.flagSound.value = flagSound
                 this@AlarmViewModel.flagRepeat.value = flagRepeat
                 this@AlarmViewModel.flagOffWay.value = flagOffWay
+                this@AlarmViewModel.date.value = if(date.isNotEmpty()) date.split(",").toMutableList() else mutableListOf()
             }
         }
     }
@@ -121,6 +146,12 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun sortDate() : String? {
+
+        val asd =  date.value?.sortedBy { dayOfWeekMap[it] }?.joinToString( "," ,"","")
+        logLine("confirm date", "$asd")
+        return asd
+    }
     fun logLine(tag: String, log: String) {
         if (log.length > 1500) {
             Log.d(tag, log.substring(0, 1500))
