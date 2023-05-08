@@ -3,7 +3,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.miraclealarm.AlarmViewModel" />
+            type="com.example.miraclealarm.viewmodel.AlarmViewModel" />
     </data>
 <androidx.appcompat.widget.LinearLayoutCompat
     android:layout_width="wrap_content"

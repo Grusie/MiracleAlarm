@@ -14,6 +14,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.example.miraclealarm.databinding.ItemAlarmDateBinding
+import com.example.miraclealarm.viewmodel.AlarmViewModel
 
 class AlarmDateAdapter(
     private val viewModel: AlarmViewModel,
@@ -65,16 +66,17 @@ class ViewHolder(private val binding: ItemAlarmDateBinding) :
                 intArrayOf(-android.R.attr.state_checked)
             ), intArrayOf(checkedColor, color)
         )
-        binding.cbItemDate.text = data
-        viewModel.date.observe(lifecycleOwner) {
-            if (it?.contains(data) == true)
-                binding.cbItemDate.isChecked = true
 
-            binding.cbItemDate.setOnCheckedChangeListener { _, _ ->
-                viewModel.onSwDateClicked(data)
-            }
+        binding.cbItemDate.text = data
+        viewModel.dateList.observe(lifecycleOwner) {
+            binding.cbItemDate.isChecked = it?.contains(data) == true
 
             binding.cbItemDate.setTextColor(colorSelector)
+        }
+
+        binding.cbItemDate.setOnClickListener {
+            viewModel.logLine("confrim datelist", "$data checked")
+            viewModel.onDateClicked(data, true)
         }
     }
 }

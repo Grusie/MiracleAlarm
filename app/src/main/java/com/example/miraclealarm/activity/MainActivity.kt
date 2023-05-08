@@ -1,23 +1,19 @@
-package com.example.miraclealarm
+package com.example.miraclealarm.activity
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.miraclealarm.viewmodel.AlarmViewModel
+import com.example.miraclealarm.R
+import com.example.miraclealarm.adapter.AlarmListAdapter
 import com.example.miraclealarm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var adapter :AlarmListAdapter
+    private lateinit var adapter : AlarmListAdapter
     private lateinit var alarmViewModel: AlarmViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

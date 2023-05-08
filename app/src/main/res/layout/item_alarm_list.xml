@@ -4,10 +4,10 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.miraclealarm.AlarmViewModel" />
+            type="com.example.miraclealarm.viewmodel.AlarmViewModel" />
         <variable
             name="alarm"
-            type="com.example.miraclealarm.AlarmData" />
+            type="com.example.miraclealarm.model.AlarmData" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

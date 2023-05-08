@@ -1,7 +1,8 @@
-package com.example.miraclealarm
+package com.example.miraclealarm.model
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.example.miraclealarm.model.AlarmData
 
 @Dao
 interface AlarmDao {

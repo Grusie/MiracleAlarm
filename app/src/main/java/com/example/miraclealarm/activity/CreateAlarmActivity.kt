@@ -1,4 +1,4 @@
-package com.example.miraclealarm
+package com.example.miraclealarm.activity
 
 import android.app.DatePickerDialog
 import android.os.Build
@@ -7,13 +7,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.example.miraclealarm.AlarmDateAdapter
+import com.example.miraclealarm.viewmodel.AlarmViewModel
+import com.example.miraclealarm.R
 import com.example.miraclealarm.databinding.ActivityCreateAlarmBinding
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.Month
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -41,13 +42,11 @@ class CreateAlarmActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
-        if (!alarmViewModel.instanceFlag) {
             alarmViewModel.initAlarmData(alarmId)
             binding.viewModel?.timePickerToTime(
                 binding.tpAlarmTime.hour,
                 binding.tpAlarmTime.minute
             )
-        }
 
         binding.apply {
             val date = resources.getStringArray(R.array.array_date)
@@ -73,7 +72,7 @@ class CreateAlarmActivity : AppCompatActivity() {
                     flagRepeat = viewModel?.flagRepeat?.value == true
 
                     time = viewModel?.time?.value.toString()
-                    this.date = viewModel?.sortDate()!!
+                    this.date = viewModel?.date?.value!!
 
                     enabled = true
                     sound =
@@ -106,10 +105,9 @@ class CreateAlarmActivity : AppCompatActivity() {
                 cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 val dayOfWeek = SimpleDateFormat("EE").format(cal.time)
                 val text =
-                    if (year == cal.get(Calendar.YEAR)) String.format("%02d월 %02d일 (%s)", month + 1, dayOfMonth, dayOfWeek)
+                    if (year == Calendar.getInstance().get(Calendar.YEAR)) String.format("%02d월 %02d일 (%s)", month + 1, dayOfMonth, dayOfWeek)
                     else String.format("%04d년 %02d월 %02d일 (%s)", year, month + 1, dayOfMonth, dayOfWeek)
-                //binding.viewModel?.date?.value
-                binding.tvNextAlarm.text = text
+                binding.viewModel?.onDateClicked(text, false)
             },
             cal.get(Calendar.YEAR),
             cal.get(Calendar.MONTH),
