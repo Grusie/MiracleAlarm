@@ -1,5 +1,6 @@
 package com.example.miraclealarm
 
+import android.app.DatePickerDialog
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +13,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.Month
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -21,6 +23,7 @@ class CreateAlarmActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreateAlarmBinding
     private lateinit var alarmViewModel: AlarmViewModel
     private var alarmId by Delegates.notNull<Int>()
+    private lateinit var cal: Calendar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -33,51 +36,32 @@ class CreateAlarmActivity : AppCompatActivity() {
     private fun initUi() {
         alarmId = intent.getIntExtra("id", -1)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
+        cal = Calendar.getInstance()
 
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
         if (!alarmViewModel.instanceFlag) {
             alarmViewModel.initAlarmData(alarmId)
-            binding.viewModel?.timePickerToTime(binding.tpAlarmTime.hour, binding.tpAlarmTime.minute)
+            binding.viewModel?.timePickerToTime(
+                binding.tpAlarmTime.hour,
+                binding.tpAlarmTime.minute
+            )
         }
 
         binding.apply {
             val date = resources.getStringArray(R.array.array_date)
 
-            val adapter = AlarmDateAdapter(alarmViewModel,date, this@CreateAlarmActivity)
+            val adapter = AlarmDateAdapter(alarmViewModel, date, this@CreateAlarmActivity)
             rvAlarmDate.adapter = adapter
             rvAlarmDate.layoutManager =
                 LinearLayoutManager(this@CreateAlarmActivity, LinearLayoutManager.HORIZONTAL, false)
 
-            tpAlarmTime.setOnTimeChangedListener { timePicker, hour, minute ->
+            tpAlarmTime.setOnTimeChangedListener { _, hour, minute ->
                 viewModel?.timePickerToTime(hour, minute)
             }
 
-            viewModel?.time?.observe(this@CreateAlarmActivity) { it ->
-                val cal = Calendar.getInstance()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val formatter =
-                        DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
-                    val localTime =
-                        LocalTime.parse(it.toString(), formatter)
-                    val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
-                    val zoneId = ZoneId.systemDefault()
-                    val date = Date.from(localDateTime.atZone(zoneId).toInstant())
-                    cal.time = date
-                } else {
-                    val formatter = SimpleDateFormat("a hh:mm", Locale.KOREAN)
-                    val date = formatter.parse(it)
-                    cal.time = date
-                }
-                tpAlarmTime.hour = cal.get(Calendar.HOUR_OF_DAY)
-                tpAlarmTime.minute = cal.get(Calendar.MINUTE)
-                viewModel?.logLine(
-                    "confirm Time",
-                    "time = ${it}, hour = ${tpAlarmTime.hour}, minute = ${tpAlarmTime.minute}"
-                )
-                executePendingBindings()
-            }
+            initTime()
 
             btnSave.setOnClickListener {
                 viewModel?.alarm?.value?.apply {
@@ -106,6 +90,58 @@ class CreateAlarmActivity : AppCompatActivity() {
             }
             btnCancel.setOnClickListener {
                 finish()
+            }
+            ivCalendar.setOnClickListener {
+                initDate()
+            }
+        }
+    }
+
+    private fun initDate() {
+        val datePickerDialog = DatePickerDialog(
+            this,
+            DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, month)
+                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                val dayOfWeek = SimpleDateFormat("EE").format(cal.time)
+                val text =
+                    if (year == cal.get(Calendar.YEAR)) String.format("%02d월 %02d일 (%s)", month + 1, dayOfMonth, dayOfWeek)
+                    else String.format("%04d년 %02d월 %02d일 (%s)", year, month + 1, dayOfMonth, dayOfWeek)
+                //binding.viewModel?.date?.value
+                binding.tvNextAlarm.text = text
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        )
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
+        datePickerDialog.show()
+    }
+
+    private fun initTime() {
+        binding.apply {
+            viewModel?.time?.observe(this@CreateAlarmActivity) { it ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val formatter =
+                        DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
+                    val localTime = LocalTime.parse(it.toString(), formatter)
+                    val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
+                    val zoneId = ZoneId.systemDefault()
+                    val date = Date.from(localDateTime.atZone(zoneId).toInstant())
+                    cal.time = date
+                } else {
+                    val formatter = SimpleDateFormat("a hh:mm", Locale.KOREAN)
+                    val date = formatter.parse(it)
+                    cal.time = date
+                }
+                tpAlarmTime.hour = cal.get(Calendar.HOUR_OF_DAY)
+                tpAlarmTime.minute = cal.get(Calendar.MINUTE)
+                viewModel?.logLine(
+                    "confirm Time",
+                    "time = ${it}, hour = ${tpAlarmTime.hour}, minute = ${tpAlarmTime.minute}"
+                )
+                executePendingBindings()
             }
         }
     }

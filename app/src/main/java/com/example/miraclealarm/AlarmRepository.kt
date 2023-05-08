@@ -18,7 +18,7 @@ class AlarmRepository(private val alarmDao: AlarmDao) {
         alarmDao.delete(alarm)
     }
 
-    fun getAlarmById(id: Int) : LiveData<AlarmData>{
+    suspend fun getAlarmById(id: Int) : AlarmData{
         return alarmDao.getAlarmById(id)
     }
 }

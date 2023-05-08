@@ -34,14 +34,39 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_alarm_date"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cl_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:listitem="@layout/item_alarm_date" />
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/tv_nextAlarm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="@id/iv_calendar"/>
+
+                    <ImageButton
+                        android:id="@+id/iv_calendar"
+                        style="?android:attr/borderlessButtonStyle"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/calendar"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_alarm_date"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_nextAlarm"
+                        tools:listitem="@layout/item_alarm_date" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/cl_holiday"
@@ -49,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/rv_alarm_date">
+                    app:layout_constraintTop_toBottomOf="@id/cl_date">
 
                     <TextView
                         android:id="@+id/tv_holiday_title"
