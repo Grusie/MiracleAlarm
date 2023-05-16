@@ -2,8 +2,11 @@ package com.example.miraclealarm.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
+import android.view.View.OnLongClickListener
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.miraclealarm.viewmodel.AlarmViewModel
@@ -12,7 +15,7 @@ import com.example.miraclealarm.R
 import com.example.miraclealarm.databinding.ItemAlarmListBinding
 import com.example.miraclealarm.model.AlarmData
 
-class AlarmListAdapter(private val viewModel: AlarmViewModel) :
+class AlarmListAdapter(private val viewModel: AlarmViewModel, private val lifecycleOwner: LifecycleOwner) :
     RecyclerView.Adapter<AlarmListAdapter.AlarmListViewHolder>() {
     var alarmList: MutableList<AlarmData> = arrayListOf()
 
@@ -24,16 +27,18 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel) :
     }
 
     override fun onBindViewHolder(holder: AlarmListViewHolder, position: Int) {
-        holder.bind(alarmList[position], viewModel)
+        val alarm = alarmList[position]
+        holder.binding.cbAlarmSelect.isChecked = holder.binding.viewModel?.modifyList?.value?.contains(alarm) ?: false
+        holder.bind(alarm, viewModel, lifecycleOwner)
     }
 
     override fun getItemCount(): Int {
         return alarmList.size
     }
 
-    inner class AlarmListViewHolder(private val binding: ItemAlarmListBinding) :
+    inner class AlarmListViewHolder(val binding: ItemAlarmListBinding) :
         ViewHolder(binding.root) {
-        fun bind(alarm: AlarmData, viewModel: AlarmViewModel) {
+        fun bind(alarm: AlarmData, viewModel: AlarmViewModel, lifecycleOwner: LifecycleOwner) {
             binding.viewModel = viewModel
             binding.alarm = alarm
             if(binding.alarm?.enabled == false){
@@ -46,10 +51,36 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel) :
                 binding.tvAlarmTitle.setTextColor(ContextCompat.getColor(binding.root.context, R.color.black))
             }
             binding.executePendingBindings()
+
+            binding.viewModel?.modifyMode?.observe(lifecycleOwner){
+                if(it) binding.cbAlarmSelect.visibility = View.VISIBLE else binding.cbAlarmSelect.visibility = View.GONE
+            }
+
             itemView.setOnClickListener {
-                val intent = Intent(itemView.context, CreateAlarmActivity::class.java)
-                intent.putExtra("id", alarm.id)
-                binding.root.context.startActivity(intent)
+                if(binding.viewModel?.modifyMode?.value == false) {
+                    val intent = Intent(itemView.context, CreateAlarmActivity::class.java)
+                    intent.putExtra("id", alarm.id)
+                    binding.root.context.startActivity(intent)
+                }else {
+                    if(!binding.cbAlarmSelect.isChecked){
+                        binding.viewModel?.modifyList?.value!!.add(alarm)
+                    }
+                    else{
+                        binding.viewModel?.modifyList?.value!!.remove(alarm)
+                    }
+                    binding.cbAlarmSelect.isChecked = !binding.cbAlarmSelect.isChecked
+                    binding.viewModel?.logLine("confirm clickListener", "${alarm}, ${binding.viewModel?.modifyList?.value}")
+                }
+            }
+
+            itemView.setOnLongClickListener {
+                if(binding.viewModel?.modifyMode?.value == false){
+                    binding.viewModel?.modifyMode?.value = true
+
+                    binding.viewModel?.modifyList?.value!!.add(alarm)
+                    binding.cbAlarmSelect.isChecked = true
+                }
+                true
             }
         }
     }

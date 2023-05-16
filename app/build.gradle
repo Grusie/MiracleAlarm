@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.miraclealarm"
-        minSdk 24
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -62,4 +62,8 @@ dependencies {
     kapt 'androidx.room:room-compiler:2.5.1'
     implementation 'androidx.room:room-ktx:2.5.1'
     androidTestImplementation 'androidx.room:room-testing:2.5.1'
+
+
+    //TedPermission
+    implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
 }
