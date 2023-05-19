@@ -41,38 +41,132 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/cl_nextAlarm"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                    <TextView
-                        android:id="@+id/tv_nextAlarm"
-                        android:layout_width="wrap_content"
-                        android:layout_height="0dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:text="@{viewModel.date}"
-                        android:layout_margin="@dimen/margin_default"
-                        app:layout_constraintBottom_toBottomOf="@id/iv_calendar"/>
-
-                    <ImageButton
-                        android:id="@+id/iv_calendar"
-                        style="?android:attr/borderlessButtonStyle"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/calendar"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rv_alarm_date"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/tv_nextAlarm"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_margin="@dimen/margin_default"
+                            android:text="@{viewModel.date}"
+                            app:layout_constraintBottom_toBottomOf="@id/iv_calendar"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <ImageButton
+                            android:id="@+id/iv_calendar"
+                            style="?android:attr/borderlessButtonStyle"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/calendar"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!--                    <androidx.recyclerview.widget.RecyclerView
+                                            android:id="@+id/rv_alarm_date"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            app:layout_constraintEnd_toEndOf="parent"
+                                            app:layout_constraintStart_toStartOf="parent"
+                                            app:layout_constraintTop_toBottomOf="@id/cl_nextAlarm"
+                                            tools:listitem="@layout/item_alarm_date" />-->
+
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:justifyContent="space_evenly"
                         app:layout_constraintTop_toBottomOf="@id/cl_nextAlarm"
-                        tools:listitem="@layout/item_alarm_date" />
+                        tools:layout_editor_absoluteX="0dp">
+
+                        <CheckBox
+                            android:id="@+id/cb_date_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_sunday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_sunday, true)}"
+                            android:text="@string/string_sunday"
+                            android:textColor="@drawable/sunday_text_selector" />
+
+                        <CheckBox
+                            android:id="@+id/cb_date_2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_monday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_monday, true)}"
+                            android:text="@string/string_monday"
+                            android:textColor="@drawable/weekday_text_selector" />
+
+                        <CheckBox
+                            android:id="@+id/cb_date_3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_tuesday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_tuesday, true)}"
+                            android:text="@string/string_tuesday"
+                            android:textColor="@drawable/weekday_text_selector" />
+
+                        <CheckBox
+                            android:id="@+id/cb_date_4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_wednesday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_wednesday, true)}"
+                            android:text="@string/string_wednesday"
+                            android:textColor="@drawable/weekday_text_selector" />
+
+                        <CheckBox
+                            android:id="@+id/cb_date_5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_thursday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_thursday, true)}"
+                            android:text="@string/string_thursday"
+                            android:textColor="@drawable/weekday_text_selector" />
+
+                        <CheckBox
+                            android:id="@+id/cb_date_6"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_friday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_friday, true)}"
+                            android:text="@string/string_friday"
+                            android:textColor="@drawable/weekday_text_selector" />
+
+                        <CheckBox
+                            android:id="@+id/cb_date_7"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/date_border_selector"
+                            android:button="@null"
+                            android:checked="@{viewModel.dateList.contains(@string/string_saturday)}"
+                            android:gravity="center"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/string_saturday, true)}"
+                            android:text="@string/string_saturday"
+                            android:textColor="@drawable/saturday_text_selector" />
+
+                    </com.google.android.flexbox.FlexboxLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout

@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
-apply plugin : 'kotlin-kapt'
+apply plugin: 'kotlin-kapt'
 
 android {
     namespace 'com.example.miraclealarm'
@@ -31,7 +31,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    buildFeatures{
+    buildFeatures {
         dataBinding true
     }
 }
@@ -66,4 +66,7 @@ dependencies {
 
     //TedPermission
     implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
+
+    //flexbox Layout
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 }

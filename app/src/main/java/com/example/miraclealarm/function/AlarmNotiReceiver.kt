@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.miraclealarm.R
@@ -16,17 +15,15 @@ import com.example.miraclealarm.activity.MainActivity
 
 class AlarmNotiReceiver : BroadcastReceiver() {
 
-    lateinit var manager : NotificationManager
-    lateinit var builder : NotificationCompat.Builder
+    lateinit var manager: NotificationManager
+    lateinit var builder: NotificationCompat.Builder
 
     private val channel_id = "channel_id"
     private val channel_name = "channel_name"
 
     override fun onReceive(context: Context, intent: Intent) {
         val contentValue = intent.getStringExtra("content")
-        val deleteValue = intent.getStringExtra("delete")
         Log.d("confirm contentValue", "confirm contentValue : $contentValue")
-        Log.d("confirm deleteValue", "confirm deleteValue : $deleteValue")
 
         manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -41,7 +38,12 @@ class AlarmNotiReceiver : BroadcastReceiver() {
 
         val intent2 = Intent(context, MainActivity::class.java)
 
-        val pendingIntent = PendingIntent.getActivity(context, 101, intent2, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            101,
+            intent2,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
 
         val pm: PackageManager = context.packageManager

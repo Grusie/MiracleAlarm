@@ -4,29 +4,30 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.miraclealarm.viewmodel.AlarmViewModel
 import com.example.miraclealarm.R
 import com.example.miraclealarm.adapter.AlarmListAdapter
 import com.example.miraclealarm.databinding.ActivityMainBinding
 import com.example.miraclealarm.function.AlarmNotiReceiver
+import com.example.miraclealarm.function.Utils
 import com.example.miraclealarm.model.AlarmData
+import com.example.miraclealarm.viewmodel.AlarmViewModel
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var adapter : AlarmListAdapter
+    private lateinit var adapter: AlarmListAdapter
     private lateinit var alarmViewModel: AlarmViewModel
-    private lateinit var alarmManager : AlarmManager
-    private lateinit var receiverIntent : Intent
-    private var backpressedTime : Long = 0
+    private lateinit var alarmManager: AlarmManager
+    private lateinit var receiverIntent: Intent
+    private var backpressedTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,26 +58,41 @@ class MainActivity : AppCompatActivity() {
             fbAlarmAdd.setOnClickListener {
                 startActivity(intent)
             }
-            viewModel?.modifyMode?.observe(this@MainActivity){
-                llModifyTab.visibility = if(it) View.VISIBLE else View.GONE
+            viewModel?.modifyMode?.observe(this@MainActivity) {
+                llModifyTab.visibility = if (it) View.VISIBLE else View.GONE
             }
             btnDelete.setOnClickListener {
-                for(alarm in viewModel?.modifyList?.value!!) {
+                for (alarm in viewModel?.modifyList?.value!!) {
                     viewModel?.delete(alarm)
                     delAlarm(alarm)
                 }
                 viewModel?.modifyList!!.value = mutableSetOf()
                 viewModel?.modifyMode!!.value = false
+                Toast.makeText(this@MainActivity, "알람이 삭제 되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+
+            viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
+                if (alarm.enabled) {
+                    viewModel?.getAlarmTime()?.forEach {
+                        Utils.setAlarm(this@MainActivity, it, alarm.dateRepeat, alarm.id)
+                    }
+                } else
+                    delAlarm(alarm)
             }
         }
     }
 
-    private fun delAlarm(alarm : AlarmData){
-        receiverIntent.putExtra("delete", "$alarm 삭제됨")
-        val pendingIntent = PendingIntent.getBroadcast(this, alarm.id, receiverIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    private fun delAlarm(alarm: AlarmData) {
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            alarm.id,
+            receiverIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         alarmManager.cancel(pendingIntent)
     }
-    fun createPermission(){
+
+    fun createPermission() {
 
         val permissionlistener: PermissionListener = object : PermissionListener {
             override fun onPermissionGranted() {
@@ -94,7 +110,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if(binding.viewModel?.modifyMode?.value == true){
+        if (binding.viewModel?.modifyMode?.value == true) {
             binding.viewModel?.modifyMode?.value = false
         } else {
             if (System.currentTimeMillis() > backpressedTime + 2000) {
