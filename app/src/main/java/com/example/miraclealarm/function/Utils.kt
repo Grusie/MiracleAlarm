@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.example.miraclealarm.model.AlarmData
 import java.util.*
 
 class Utils {
@@ -12,14 +13,18 @@ class Utils {
         lateinit var receiverIntent: Intent
         lateinit var alarmManager: AlarmManager
 
-        fun setAlarm(context: Context, alarmTime: Calendar, dateRepeat: Boolean, alarmId: Int) {
+        fun setAlarm(context: Context, alarmTime: Calendar, alarm: AlarmData) {
+            val dateRepeat = alarm.dateRepeat
+            val alarmId = alarm.id
+            val alarmTitle = alarm.title
+
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             Log.d("confirm utils", "${alarmTime.time}, $dateRepeat ,$alarmId 알람 설정 됨")
             receiverIntent.putExtra(
-                "content",
-                "${alarmTime.time} 알람"
+                "content", "${alarmTime.time} 알람"
             )
+            receiverIntent.putExtra("title", alarmTitle)
 
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -35,24 +40,17 @@ class Utils {
 
                 // 알람 설정
                 alarmManager.setRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime.timeInMillis,
-                    intervalMillis,
-                    pendingIntent
+                    AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, intervalMillis, pendingIntent
                 )
 
                 // 알람매니저가 실행되기 전에 해당 요일로 먼저 설정
                 alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime.timeInMillis,
-                    pendingIntent
+                    AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, pendingIntent
                 )
             } else {
                 // 일회성 알람 설정
                 alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime.timeInMillis,
-                    pendingIntent
+                    AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, pendingIntent
                 )
             }
         }

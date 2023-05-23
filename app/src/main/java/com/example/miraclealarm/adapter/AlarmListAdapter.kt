@@ -2,9 +2,11 @@ package com.example.miraclealarm.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
@@ -55,6 +57,18 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel, private val lifecy
             binding.viewModel?.modifyMode?.observe(lifecycleOwner){
                 if(it) binding.cbAlarmSelect.visibility = View.VISIBLE else binding.cbAlarmSelect.visibility = View.GONE
             }
+            
+            val checkBoxListener = CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                if(isChecked){
+                    binding.viewModel?.modifyList?.value!!.add(alarm)
+                }
+                else{
+                    binding.viewModel?.modifyList?.value!!.remove(alarm)
+                }
+                binding.viewModel?.logLine("confirm clickListener", "${alarm}, ${binding.viewModel?.modifyList?.value}")
+            }
+
+            binding.cbAlarmSelect.setOnCheckedChangeListener(checkBoxListener)
 
             itemView.setOnClickListener {
                 if(binding.viewModel?.modifyMode?.value == false) {
@@ -62,14 +76,7 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel, private val lifecy
                     intent.putExtra("id", alarm.id)
                     binding.root.context.startActivity(intent)
                 }else {
-                    if(!binding.cbAlarmSelect.isChecked){
-                        binding.viewModel?.modifyList?.value!!.add(alarm)
-                    }
-                    else{
-                        binding.viewModel?.modifyList?.value!!.remove(alarm)
-                    }
                     binding.cbAlarmSelect.isChecked = !binding.cbAlarmSelect.isChecked
-                    binding.viewModel?.logLine("confirm clickListener", "${alarm}, ${binding.viewModel?.modifyList?.value}")
                 }
             }
 

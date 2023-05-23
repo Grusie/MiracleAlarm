@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
                 if (alarm.enabled) {
                     viewModel?.getAlarmTime()?.forEach {
-                        Utils.setAlarm(this@MainActivity, it, alarm.dateRepeat, alarm.id)
+                        Utils.setAlarm(this@MainActivity, it, alarm)
                     }
                 } else
                     delAlarm(alarm)

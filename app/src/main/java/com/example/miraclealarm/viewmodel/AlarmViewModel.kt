@@ -259,7 +259,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     fun dateToCal(date: String, cal: Calendar): Calendar {
         var returnCal = cal
         try {
-            val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (EE) a HH:mm")
+            val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (EE) a hh:mm")
             logLine("confirm getAlarmTime", "$date, ${time.value}")
             val dateTime: Date = if (date.split(" ").size >= 4) {
                 dateFormat.parse("$date ${time.value}")
@@ -267,6 +267,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 val tempDate = cal.get(Calendar.YEAR).toString() + "년 " + date
                 dateFormat.parse("$tempDate ${time.value}")
             }
+            logLine("confirm getAlarmTime : ", "${time.value}$dateTime")
+
             returnCal.time = dateTime
         } catch (e: java.lang.Exception) {
             returnCal = Calendar.getInstance()

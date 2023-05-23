@@ -22,6 +22,7 @@ class AlarmNotiReceiver : BroadcastReceiver() {
     private val channel_name = "channel_name"
 
     override fun onReceive(context: Context, intent: Intent) {
+        val title = intent.getStringExtra("title")
         val contentValue = intent.getStringExtra("content")
         Log.d("confirm contentValue", "confirm contentValue : $contentValue")
 
@@ -46,11 +47,8 @@ class AlarmNotiReceiver : BroadcastReceiver() {
         )
 
 
-        val pm: PackageManager = context.packageManager
-        val i: PackageInfo = pm.getPackageInfo(context.packageName, 0)
-        val appName = i.applicationInfo.loadLabel(pm)
-        builder.setContentTitle(appName)
-        builder.setContentText(contentValue)
+        builder.setContentTitle(contentValue)
+        //builder.setContentText(contentValue)
         builder.setSmallIcon(R.drawable.ic_launcher_foreground)
         builder.setAutoCancel(true)
         builder.setContentIntent(pendingIntent)

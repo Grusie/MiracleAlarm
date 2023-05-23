@@ -138,8 +138,7 @@ class CreateAlarmActivity : AppCompatActivity() {
                 Utils.setAlarm(
                     this@CreateAlarmActivity,
                     alarmTime,
-                    viewModel?.alarm?.value?.dateRepeat == true,
-                    binding.viewModel?.alarm?.value?.id!!
+                    viewModel?.alarm?.value!!,
                 )
             }
         }
