@@ -22,4 +22,6 @@
     <string name="string_saturday">토</string>
     <string name="string_sunday">일</string>
 
+    <string name="default_notification_channel_id">channel_id</string>
+
 </resources>

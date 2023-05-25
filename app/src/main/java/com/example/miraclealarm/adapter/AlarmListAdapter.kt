@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.CompoundButton
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -31,6 +32,7 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel, private val lifecy
     override fun onBindViewHolder(holder: AlarmListViewHolder, position: Int) {
         val alarm = alarmList[position]
         holder.binding.cbAlarmSelect.isChecked = holder.binding.viewModel?.modifyList?.value?.contains(alarm) ?: false
+        viewModel.logLine("onbindViewHolder", " alarm = ${alarm} list = ${holder.binding.viewModel?.modifyList?.value} check = ${holder.binding.cbAlarmSelect.isChecked}")
         holder.bind(alarm, viewModel, lifecycleOwner)
     }
 
@@ -57,18 +59,9 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel, private val lifecy
             binding.viewModel?.modifyMode?.observe(lifecycleOwner){
                 if(it) binding.cbAlarmSelect.visibility = View.VISIBLE else binding.cbAlarmSelect.visibility = View.GONE
             }
-            
-            val checkBoxListener = CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-                if(isChecked){
-                    binding.viewModel?.modifyList?.value!!.add(alarm)
-                }
-                else{
-                    binding.viewModel?.modifyList?.value!!.remove(alarm)
-                }
-                binding.viewModel?.logLine("confirm clickListener", "${alarm}, ${binding.viewModel?.modifyList?.value}")
+            binding.viewModel?.modifyList?.observe(lifecycleOwner){
+                itemView.findViewById<CheckBox>(R.id.cb_alarm_select).isChecked = it.contains(alarm)
             }
-
-            binding.cbAlarmSelect.setOnCheckedChangeListener(checkBoxListener)
 
             itemView.setOnClickListener {
                 if(binding.viewModel?.modifyMode?.value == false) {
@@ -77,6 +70,12 @@ class AlarmListAdapter(private val viewModel: AlarmViewModel, private val lifecy
                     binding.root.context.startActivity(intent)
                 }else {
                     binding.cbAlarmSelect.isChecked = !binding.cbAlarmSelect.isChecked
+                    if(binding.cbAlarmSelect.isChecked){
+                        binding.viewModel?.modifyList?.value!!.add(alarm)
+                    }
+                    else{
+                        binding.viewModel?.modifyList?.value!!.remove(alarm)
+                    }
                 }
             }
 

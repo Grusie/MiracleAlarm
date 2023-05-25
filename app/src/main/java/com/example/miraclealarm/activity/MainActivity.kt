@@ -25,8 +25,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AlarmListAdapter
     private lateinit var alarmViewModel: AlarmViewModel
-    private lateinit var alarmManager: AlarmManager
-    private lateinit var receiverIntent: Intent
     private var backpressedTime: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,8 +37,6 @@ class MainActivity : AppCompatActivity() {
     private fun initUi() {
         createPermission()
         adapter = AlarmListAdapter(alarmViewModel, this@MainActivity)
-        alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        receiverIntent = Intent(this, AlarmNotiReceiver::class.java)
 
         alarmViewModel.allAlarms.observe(this) { alarm ->
             alarmViewModel.logLine("alarmList : ", "$alarm")
@@ -60,11 +56,15 @@ class MainActivity : AppCompatActivity() {
             }
             viewModel?.modifyMode?.observe(this@MainActivity) {
                 llModifyTab.visibility = if (it) View.VISIBLE else View.GONE
+
+                if(!it){
+                    viewModel?.modifyList?.value?.clear()
+                }
             }
             btnDelete.setOnClickListener {
                 for (alarm in viewModel?.modifyList?.value!!) {
                     viewModel?.delete(alarm)
-                    delAlarm(alarm)
+                    Utils.delAlarm(this@MainActivity, alarm)
                 }
                 viewModel?.modifyList!!.value = mutableSetOf()
                 viewModel?.modifyMode!!.value = false
@@ -77,21 +77,10 @@ class MainActivity : AppCompatActivity() {
                         Utils.setAlarm(this@MainActivity, it, alarm)
                     }
                 } else
-                    delAlarm(alarm)
+                    Utils.delAlarm(this@MainActivity, alarm)
             }
         }
     }
-
-    private fun delAlarm(alarm: AlarmData) {
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            alarm.id,
-            receiverIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(pendingIntent)
-    }
-
     fun createPermission() {
 
         val permissionlistener: PermissionListener = object : PermissionListener {

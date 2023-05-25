@@ -1,59 +1,47 @@
 package com.example.miraclealarm.function
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.example.miraclealarm.R
-import com.example.miraclealarm.activity.MainActivity
+import androidx.core.content.ContextCompat
+import com.example.miraclealarm.model.AlarmDatabase
+import com.example.miraclealarm.model.AlarmRepository
 
 class AlarmNotiReceiver : BroadcastReceiver() {
-
-    lateinit var manager: NotificationManager
-    lateinit var builder: NotificationCompat.Builder
-
-    private val channel_id = "channel_id"
-    private val channel_name = "channel_name"
-
     override fun onReceive(context: Context, intent: Intent) {
-        val title = intent.getStringExtra("title")
-        val contentValue = intent.getStringExtra("content")
-        Log.d("confirm contentValue", "confirm contentValue : $contentValue")
+        var title = ""
+        var contentValue = ""
+        if(intent.action == Intent.ACTION_BOOT_COMPLETED){
+            val alarmDao = AlarmDatabase.getDatabase(context).alarmDao()
+            val repository = AlarmRepository(alarmDao)
+            val allAlarms = repository.allAlarms
 
-        manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            allAlarms.observeForever { alarmList ->
+                for (alarm in alarmList) {
+                    if (alarm.enabled) {
+                        title = alarm.title
+                        contentValue = alarm.time + " 알람"
 
-        manager.createNotificationChannel(
-            NotificationChannel(
-                channel_id,
-                channel_name,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-        )
-        builder = NotificationCompat.Builder(context, channel_id)
+                        Log.d("confirm contentValue", "confirm contentValue : $contentValue 생성됨")
+                        createAlarm(context, title, contentValue)
+                    }
+                }
+            }
+        }
+        else {
+            title = intent.getStringExtra("title") ?: ""
+            contentValue = intent.getStringExtra("content") ?: ""
+            Log.d("confirm contentValue", "confirm contentValue : $contentValue 생성됨")
+            createAlarm(context, title, contentValue)
+        }
 
-        val intent2 = Intent(context, MainActivity::class.java)
-
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            101,
-            intent2,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-
-        builder.setContentTitle(contentValue)
-        //builder.setContentText(contentValue)
-        builder.setSmallIcon(R.drawable.ic_launcher_foreground)
-        builder.setAutoCancel(true)
-        builder.setContentIntent(pendingIntent)
-
-        val notification = builder.build()
-        manager.notify(1, notification)
+    }
+    private fun createAlarm(context : Context, title : String, contentValue : String){
+        val serviceIntent = Intent(context, ForegroundAlarmService::class.java).apply {
+            putExtra("title", title)
+            putExtra("contentValue", contentValue)
+        }
+        ContextCompat.startForegroundService(context, serviceIntent)
     }
 }

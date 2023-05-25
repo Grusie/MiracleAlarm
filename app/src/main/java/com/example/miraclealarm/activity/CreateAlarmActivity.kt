@@ -30,8 +30,6 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     //private lateinit var alarmCal: Calendar
     private lateinit var currCal: Calendar
-    private lateinit var alarmManager: AlarmManager
-    private lateinit var receiverIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +42,6 @@ class CreateAlarmActivity : AppCompatActivity() {
     private fun initUi() {
         alarmId = intent.getIntExtra("id", -1)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
-
-        alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        receiverIntent = Intent(this, AlarmNotiReceiver::class.java)
 
         timeCal = Calendar.getInstance()
 
