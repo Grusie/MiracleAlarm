@@ -1,9 +1,8 @@
-package com.example.miraclealarm.activity
+package com.grusie.miraclealarm.activity
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -11,13 +10,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.miraclealarm.R
-import com.example.miraclealarm.adapter.AlarmListAdapter
-import com.example.miraclealarm.databinding.ActivityMainBinding
-import com.example.miraclealarm.function.AlarmNotiReceiver
-import com.example.miraclealarm.function.Utils
-import com.example.miraclealarm.model.AlarmData
-import com.example.miraclealarm.viewmodel.AlarmViewModel
+import com.grusie.miraclealarm.R
+import com.grusie.miraclealarm.adapter.AlarmListAdapter
+import com.grusie.miraclealarm.databinding.ActivityMainBinding
+import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.function.Utils.Companion.createPermission
+import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 
@@ -35,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUi() {
-        createPermission()
+        createPermission(Manifest.permission.POST_NOTIFICATIONS)
         adapter = AlarmListAdapter(alarmViewModel, this@MainActivity)
 
         alarmViewModel.allAlarms.observe(this) { alarm ->
@@ -57,7 +55,7 @@ class MainActivity : AppCompatActivity() {
             viewModel?.modifyMode?.observe(this@MainActivity) {
                 llModifyTab.visibility = if (it) View.VISIBLE else View.GONE
 
-                if(!it){
+                if (!it) {
                     viewModel?.modifyList?.value?.clear()
                 }
             }
@@ -81,26 +79,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    fun createPermission() {
-
-        val permissionlistener: PermissionListener = object : PermissionListener {
-            override fun onPermissionGranted() {
-            }
-
-            override fun onPermissionDenied(deniedPermissions: List<String?>) {
-            }
-        }
-
-        TedPermission.create()
-            .setPermissionListener(permissionlistener)
-            .setDeniedMessage("알람을 사용하려면 알림 권한을 허용하여 주셔야 합니다.")
-            .setPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
-            .check()
-    }
 
     override fun onBackPressed() {
         if (binding.viewModel?.modifyMode?.value == true) {
             binding.viewModel?.modifyMode?.value = false
+            binding.viewModel?.modifyList?.value?.clear()
+            adapter.notifyDataSetChanged()
         } else {
             if (System.currentTimeMillis() > backpressedTime + 2000) {
                 backpressedTime = System.currentTimeMillis()

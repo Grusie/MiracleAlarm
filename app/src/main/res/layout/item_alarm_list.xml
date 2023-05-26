@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <data>
+
         <variable
             name="viewModel"
-            type="com.example.miraclealarm.viewmodel.AlarmViewModel" />
+            type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
+
         <variable
             name="alarm"
-            type="com.example.miraclealarm.model.AlarmData" />
+            type="com.grusie.miraclealarm.model.AlarmData" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,17 +20,18 @@
         android:background="@drawable/border_round"
         android:backgroundTint="@color/white"
         android:paddingHorizontal="@dimen/padding_half"
-        android:paddingVertical="@dimen/padding_half"
-        >
+        android:paddingVertical="@dimen/padding_half">
 
         <CheckBox
             android:id="@+id/cb_alarm_select"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:checked="@{viewModel.modifyList.contains(alarm)}"
+            android:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCheckAlarmList(alarm, isChecked)}"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:visibility="gone"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/tv_alarm_title"
             android:layout_width="wrap_content"
@@ -40,32 +44,31 @@
             android:id="@+id/tv_alarm_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@{alarm.time}"
             android:textSize="@dimen/text_large"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/cb_alarm_select"
-            app:layout_constraintTop_toTopOf="parent"
-            android:text="@{alarm.time}"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_alarm_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@{alarm.date}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/sw_alarm"
-            app:layout_constraintTop_toTopOf="parent"
-            android:text="@{alarm.date}"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Switch
             android:id="@+id/sw_alarm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             android:checked="@{alarm.enabled}"
             android:onClick="@{() -> viewModel.onAlarmFlagClicked(alarm)}"
-            />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

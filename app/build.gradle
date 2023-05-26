@@ -5,11 +5,11 @@ plugins {
 apply plugin: 'kotlin-kapt'
 
 android {
-    namespace 'com.example.miraclealarm'
+    namespace 'com.grusie.miraclealarm'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.miraclealarm"
+        applicationId 'com.grusie.miraclealarm'
         minSdk 26
         targetSdk 33
         versionCode 1

@@ -1,18 +1,14 @@
-package com.example.miraclealarm.activity
+package com.grusie.miraclealarm.activity
 
-import android.app.AlarmManager
 import android.app.DatePickerDialog
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.example.miraclealarm.R
-import com.example.miraclealarm.databinding.ActivityCreateAlarmBinding
-import com.example.miraclealarm.function.AlarmNotiReceiver
-import com.example.miraclealarm.function.Utils
-import com.example.miraclealarm.viewmodel.AlarmViewModel
+import com.grusie.miraclealarm.R
+import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
+import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

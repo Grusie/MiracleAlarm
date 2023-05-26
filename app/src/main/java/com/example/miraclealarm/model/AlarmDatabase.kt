@@ -1,4 +1,4 @@
-package com.example.miraclealarm.model
+package com.grusie.miraclealarm.model
 
 import android.content.Context
 import androidx.room.Database
@@ -10,14 +10,18 @@ abstract class AlarmDatabase : RoomDatabase() {
 
     abstract fun alarmDao(): AlarmDao
 
-    companion object{
+    companion object {
         @Volatile
         private var INSTANCE: AlarmDatabase? = null
         var id = 0
 
         fun getDatabase(context: Context): AlarmDatabase {
-            return INSTANCE ?: synchronized(this){
-                val instance = Room.databaseBuilder(context.applicationContext, AlarmDatabase::class.java, "alarm_database").build()
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AlarmDatabase::class.java,
+                    "alarm_database"
+                ).build()
                 INSTANCE = instance
                 instance
             }

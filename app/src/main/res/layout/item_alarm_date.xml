@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
+
     <data>
+
         <variable
             name="viewModel"
-            type="com.example.miraclealarm.viewmodel.AlarmViewModel" />
+            type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
     </data>
-<androidx.appcompat.widget.LinearLayoutCompat
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
 
-    <CheckBox
-        android:id="@+id/cb_item_date"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:button="@null"
-        android:background="@drawable/date_border_selector"
-        android:layout_margin="@dimen/margin_quarter"
-        android:buttonTint="@color/blue"
-        />
-</androidx.appcompat.widget.LinearLayoutCompat>
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/cb_item_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_quarter"
+            android:background="@drawable/date_border_selector"
+            android:button="@null"
+            android:buttonTint="@color/blue"
+            android:textAlignment="center" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>

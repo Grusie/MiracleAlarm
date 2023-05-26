@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
-            type="com.example.miraclealarm.viewmodel.AlarmViewModel" />
+            type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

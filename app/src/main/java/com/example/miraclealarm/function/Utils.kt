@@ -1,11 +1,13 @@
-package com.example.miraclealarm.function
+package com.grusie.miraclealarm.function
 
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.example.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.AlarmData
+import com.gun0912.tedpermission.PermissionListener
+import com.gun0912.tedpermission.normal.TedPermission
 import java.util.*
 
 class Utils {
@@ -72,5 +74,20 @@ class Utils {
             Log.d("confirm contentValue", "${alarm.id} 알람 제거 됨")
         }
 
+        fun createPermission(permission: String) {
+
+            val permissionlistener: PermissionListener = object : PermissionListener {
+                override fun onPermissionGranted() {
+                }
+
+                override fun onPermissionDenied(deniedPermissions: List<String?>) {
+                }
+            }
+            TedPermission.create()
+                .setPermissionListener(permissionlistener)
+                .setDeniedMessage("알람을 사용하려면 알림 권한을 허용하여 주셔야 합니다.")
+                .setPermissions(permission)
+                .check()
+        }
     }
 }

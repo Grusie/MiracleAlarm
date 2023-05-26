@@ -1,15 +1,17 @@
-package com.example.miraclealarm.viewmodel
+package com.grusie.miraclealarm.viewmodel
 
+import android.Manifest
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.miraclealarm.R
-import com.example.miraclealarm.model.AlarmData
-import com.example.miraclealarm.model.AlarmDatabase
-import com.example.miraclealarm.model.AlarmRepository
+import com.grusie.miraclealarm.R
+import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.AlarmDatabase
+import com.grusie.miraclealarm.model.AlarmRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -100,12 +102,12 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * DAO
      * **/
-    fun insert(alarm: AlarmData) = viewModelScope.launch {
+    suspend fun insert(alarm: AlarmData): Long {
         logLine("confirm insert", "$alarm")
-        repository.insert(alarm)
+        return repository.insert(alarm)
     }
 
-    fun update(alarm: AlarmData) = viewModelScope.launch {
+    suspend fun update(alarm: AlarmData) {
         logLine("confirm update", "$alarm")
         repository.update(alarm)
     }
@@ -147,7 +149,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         initAlarmData(alarm.id)
         alarm.enabled = !alarm.enabled
         clearAlarm.value = alarm
-        update(alarm)
+        viewModelScope.launch { update(alarm) }
         logLine("flag confirm", "${alarm.enabled}")
     }
 
@@ -187,17 +189,20 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateAlarmData() {
-        if (alarm.value?.id == 0) {
-            alarm.value?.let { insert(it) }
-        } else {
-            alarm.value?.let { update(it) }
-        }
+        viewModelScope.launch {
+            val alarmId = if (alarm.value?.id == 0) {
+                alarm.value?.let { insert(it) } ?: 0
+            } else {
+                alarm.value?.let { update(it) }
+                alarm.value?.id
+            }
 
-        alarm.value?.apply {
-            logLine(
-                "viewModelVariable",
-                "alarmId = ${alarm.value?.id}, time = ${time}, title = ${title}, date = ${date}, dateRepeat = ${dateRepeat}, holiday = ${holiday}, sound = ${sound}, vibrate = ${vibrate}, offWay = ${off_way}, repeat = ${repeat}"
-            )
+            alarm.value?.apply {
+                logLine(
+                    "viewModelVariable",
+                    "alarmId = ${alarm.value?.id}, alarmIdTest = ${alarmId}, time = ${time}, title = ${title}, date = ${date}, dateRepeat = ${dateRepeat}, holiday = ${holiday}, sound = ${sound}, vibrate = ${vibrate}, offWay = ${off_way}, repeat = ${repeat}"
+                )
+            }
         }
     }
 
@@ -259,12 +264,13 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     fun dateToCal(date: String, cal: Calendar): Calendar {
         var returnCal = cal
         try {
-            val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (EE) a hh:mm")
+            val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (E) a hh:mm", Locale.KOREAN)
             logLine("confirm getAlarmTime", "$date, ${time.value}")
             val dateTime: Date = if (date.split(" ").size >= 4) {
                 dateFormat.parse("$date ${time.value}")
             } else {
                 val tempDate = cal.get(Calendar.YEAR).toString() + "년 " + date
+                logLine("confirm getAlarmTime2", "$tempDate ${time.value}")
                 dateFormat.parse("$tempDate ${time.value}")
             }
             logLine("confirm getAlarmTime : ", "${time.value}$dateTime")
@@ -273,7 +279,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: java.lang.Exception) {
             returnCal = Calendar.getInstance()
             returnCal.add(Calendar.DAY_OF_YEAR, 1)
-            Log.e("confirm getAlarmTime", "getAlarmTime try-catch1 ${e.stackTrace}")
+            Log.e("confirm getAlarmTime", "getAlarmTime try-catch1 $date, ${cal.time} ${Log.getStackTraceString(e)}")
         }
         return returnCal
     }
@@ -297,6 +303,12 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 daysOfWeek[dayOfWeek - 1]
             )
         }
+    }
+
+    fun onCheckAlarmList(alarm: AlarmData, isChecked: Boolean) {
+        if (isChecked) modifyList.value?.add(alarm)
+        else modifyList.value?.remove(alarm)
+        logLine("confirm modifyList2", "${modifyList.value}, $alarm, $isChecked")
     }
 
     fun dateToList(): List<String> {
