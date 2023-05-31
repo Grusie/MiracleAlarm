@@ -91,11 +91,12 @@ class CreateAlarmActivity : AppCompatActivity() {
         binding.apply {
             viewModel?.date?.observe(this@CreateAlarmActivity) {
                 viewModel?.logLine("confirm day_of_week", it)
-                currCal = viewModel?.dateToCal(it, currCal)!!
                 if (it.isNullOrEmpty()) {
                     val date = viewModel?.dateFormat(year, month, day, dayOfWeek)!!
                     viewModel?.onDateClicked(date, false)
                 }
+                else
+                    currCal = viewModel?.dateToCal(it, currCal)!!
             }
         }
     }

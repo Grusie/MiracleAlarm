@@ -1,18 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activity.NotificationActivity">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <data>
+        <variable
+            name="viewModel"
+            type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/tv_notification"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textSize="40sp"/>
+            android:id="@+id/tv_notification_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{viewModel.alarm.title}"
+            android:textSize="@dimen/text_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tv_notification_time"/>
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+        <TextView
+            android:id="@+id/tv_notification_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{viewModel.alarm.time}"
+            android:textSize="@dimen/text_middle_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_notification_title"
+            app:layout_constraintBottom_toTopOf="@id/cl_offWay_content"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_offWay_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:padding="@dimen/padding_default">
+
+<!--            <TextView
+                android:id="@+id/tv_offWay_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textSize="@dimen/text_title"
+                android:text="끄는 방법"
+                />
+
+            <TextView
+                android:id="@+id/tv_offWay_detail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/tv_offWay_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textSize="@dimen/text_middle_title"
+                android:layout_marginVertical="@dimen/margin_half"
+                android:text="25 + 13 = "
+                />
+            <EditText
+                android:id="@+id/et_offWay_answer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_middle_title"
+                app:layout_constraintStart_toEndOf="@id/tv_offWay_detail"
+                app:layout_constraintTop_toTopOf="@id/tv_offWay_detail"
+                app:layout_constraintBottom_toBottomOf="@id/tv_offWay_detail"
+                />-->
+            <Button
+                android:id="@+id/btn_turnOff"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="끄기"
+                android:backgroundTint="@color/light_blue"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"></Button>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

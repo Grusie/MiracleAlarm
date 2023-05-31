@@ -38,6 +38,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     val clearAlarm = MutableLiveData<AlarmData>()               //제거할 알람 값
     val daysOfWeek: Array<String>                               //요일 리스트 값
     private val dayOfWeekMap: Map<String, Int>                  //요일 리스트 맵
+    private val question = MutableLiveData<String>()
+    private val answer = MutableLiveData<Int>()
 
     /**
      * 초기화 작업
@@ -85,7 +87,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun initEmptyAlarmData() {
+    private fun initEmptyAlarmData() {
         this.alarm.value?.apply {
             this@AlarmViewModel.flagHoliday.value = holiday
             this@AlarmViewModel.flagVibe.value = flagVibrate
@@ -117,7 +119,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         repository.delete(alarm)
     }
 
-    suspend fun getAlarmById(id: Int): AlarmData {
+    private suspend fun getAlarmById(id: Int): AlarmData {
         return withContext(Dispatchers.IO) { repository.getAlarmById(id) }
     }
 
@@ -314,6 +316,12 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     fun dateToList(): List<String> {
         return alarm.value?.date?.split(",")!!
     }
+
+/*    fun createOffWay(){
+        val a = (1..100).random()
+        val b = (1..100).random()
+        a + b
+    }*/
 
     override fun onCleared() {
         super.onCleared()
