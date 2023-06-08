@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="viewModel"
             type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
@@ -246,7 +245,7 @@
                         android:id="@+id/tv_offWay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagOffWay ? viewModel.alarm.off_way : @string/string_disabled}"
+                        android:text="@{viewModel.flagOffWay ? viewModel.offWay : @string/string_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -283,7 +282,7 @@
                         android:id="@+id/tv_sound_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagSound ? viewModel.alarm.sound : @string/string_disabled}"
+                        android:text="@{viewModel.flagSound ? viewModel.sound : @string/string_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -321,7 +320,7 @@
                         android:id="@+id/tv_vibe_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagVibe ? viewModel.alarm.vibrate : @string/string_disabled}"
+                        android:text="@{viewModel.flagVibe ? viewModel.vibrate : @string/string_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -359,7 +358,7 @@
                         android:id="@+id/tv_repeat_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagRepeat ? viewModel.alarm.repeat : @string/string_disabled}"
+                        android:text="@{viewModel.flagRepeat ? viewModel.repeat : @string/string_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -387,21 +386,19 @@
 
             <Button
                 android:id="@+id/btn_cancel"
+                style="@style/customButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="@color/gray"
-                android:text="@string/string_cancel"
-                android:textColor="@color/black" />
+                android:text="@string/string_cancel" />
 
             <Button
                 android:id="@+id/btn_save"
+                style="@style/customButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="@color/gray"
-                android:text="@string/string_save"
-                android:textColor="@color/black" />
+                android:text="@string/string_save" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

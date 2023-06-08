@@ -12,11 +12,13 @@ import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.model.AlarmDatabase
 import com.grusie.miraclealarm.model.AlarmRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.log
 
 
 class AlarmViewModel(application: Application) : AndroidViewModel(application) {
@@ -33,10 +35,14 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     val time = MutableLiveData<String>()                        //알람 시간 값
     val dateList = MutableLiveData<MutableSet<String>>()        //날짜 리스트 값
     val date = MutableLiveData<String>()                        //날짜 값
+    val sound = MutableLiveData<String>()                       //알람 소리 값
+    val vibrate = MutableLiveData<String>()                     //알람 진동 값
+    val offWay = MutableLiveData<String>()                      //알람 끄는 방법 값
+    val repeat = MutableLiveData<String>()                      //알람 반복 값
     val modifyMode = MutableLiveData<Boolean>()                 //수정 모드 플래그
     val modifyList = MutableLiveData<MutableSet<AlarmData>>()   //수정 알람 데이터 리스트 값
     val clearAlarm = MutableLiveData<AlarmData>()               //제거할 알람 값
-    val daysOfWeek: Array<String>                               //요일 리스트 값
+    private val daysOfWeek: Array<String>                       //요일 리스트 값
     private val dayOfWeekMap: Map<String, Int>                  //요일 리스트 맵
     private val question = MutableLiveData<String>()
     private val answer = MutableLiveData<Int>()
@@ -75,6 +81,10 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         return getApplication<Application>().getString(id)
     }
 
+
+    /**
+     * 뷰모델 알람 초기화
+     * **/
     fun initAlarmData(alarmId: Int) {
         logLine("confirm init AlarmData", "initalarmdata테스트")
         viewModelScope.launch {
@@ -87,6 +97,21 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * 뷰모델 알람 초기화
+     * **/
+    fun initAlarmData(alarm: AlarmData) {
+        logLine("confirm init AlarmData", "initalarmdata테스트")
+        viewModelScope.launch {
+            this@AlarmViewModel.alarm.value = alarm
+            initEmptyAlarmData()
+        }
+    }
+
+
+    /**
+     * 뷰모델 알람 초기화
+     * **/
     private fun initEmptyAlarmData() {
         this.alarm.value?.apply {
             this@AlarmViewModel.flagHoliday.value = holiday
@@ -94,6 +119,10 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             this@AlarmViewModel.flagSound.value = flagSound
             this@AlarmViewModel.flagRepeat.value = flagRepeat
             this@AlarmViewModel.flagOffWay.value = flagOffWay
+            this@AlarmViewModel.sound.value = sound
+            this@AlarmViewModel.offWay.value = off_way
+            this@AlarmViewModel.vibrate.value = vibrate
+            this@AlarmViewModel.repeat.value = repeat
             this@AlarmViewModel.time.value = time
             this@AlarmViewModel.dateList.value =
                 if (date.isNotEmpty()) date.split(",").toMutableSet() else mutableSetOf()
@@ -102,7 +131,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * DAO
+     * DAO CRUD
      * **/
     suspend fun insert(alarm: AlarmData): Long {
         logLine("confirm insert", "$alarm")
@@ -119,6 +148,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         repository.delete(alarm)
     }
 
+    /**
+     * 해당 알람 객체 가져오기
+     * **/
     private suspend fun getAlarmById(id: Int): AlarmData {
         return withContext(Dispatchers.IO) { repository.getAlarmById(id) }
     }
@@ -190,7 +222,11 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         logLine("confirm time - timePickerToTime", "${time.value}")
     }
 
-    fun updateAlarmData() {
+    /**
+     * 알람 삽입 or 업데이트
+     * **/
+    suspend fun updateAlarmData() : AlarmData{
+        val deferred = CompletableDeferred<AlarmData>()
         viewModelScope.launch {
             val alarmId = if (alarm.value?.id == 0) {
                 alarm.value?.let { insert(it) } ?: 0
@@ -199,19 +235,30 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 alarm.value?.id
             }
 
+            alarm.value = getAlarmById(alarmId!!.toInt())
+
             alarm.value?.apply {
                 logLine(
-                    "viewModelVariable",
+                    "confirm viewModelVariable",
                     "alarmId = ${alarm.value?.id}, alarmIdTest = ${alarmId}, time = ${time}, title = ${title}, date = ${date}, dateRepeat = ${dateRepeat}, holiday = ${holiday}, sound = ${sound}, vibrate = ${vibrate}, offWay = ${off_way}, repeat = ${repeat}"
                 )
             }
+            deferred.complete(alarm.value!!) // 알람 데이터를 complete() 메서드로 설정
         }
+
+        return deferred.await()
     }
 
-    fun sortDate() {
+    /**
+     * 요일 정렬
+     * **/
+    private fun sortDate() {
         dateList.value = dateList.value?.sortedBy { dayOfWeekMap[it] }?.toMutableSet()
     }
 
+    /**
+     * 로그
+     * **/
     fun logLine(tag: String, log: String) {
         if (log.length > 1500) {
             Log.d(tag, log.substring(0, 1500))
@@ -220,6 +267,10 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(tag, log)
     }
 
+
+    /**
+     * 알람 울릴 시간 가져오기
+     * **/
     fun getAlarmTime(): ArrayList<Calendar> {
         val inputFormat = SimpleDateFormat("a hh:mm")
         val calList = ArrayList<Calendar>()
@@ -263,6 +314,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         return calList
     }
 
+    /**
+     * date가 요일이 아닌 날짜일 경우 Calendar를 반환해주는 함수
+     * */
     fun dateToCal(date: String, cal: Calendar): Calendar {
         var returnCal = cal
         try {
@@ -286,7 +340,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         return returnCal
     }
 
-
+    /**
+     * 날짜 포맷
+     * **/
     fun dateFormat(year: Int?, month: Int, day: Int, dayOfWeek: Int): String {
         logLine("confirm dateFormat", "$dayOfWeek, ${daysOfWeek[dayOfWeek - 1]}")
         if (year == Calendar.getInstance().get(Calendar.YEAR)) {
@@ -307,6 +363,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * 알람 수정 리스트 추가 삭제
+     * **/
     fun onCheckAlarmList(alarm: AlarmData, isChecked: Boolean) {
         if (isChecked) modifyList.value?.add(alarm)
         else modifyList.value?.remove(alarm)
@@ -315,6 +374,11 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dateToList(): List<String> {
         return alarm.value?.date?.split(",")!!
+    }
+
+    fun changeSound(sound: String) {
+        this.sound.value = sound
+        logLine("confirm sound", "${this.sound.value}, $sound")
     }
 
 /*    fun createOffWay(){

@@ -2,8 +2,8 @@ package com.grusie.miraclealarm.activity
 
 import android.Manifest
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,10 +14,9 @@ import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.AlarmListAdapter
 import com.grusie.miraclealarm.databinding.ActivityMainBinding
 import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.function.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.function.Utils.Companion.createPermission
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
-import com.gun0912.tedpermission.PermissionListener
-import com.gun0912.tedpermission.normal.TedPermission
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -34,6 +33,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun initUi() {
         createPermission(Manifest.permission.POST_NOTIFICATIONS)
+        if (!Settings.canDrawOverlays(this))
+            createConfirm(
+                this,
+                Manifest.permission.SYSTEM_ALERT_WINDOW,
+                "권한 허용",
+                "알람을 사용하려면 다른 앱 위에 표시권한을 허용해주세요."
+            )
+
         adapter = AlarmListAdapter(alarmViewModel, this@MainActivity)
 
         alarmViewModel.allAlarms.observe(this) { alarm ->
@@ -70,6 +77,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
+                viewModel?.initAlarmData(alarm)
+                viewModel?.logLine("confirm clearAlarm", "$alarm, ${alarm.enabled}")
                 if (alarm.enabled) {
                     viewModel?.getAlarmTime()?.forEach {
                         Utils.setAlarm(this@MainActivity, it, alarm)

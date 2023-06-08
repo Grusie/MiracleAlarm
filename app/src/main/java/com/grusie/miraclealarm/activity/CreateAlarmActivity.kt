@@ -1,14 +1,20 @@
 package com.grusie.miraclealarm.activity
 
+import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -26,6 +32,7 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     //private lateinit var alarmCal: Calendar
     private lateinit var currCal: Calendar
+    private lateinit var resultLauncher : ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +53,15 @@ class CreateAlarmActivity : AppCompatActivity() {
 
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
+
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val sound = result.data?.getStringExtra("sound")
+                if (sound != null) {
+                    binding.viewModel?.changeSound(sound)
+                }
+            }
+        }
 
         alarmViewModel.initAlarmData(alarmId)
 
@@ -73,7 +89,20 @@ class CreateAlarmActivity : AppCompatActivity() {
             ivCalendar.setOnClickListener {
                 showDateDialog()
             }
+            clAlarmSound.setOnClickListener {
+                startOptionActivity(
+                    Intent(this@CreateAlarmActivity, SoundActivity::class.java),
+                    binding.tvSoundSub.text as String
+                )
+            }
         }
+    }
+
+    private fun startOptionActivity(intent: Intent, detail: String) {
+        intent.putExtra("alarmId", alarmId)
+        intent.putExtra("detail", detail)
+
+        resultLauncher.launch(intent)
     }
 
     private fun initDate() {
@@ -94,9 +123,10 @@ class CreateAlarmActivity : AppCompatActivity() {
                 if (it.isNullOrEmpty()) {
                     val date = viewModel?.dateFormat(year, month, day, dayOfWeek)!!
                     viewModel?.onDateClicked(date, false)
+                } else {
+                    if (viewModel?.alarm?.value?.dateRepeat == false)
+                        currCal = viewModel?.dateToCal(it, currCal)!!
                 }
-                else
-                    currCal = viewModel?.dateToCal(it, currCal)!!
             }
         }
     }
@@ -124,14 +154,16 @@ class CreateAlarmActivity : AppCompatActivity() {
                 repeat =
                     if (viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else repeat
             }
-            viewModel?.updateAlarmData()
-
-            viewModel?.getAlarmTime()!!.forEach { alarmTime ->
-                Utils.setAlarm(
-                    this@CreateAlarmActivity,
-                    alarmTime,
-                    viewModel?.alarm?.value!!,
-                )
+            lifecycleScope.launch {
+                viewModel?.getAlarmTime()!!.forEach { alarmTime ->
+                    viewModel?.updateAlarmData()?.let {
+                        Utils.setAlarm(
+                            this@CreateAlarmActivity,
+                            alarmTime,
+                            it,
+                        )
+                    }
+                }
             }
         }
         finish()

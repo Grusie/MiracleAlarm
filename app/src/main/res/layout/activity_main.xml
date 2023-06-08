@@ -9,6 +9,8 @@
         <variable
             name="viewModel"
             type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
+
+        <import type="android.view.View" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,6 +31,18 @@
             app:layout_constraintBottom_toTopOf="@id/ll_modify_tab"
             app:layout_constraintTop_toBottomOf="@id/tb_main"
             tools:listitem="@layout/item_alarm_list" />
+
+        <TextView
+            android:id="@+id/tv_empty_alarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="알람이 없습니다."
+            android:textSize="@dimen/text_middle_title"
+            android:visibility="@{viewModel.allAlarms.size() == 0 ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fb_alarm_add"
@@ -52,9 +66,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:backgroundTint="@color/gray"
-                android:text="@string/string_delete"
-                android:textColor="@color/black" />
+                style="@style/customButtonStyle"
+                android:text="@string/string_delete" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>

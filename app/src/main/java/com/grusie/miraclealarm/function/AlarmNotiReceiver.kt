@@ -48,7 +48,6 @@ class AlarmNotiReceiver : BroadcastReceiver() {
     private fun createAlarm(context: Context, alarmId: Int, title: String, contentValue: String) {
 
         val serviceIntent = Intent(context, ForegroundAlarmService::class.java).apply {
-            action = context.getString(R.string.ACTION_DISMISS)
             putExtra("alarmId", alarmId)
             putExtra("title", title)
             putExtra("contentValue", contentValue)

@@ -1,21 +1,32 @@
 package com.grusie.miraclealarm.function
 
+import android.Manifest
+import android.app.Activity
 import android.app.AlarmManager
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.model.AlarmData
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.util.*
+import kotlin.system.exitProcess
 
 class Utils {
     companion object {
         lateinit var receiverIntent: Intent
         lateinit var alarmManager: AlarmManager
 
+        /**
+         * 알람 생성하기
+         * */
         fun setAlarm(context: Context, alarmTime: Calendar, alarm: AlarmData) {
             val dateRepeat = alarm.dateRepeat
             val alarmId = alarm.id
@@ -62,7 +73,9 @@ class Utils {
                 )
             }
         }
-
+        /**
+         * 알람 지우기
+         * */
         fun delAlarm(context: Context, alarm: AlarmData) {
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -77,9 +90,11 @@ class Utils {
 
             Log.d("confirm contentValue", "${alarm.id} 알람 제거 됨")
         }
-
+        
+        /**
+         * 권한 체크 및 요청 setting용 권한인 경우 따로 처리
+         * **/
         fun createPermission(permission: String) {
-
             val permissionlistener: PermissionListener = object : PermissionListener {
                 override fun onPermissionGranted() {
                 }
@@ -89,11 +104,14 @@ class Utils {
             }
             TedPermission.create()
                 .setPermissionListener(permissionlistener)
-                .setDeniedMessage("알람을 사용하려면 알림 권한을 허용하여 주셔야 합니다.")
+                .setDeniedMessage("알람을 사용하려면 권한을 허용하여 주셔야 합니다.")
                 .setPermissions(permission)
                 .check()
         }
 
+        /**
+         * 알람 소리 선택
+         * */
         fun getAlarmSound(context: Context, sound: String): Int {
             val soundArray = context.resources.getStringArray(R.array.sound_array)
             val returnSound = when (sound) {
@@ -102,21 +120,39 @@ class Utils {
                 soundArray[2] -> R.raw.beep_beep
                 soundArray[3] -> R.raw.alarm_sound1
                 soundArray[4] -> R.raw.alarm_sound2
-                soundArray[4] -> R.raw.alarm_sound3
-                soundArray[5] -> R.raw.alarm_sound4
-                soundArray[6] -> R.raw.school
-                soundArray[7] -> R.raw.chicken_sound
-                soundArray[8] -> R.raw.ring
-                soundArray[9] -> R.raw.alarm_clock
-                soundArray[10] -> R.raw.emergency
-                soundArray[11] -> R.raw.radiation
-                soundArray[12] -> R.raw.mix
+                soundArray[5] -> R.raw.alarm_sound3
+                soundArray[6] -> R.raw.alarm_sound4
+                soundArray[7] -> R.raw.school
+                soundArray[8] -> R.raw.chicken_sound
+                soundArray[9] -> R.raw.ring
+                soundArray[10] -> R.raw.alarm_clock
+                soundArray[11] -> R.raw.emergency
+                soundArray[12] -> R.raw.radiation
+                soundArray[13] -> R.raw.mix
                 else -> {
                     R.raw.desk_clock
                 }
             }
 
             return returnSound
+        }
+        
+        /**
+         * confirm 다이얼로그 만들기
+         * */
+        fun createConfirm(activity: Activity,permission: String, title:String, message:String){
+            val builder = AlertDialog.Builder(activity).apply{
+                setTitle(title)
+                setMessage(message)
+                setCancelable(false)
+                setNegativeButton("취소"){dialog, _ ->
+                    dialog.dismiss()
+                }
+                setPositiveButton("수락"){_, _ ->
+                    createPermission(permission)
+                }
+            }
+            builder.create().show()
         }
     }
 }
