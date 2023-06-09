@@ -36,6 +36,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     val dateList = MutableLiveData<MutableSet<String>>()        //날짜 리스트 값
     val date = MutableLiveData<String>()                        //날짜 값
     val sound = MutableLiveData<String>()                       //알람 소리 값
+    val volume = MutableLiveData<Int>()                         //알람 볼륨 값
     val vibrate = MutableLiveData<String>()                     //알람 진동 값
     val offWay = MutableLiveData<String>()                      //알람 끄는 방법 값
     val repeat = MutableLiveData<String>()                      //알람 반복 값
@@ -102,10 +103,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
      * **/
     fun initAlarmData(alarm: AlarmData) {
         logLine("confirm init AlarmData", "initalarmdata테스트")
-        viewModelScope.launch {
-            this@AlarmViewModel.alarm.value = alarm
-            initEmptyAlarmData()
-        }
+        this@AlarmViewModel.alarm.value = alarm
+        initEmptyAlarmData()
     }
 
 
@@ -120,6 +119,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             this@AlarmViewModel.flagRepeat.value = flagRepeat
             this@AlarmViewModel.flagOffWay.value = flagOffWay
             this@AlarmViewModel.sound.value = sound
+            this@AlarmViewModel.volume.value = volume
             this@AlarmViewModel.offWay.value = off_way
             this@AlarmViewModel.vibrate.value = vibrate
             this@AlarmViewModel.repeat.value = repeat
@@ -240,7 +240,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             alarm.value?.apply {
                 logLine(
                     "confirm viewModelVariable",
-                    "alarmId = ${alarm.value?.id}, alarmIdTest = ${alarmId}, time = ${time}, title = ${title}, date = ${date}, dateRepeat = ${dateRepeat}, holiday = ${holiday}, sound = ${sound}, vibrate = ${vibrate}, offWay = ${off_way}, repeat = ${repeat}"
+                    "alarmId = ${alarm.value?.id}, time = ${time}, title = ${title}, date = ${date}, dateRepeat = ${dateRepeat}, holiday = ${holiday}, sound = ${sound}, volume = ${volume} vibrate = ${vibrate}, offWay = ${off_way}, repeat = ${repeat}"
                 )
             }
             deferred.complete(alarm.value!!) // 알람 데이터를 complete() 메서드로 설정
@@ -379,6 +379,11 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     fun changeSound(sound: String) {
         this.sound.value = sound
         logLine("confirm sound", "${this.sound.value}, $sound")
+    }
+
+    fun changeVolume(volume: Int) {
+        this.volume.value = volume
+        logLine("confirm volume", "${this.volume.value}, $volume")
     }
 
 /*    fun createOffWay(){

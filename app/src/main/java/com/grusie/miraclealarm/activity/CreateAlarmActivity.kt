@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -57,8 +58,12 @@ class CreateAlarmActivity : AppCompatActivity() {
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val sound = result.data?.getStringExtra("sound")
+                val volume = result.data?.getIntExtra("volume", 0)
                 if (sound != null) {
                     binding.viewModel?.changeSound(sound)
+                }
+                if(volume != null && volume != 0){
+                    binding.viewModel?.changeVolume(volume)
                 }
             }
         }
@@ -92,15 +97,16 @@ class CreateAlarmActivity : AppCompatActivity() {
             clAlarmSound.setOnClickListener {
                 startOptionActivity(
                     Intent(this@CreateAlarmActivity, SoundActivity::class.java),
-                    binding.tvSoundSub.text as String
+                    binding.tvSoundSub.text as String,
+                    binding.viewModel?.volume?.value
                 )
             }
         }
     }
 
-    private fun startOptionActivity(intent: Intent, detail: String) {
-        intent.putExtra("alarmId", alarmId)
-        intent.putExtra("detail", detail)
+    private fun startOptionActivity(intent: Intent, param1: String, param2: Int?) {
+        intent.putExtra("param1", param1)
+        if(param2 != null) intent.putExtra("param2", param2)
 
         resultLauncher.launch(intent)
     }
@@ -147,6 +153,7 @@ class CreateAlarmActivity : AppCompatActivity() {
                 enabled = true
                 sound =
                     if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
+                volume = viewModel?.volume?.value!!
                 vibrate =
                     if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
                 off_way =
