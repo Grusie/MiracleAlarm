@@ -22,7 +22,6 @@ import kotlin.properties.Delegates
 
 class ForegroundAlarmService : Service() {
     //private lateinit var wakeLock: PowerManager.WakeLock
-    private var mp: MediaPlayer? = null
     private var NOTIFICATION_ID by Delegates.notNull<Int>()
     private val CHANNEL_ID = "channel_id"
     private val CHANNEL_NAME = "channel_name"
@@ -49,7 +48,8 @@ class ForegroundAlarmService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mp?.stop()
+        Utils.stopAlarmSound()
+        Utils.changeVolume(null)
 /*        if (wakeLock.isHeld) {
             wakeLock.release()
         }*/
@@ -71,7 +71,6 @@ class ForegroundAlarmService : Service() {
 
         val notificationIntent = createNotificationIntent(alarmId, title, content)
 
-
         notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
         if (intent?.action == "startActivity") {
@@ -87,9 +86,9 @@ class ForegroundAlarmService : Service() {
 
                     if (alarm.flagSound) {
                         val sound = Utils.getAlarmSound(applicationContext, alarm.sound)
-                        mp = MediaPlayer.create(applicationContext, sound)
-                        mp?.isLooping = true
-                        mp?.start()
+                        Utils.initVolume(applicationContext)
+                        Utils.changeVolume(alarm.volume)
+                        Utils.playAlarmSound(applicationContext, sound)
                     }
                 }
             }
@@ -137,7 +136,7 @@ class ForegroundAlarmService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(content)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_alarm_noti)
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
             .setOngoing(true)

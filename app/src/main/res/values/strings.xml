@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">MiracleAlarm</string>
+    <string name="app_name">미라클알람</string>
     <string name="holiday_title">공휴일엔 알람 끄기</string>
     <string name="holiday_sub">대체 공휴일이나 임시 공휴일 포함 안 함</string>
     <string name="title_hint">알람 이름</string>
     <string name="offWay_title">알림 종료 방법</string>
     <string name="sound_title">알람음</string>
-    <string name="sound_sub">Homecoming</string>
+    <string name="sound_sub">탁상시계 알람소리</string>
     <string name="vibe_title">진동</string>
     <string name="vibe_sub">Basic call</string>
     <string name="repeat_title">다시 울림</string>
@@ -21,14 +21,14 @@
     <string name="string_friday">금</string>
     <string name="string_saturday">토</string>
     <string name="string_sunday">일</string>
-
-    <string name="default_notification_channel_id">channel_id</string>
-    <string name="ACTION_DISMISS">com.grusie.miraclemorning.ACTION_DISMISS</string>
+    <string name="string_play">재생</string>
+    <string name="string_stop">정지</string>
 
     <string-array name="sound_array">
         <item>탁상시계 알람소리</item>
         <item>시계알람</item>
         <item>생명 유지 장치 알람소리</item>
+        <item>기상나팔 소리</item>
         <item>알람소리1</item>
         <item>알람소리2</item>
         <item>알람소리3</item>

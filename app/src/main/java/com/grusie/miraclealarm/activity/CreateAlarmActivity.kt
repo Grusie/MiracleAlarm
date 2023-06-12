@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
 import com.grusie.miraclealarm.function.Utils
@@ -56,13 +57,13 @@ class CreateAlarmActivity : AppCompatActivity() {
         binding.viewModel = alarmViewModel
 
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
+            if (result.resultCode == Const.RESULT_CODE_SOUND) {
                 val sound = result.data?.getStringExtra("sound")
-                val volume = result.data?.getIntExtra("volume", 0)
+                val volume = result.data?.getIntExtra("volume", -1)
                 if (sound != null) {
                     binding.viewModel?.changeSound(sound)
                 }
-                if(volume != null && volume != 0){
+                if(volume != null && volume != -1){
                     binding.viewModel?.changeVolume(volume)
                 }
             }

@@ -61,7 +61,7 @@
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:scaleType="fitCenter"
-                            android:src="@drawable/calendar"
+                            android:src="@drawable/ic_calendar"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
                     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,7 +7,10 @@ import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.net.Uri
+import android.provider.MediaStore.Audio
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -23,6 +26,9 @@ class Utils {
     companion object {
         lateinit var receiverIntent: Intent
         lateinit var alarmManager: AlarmManager
+        private var mp: MediaPlayer? = null
+        private lateinit var am : AudioManager
+        var initVolume = 0
 
         /**
          * 알람 생성하기
@@ -118,23 +124,65 @@ class Utils {
                 soundArray[0] -> R.raw.desk_clock
                 soundArray[1] -> R.raw.clock
                 soundArray[2] -> R.raw.beep_beep
-                soundArray[3] -> R.raw.alarm_sound1
-                soundArray[4] -> R.raw.alarm_sound2
-                soundArray[5] -> R.raw.alarm_sound3
-                soundArray[6] -> R.raw.alarm_sound4
-                soundArray[7] -> R.raw.school
-                soundArray[8] -> R.raw.chicken_sound
-                soundArray[9] -> R.raw.ring
-                soundArray[10] -> R.raw.alarm_clock
-                soundArray[11] -> R.raw.emergency
-                soundArray[12] -> R.raw.radiation
-                soundArray[13] -> R.raw.mix
+                soundArray[3] -> R.raw.army
+                soundArray[4] -> R.raw.alarm_sound1
+                soundArray[5] -> R.raw.alarm_sound2
+                soundArray[6] -> R.raw.alarm_sound3
+                soundArray[7] -> R.raw.alarm_sound4
+                soundArray[8] -> R.raw.school
+                soundArray[9] -> R.raw.chicken_sound
+                soundArray[10] -> R.raw.ring
+                soundArray[11] -> R.raw.alarm_clock
+                soundArray[12] -> R.raw.emergency
+                soundArray[13] -> R.raw.radiation
+                soundArray[14] -> R.raw.mix
                 else -> {
                     R.raw.desk_clock
                 }
             }
 
             return returnSound
+        }
+
+        /**
+         * 알람 사운드 플레이
+         **/
+        fun playAlarmSound(context: Context, sound: Int){
+            mp = MediaPlayer.create(context, sound)
+            mp?.isLooping = true
+            mp?.start()
+        }
+
+        /**
+         * 알람 사운드 스탑
+         **/
+        fun stopAlarmSound(){
+            Log.d("confirm stopAlarm", "$mp")
+            mp?.stop()
+        }
+
+        /**
+         * 알람 볼륨 조절
+         **/
+        fun changeVolume(volume: Int?) {
+            val changeVolume: Int = if(volume != null) {
+                am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * volume / 100
+            }else {
+                initVolume
+            }
+            am.setStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                changeVolume,
+                AudioManager.FLAG_SHOW_UI
+            )
+        }
+
+        /**
+         * 볼륨 조절 전 볼륨 값 가져오기
+         **/
+        fun initVolume(context: Context){
+            am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            initVolume = am.getStreamVolume(AudioManager.STREAM_MUSIC)
         }
         
         /**
