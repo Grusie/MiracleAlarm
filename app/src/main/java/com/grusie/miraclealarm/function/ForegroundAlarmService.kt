@@ -1,37 +1,29 @@
 package com.grusie.miraclealarm.function
 
 import android.app.*
+import android.bluetooth.BluetoothHeadset
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.media.MediaPlayer
+import android.media.AudioManager
 import android.os.IBinder
-import android.util.Log
-import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.activity.NotificationActivity
-import com.grusie.miraclealarm.model.AlarmDao
-import com.grusie.miraclealarm.model.AlarmDatabase
-import com.grusie.miraclealarm.model.AlarmRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.grusie.miraclealarm.function.Utils.Companion.handleHeadsetConnection
+import com.grusie.miraclealarm.model.AlarmData
 import kotlin.properties.Delegates
 
-class ForegroundAlarmService : Service() {
+class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListener {
     //private lateinit var wakeLock: PowerManager.WakeLock
     private var NOTIFICATION_ID by Delegates.notNull<Int>()
     private val CHANNEL_ID = "channel_id"
     private val CHANNEL_NAME = "channel_name"
-    private lateinit var alarmDao: AlarmDao
-    private lateinit var repository: AlarmRepository
     private lateinit var preferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
-    private var alarmId : Int? = null
-    private var title: String? = null
-    private var content: String? = null
+    private var headsetReceiver = HeadsetReceiver()
+    private lateinit var alarm: AlarmData
 
     override fun onCreate() {
         super.onCreate()
@@ -48,20 +40,19 @@ class ForegroundAlarmService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            unregisterReceiver(headsetReceiver)
+        } catch (e: Exception) {
+        }
         Utils.stopAlarmSound()
-        Utils.changeVolume(null)
+        Utils.changeVolume(applicationContext, null)
 /*        if (wakeLock.isHeld) {
             wakeLock.release()
         }*/
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        alarmId = intent?.getIntExtra("alarmId", -1)
-        title = intent?.getStringExtra("title")
-        content = intent?.getStringExtra("contentValue")
-
-        alarmDao = AlarmDatabase.getDatabase(applicationContext).alarmDao()
-        repository = AlarmRepository(alarmDao)
+        alarm = intent?.getParcelableExtra("alarmData") ?: AlarmData()
 
         // NotificationActivity에서 MainActivity로 넘길지에 대한 값 초기화
         preferences = getSharedPreferences("sharedPreferences", Context.MODE_PRIVATE)
@@ -69,29 +60,20 @@ class ForegroundAlarmService : Service() {
         editor.putBoolean("openMainActivity", false)
         editor.apply()
 
-        val notificationIntent = createNotificationIntent(alarmId, title, content)
-
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        val notificationIntent = createNotificationIntent(alarm)
 
         if (intent?.action == "startActivity") {
             startActivity(notificationIntent)
             return super.onStartCommand(intent, flags, startId)
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            withContext(Dispatchers.IO) {
-                if (alarmId != null) {
-                    val alarm = repository.getAlarmById(alarmId!!)
-                    Log.d("confirm alarmData", "$alarm")
 
-                    if (alarm.flagSound) {
-                        val sound = Utils.getAlarmSound(applicationContext, alarm.sound)
-                        Utils.initVolume(applicationContext)
-                        Utils.changeVolume(alarm.volume)
-                        Utils.playAlarmSound(applicationContext, sound)
-                    }
-                }
-            }
+        if (alarm.flagSound) {
+            val sound = Utils.getAlarmSound(applicationContext, alarm.sound)
+            Utils.initVolume(applicationContext)
+            headsetCheck()
+            Utils.changeVolume(applicationContext, alarm.volume)
+            Utils.playAlarmSound(applicationContext, sound)
         }
 
         NOTIFICATION_ID = System.currentTimeMillis().toInt()
@@ -106,42 +88,51 @@ class ForegroundAlarmService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        Log.d(
-            "confirm contentValue",
-            "NOTIFICATION_ID : $NOTIFICATION_ID, confirm contentValue : $content"
-        )
-        val notification = createNotification(title, content, pendingIntent)
+        val notification = createNotification(alarm, pendingIntent)
 
         startForeground(NOTIFICATION_ID, notification)
+
         startActivity(notificationIntent)
 
         return START_NOT_STICKY
     }
 
-    private fun createNotificationIntent(alarmId: Int?, title: String?, content: String?): Intent {
+    private fun createNotificationIntent(alarm: AlarmData): Intent {
         return Intent(this, NotificationActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            putExtra("alarmId", alarmId)
-            putExtra("title", title)
-            putExtra("contentValue", content)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra("alarmData", alarm)
         }
     }
 
     private fun createNotification(
-        title: String?,
-        content: String?,
+        alarm: AlarmData,
         pendingIntent: PendingIntent,
     ): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(content)
+            .setContentTitle(alarm.title)
+            .setContentText(alarm.time + "알람")
             .setSmallIcon(R.drawable.ic_alarm_noti)
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
             .setOngoing(true)
             .build()
     }
+
+    private fun headsetCheck() {
+        // BroadcastReceiver 등록
+        val intentFilter = IntentFilter()
+        headsetReceiver.setConnectionListener(this)
+        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG)
+        intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
+        registerReceiver(headsetReceiver, intentFilter)
+
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val isConnected =
+            audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
+
+        handleHeadsetConnection(applicationContext, isConnected, alarm.volume)
+    }
+
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
@@ -155,5 +146,9 @@ class ForegroundAlarmService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    override fun onHeadsetConnected(isConnected: Boolean) {
+        handleHeadsetConnection(this, isConnected, alarm.volume)
     }
 }

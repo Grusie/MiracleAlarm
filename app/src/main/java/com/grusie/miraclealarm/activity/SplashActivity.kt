@@ -15,14 +15,14 @@ import com.bumptech.glide.request.target.Target
 import com.grusie.miraclealarm.R
 import kotlinx.coroutines.*
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat
+import com.grusie.miraclealarm.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
-    private lateinit var splashIv: ImageView
+    private lateinit var binding: ActivitySplashBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
-
-        splashIv = findViewById(R.id.iv_splash)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val imageLoadListener = object : RequestListener<GifDrawable>{
             override fun onLoadFailed(
@@ -32,6 +32,7 @@ class SplashActivity : AppCompatActivity() {
                 isFirstResource: Boolean
             ): Boolean {
                 Log.d("confirm failure", "fail, ${e?.message}")
+                navigateToMainActivity()
                 return false
             }
 
@@ -53,17 +54,12 @@ class SplashActivity : AppCompatActivity() {
             }
         }
 
-        Glide.with(this).asGif().listener(imageLoadListener).load(R.drawable.splash_alarm).into(findViewById(R.id.iv_splash))
-
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(5000)
-            navigateToMainActivity()
-        }
+        Glide.with(this).asGif().listener(imageLoadListener).load(R.drawable.splash_alarm).into(binding.ivSplash)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Glide.with(applicationContext).clear(splashIv)
+        Glide.with(applicationContext).clear(binding.ivSplash)
     }
 
     private fun navigateToMainActivity() {

@@ -1,5 +1,7 @@
 package com.grusie.miraclealarm.model
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -22,4 +24,57 @@ data class AlarmData(
     var flagVibrate: Boolean = true,       //알람 진동 사용 여부
     var flagOffWay: Boolean = true,        //알람 끄는 방법 사용 여부
     var flagRepeat: Boolean = false,       //알람 반복 사용 여부
-)
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readByte() != 0.toByte(),
+        parcel.readString() ?: "",
+        parcel.readByte() != 0.toByte(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readString() ?: "",
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readByte() != 0.toByte(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readByte() != 0.toByte()
+    ) {
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(title)
+        parcel.writeString(time)
+        parcel.writeByte(if (holiday) 1 else 0)
+        parcel.writeString(date)
+        parcel.writeByte(if (dateRepeat) 1 else 0)
+        parcel.writeByte(if (enabled) 1 else 0)
+        parcel.writeString(sound)
+        parcel.writeInt(volume)
+        parcel.writeString(vibrate)
+        parcel.writeString(off_way)
+        parcel.writeString(repeat)
+        parcel.writeByte(if (flagSound) 1 else 0)
+        parcel.writeByte(if (flagVibrate) 1 else 0)
+        parcel.writeByte(if (flagOffWay) 1 else 0)
+        parcel.writeByte(if (flagRepeat) 1 else 0)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<AlarmData> {
+        override fun createFromParcel(parcel: Parcel): AlarmData {
+            return AlarmData(parcel)
+        }
+
+        override fun newArray(size: Int): Array<AlarmData?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

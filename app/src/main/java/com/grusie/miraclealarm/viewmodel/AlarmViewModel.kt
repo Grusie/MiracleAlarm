@@ -180,7 +180,6 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onAlarmFlagClicked(alarm: AlarmData) {
-        initAlarmData(alarm.id)
         alarm.enabled = !alarm.enabled
         clearAlarm.value = alarm
         viewModelScope.launch { update(alarm) }
@@ -257,6 +256,22 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * 알람 정렬 
+     * @param alarmList
+     */
+    fun sortAlarm(alarmList : MutableList<AlarmData>){
+        alarmList.sortWith(compareByDescending<AlarmData> { it.enabled }.thenBy { alarm ->
+            val timeString = alarm.time
+            val isAfterNoon = timeString.startsWith("오후")
+            val timeWithoutSuffix = timeString.substringAfter(' ')
+            val (hour, minute) = timeWithoutSuffix.split(':').map { it.toInt() }
+
+            val convertedHour = if (isAfterNoon && hour != 12) hour + 12 else hour
+            convertedHour * 60 + minute
+        })
+    }
+
+    /**
      * 로그
      * **/
     fun logLine(tag: String, log: String) {
@@ -267,78 +282,6 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(tag, log)
     }
 
-
-    /**
-     * 알람 울릴 시간 가져오기
-     * **/
-    fun getAlarmTime(): ArrayList<Calendar> {
-        val inputFormat = SimpleDateFormat("a hh:mm")
-        val calList = ArrayList<Calendar>()
-
-        alarm.value?.apply {
-            if (!dateRepeat) {
-                calList.add(dateToCal(date, Calendar.getInstance()))
-            } else {
-                try {
-                    val inputCal = Calendar.getInstance()
-                    inputCal.time = inputFormat.parse(time) // 입력 시간을 설정
-
-                    for (i in dateToList()) {
-                        val cal = Calendar.getInstance()
-                        dayOfWeekMap[i]?.let { cal.set(Calendar.DAY_OF_WEEK, it) }
-
-                        // 시간 설정
-                        cal.set(Calendar.HOUR_OF_DAY, inputCal.get(Calendar.HOUR_OF_DAY))
-                        cal.set(Calendar.MINUTE, inputCal.get(Calendar.MINUTE))
-                        cal.set(Calendar.SECOND, 0)
-
-                        // 현재 날짜와 비교하여 이미 지난 날짜라면 다음 주의 동일한 요일로 설정
-                        if (cal.before(Calendar.getInstance())) {
-                            cal.add(Calendar.WEEK_OF_YEAR, 1)
-                        }
-
-                        logLine(
-                            "confirm getAlarmTime",
-                            "$i, ${dayOfWeekMap[i]}, ${dateToList()}, $time"
-                        )
-                        logLine("confirm getAlarmTime2", "${cal.time}")
-
-                        calList.add(cal)
-                    }
-                } catch (e: Exception) {
-                    Log.e("confirm getAlarmTime", "getAlarmTime try-catch2 ${e.stackTrace}")
-                }
-            }
-        }
-
-        return calList
-    }
-
-    /**
-     * date가 요일이 아닌 날짜일 경우 Calendar를 반환해주는 함수
-     * */
-    fun dateToCal(date: String, cal: Calendar): Calendar {
-        var returnCal = cal
-        try {
-            val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 (E) a hh:mm", Locale.KOREAN)
-            logLine("confirm getAlarmTime", "$date, ${time.value}")
-            val dateTime: Date = if (date.split(" ").size >= 4) {
-                dateFormat.parse("$date ${time.value}")
-            } else {
-                val tempDate = cal.get(Calendar.YEAR).toString() + "년 " + date
-                logLine("confirm getAlarmTime2", "$tempDate ${time.value}")
-                dateFormat.parse("$tempDate ${time.value}")
-            }
-            logLine("confirm getAlarmTime : ", "${time.value}$dateTime")
-
-            returnCal.time = dateTime
-        } catch (e: java.lang.Exception) {
-            returnCal = Calendar.getInstance()
-            returnCal.add(Calendar.DAY_OF_YEAR, 1)
-            Log.e("confirm getAlarmTime", "getAlarmTime try-catch1 $date, ${cal.time} ${Log.getStackTraceString(e)}")
-        }
-        return returnCal
-    }
 
     /**
      * 날짜 포맷
@@ -370,10 +313,6 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         if (isChecked) modifyList.value?.add(alarm)
         else modifyList.value?.remove(alarm)
         logLine("confirm modifyList2", "${modifyList.value}, $alarm, $isChecked")
-    }
-
-    fun dateToList(): List<String> {
-        return alarm.value?.date?.split(",")!!
     }
 
     fun changeSound(sound: String) {

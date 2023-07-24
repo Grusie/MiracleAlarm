@@ -1,10 +1,8 @@
 package com.grusie.miraclealarm.activity
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +13,7 @@ import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
 import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -34,7 +33,9 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     //private lateinit var alarmCal: Calendar
     private lateinit var currCal: Calendar
-    private lateinit var resultLauncher : ActivityResultLauncher<Intent>
+    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+    private var exist = false
+    private lateinit var oldAlarm : AlarmData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +47,7 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     private fun initUi() {
         alarmId = intent.getIntExtra("id", -1)
+        if (alarmId != -1) exist = true
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
 
         timeCal = Calendar.getInstance()
@@ -56,18 +58,19 @@ class CreateAlarmActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
-        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Const.RESULT_CODE_SOUND) {
-                val sound = result.data?.getStringExtra("sound")
-                val volume = result.data?.getIntExtra("volume", -1)
-                if (sound != null) {
-                    binding.viewModel?.changeSound(sound)
-                }
-                if(volume != null && volume != -1){
-                    binding.viewModel?.changeVolume(volume)
+        resultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Const.RESULT_CODE_SOUND) {
+                    val sound = result.data?.getStringExtra("sound")
+                    val volume = result.data?.getIntExtra("volume", -1)
+                    if (sound != null) {
+                        binding.viewModel?.changeSound(sound)
+                    }
+                    if (volume != null && volume != -1) {
+                        binding.viewModel?.changeVolume(volume)
+                    }
                 }
             }
-        }
 
         alarmViewModel.initAlarmData(alarmId)
 
@@ -107,7 +110,7 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     private fun startOptionActivity(intent: Intent, param1: String, param2: Int?) {
         intent.putExtra("param1", param1)
-        if(param2 != null) intent.putExtra("param2", param2)
+        if (param2 != null) intent.putExtra("param2", param2)
 
         resultLauncher.launch(intent)
     }
@@ -132,7 +135,7 @@ class CreateAlarmActivity : AppCompatActivity() {
                     viewModel?.onDateClicked(date, false)
                 } else {
                     if (viewModel?.alarm?.value?.dateRepeat == false)
-                        currCal = viewModel?.dateToCal(it, currCal)!!
+                        currCal = Utils.dateToCal(it, viewModel?.time?.value!!)
                 }
             }
         }
@@ -141,6 +144,9 @@ class CreateAlarmActivity : AppCompatActivity() {
     private fun saveAlarm() {
         binding.apply {
             viewModel?.alarm?.value?.apply {
+                if(exist){
+                    oldAlarm = this
+                }
                 title = etAlarmTitle.text.toString()
                 holiday = viewModel?.flagHoliday?.value == true
                 flagSound = viewModel?.flagSound?.value == true
@@ -162,15 +168,15 @@ class CreateAlarmActivity : AppCompatActivity() {
                 repeat =
                     if (viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else repeat
             }
+
             lifecycleScope.launch {
-                viewModel?.getAlarmTime()!!.forEach { alarmTime ->
-                    viewModel?.updateAlarmData()?.let {
-                        Utils.setAlarm(
-                            this@CreateAlarmActivity,
-                            alarmTime,
-                            it,
-                        )
-                    }
+                viewModel?.updateAlarmData()?.let {
+                    Utils.updateAlarm(
+                        this@CreateAlarmActivity,
+                        exist,
+                        oldAlarm,
+                        it
+                    )
                 }
             }
         }

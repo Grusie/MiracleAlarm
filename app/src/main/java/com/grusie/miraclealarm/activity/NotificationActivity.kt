@@ -17,8 +17,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityNotificationBinding
+import com.grusie.miraclealarm.function.AlarmNotiReceiver
 import com.grusie.miraclealarm.function.ForegroundAlarmService
 import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import kotlin.properties.Delegates
 import kotlin.system.exitProcess
@@ -26,13 +28,13 @@ import kotlin.system.exitProcess
 class NotificationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNotificationBinding
     private lateinit var alarmViewModel: AlarmViewModel
-    private var alarmId by Delegates.notNull<Int>()
-    private lateinit var contentValue : String
-    private lateinit var title : String
+    private lateinit var alarm: AlarmData
     private var turnOffFlag = true
     private lateinit var preferences :SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var keyguardManager: KeyguardManager
+    private lateinit var alarmNotiReceiver: AlarmNotiReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         compareMainActivity()
@@ -50,6 +52,7 @@ class NotificationActivity : AppCompatActivity() {
 
         if (openMainActivity) {
             // 필요한 경우, NotificationActivity에서 메인 액티비티로 이동
+            finish()
             val intent = Intent(this, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
@@ -59,9 +62,11 @@ class NotificationActivity : AppCompatActivity() {
 
     private fun initUi() {
         initKeyguard()
+        alarmNotiReceiver = AlarmNotiReceiver()
+        alarmNotiReceiver.activity = this
         binding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
-
+        alarm = intent.getParcelableExtra("alarmData")?: AlarmData()
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
         binding.viewModel?.logLine(
@@ -69,28 +74,23 @@ class NotificationActivity : AppCompatActivity() {
             "onCreate $this"
         )
 
-        alarmId = intent.getIntExtra("alarmId", -1)
-        title = intent.getStringExtra("title").toString()
-        contentValue = intent.getStringExtra("contentValue").toString()
+        binding.viewModel?.initAlarmData(alarm)
 
-        alarmViewModel.initAlarmData(alarmId)
-        binding.viewModel?.logLine(
-            "alarmConfirm",
-            "알람 초기화 확인 $alarmId ${binding.viewModel?.alarm?.value}"
-        )
+        if(!alarm.dateRepeat) {
+            binding.viewModel?.onAlarmFlagClicked(alarm)
+        }
 
         binding.btnTurnOff.setOnClickListener {
             turnOffAlarm()
         }
     }
 
-    private fun turnOffAlarm() {
-        val intent = Intent(this, ForegroundAlarmService::class.java)
-        stopService(intent)
+    fun turnOffAlarm() {
+        Utils.stopAlarm(this)
         turnOffFlag = false
-        if(binding.viewModel?.alarm?.value?.dateRepeat == false) {
-            binding.viewModel?.onAlarmFlagClicked(binding.viewModel?.alarm?.value!!)
-        }
+
+        alarmNotiReceiver.activity = null
+
         editor.putBoolean("openMainActivity", true)
         editor.apply()
         finish()
@@ -118,16 +118,14 @@ class NotificationActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        
+
         if(turnOffFlag) {
             binding.viewModel?.logLine(
                 "lifecycleConfirm",
                 "onStop, $this"
             )
             val intent = Intent(this, ForegroundAlarmService::class.java).apply {
-                putExtra("alarmId", alarmId)
-                putExtra("title", title)
-                putExtra("contentValue", contentValue)
+                putExtra("alarmData", alarm)
                 action = "startActivity"
             }
             startForegroundService(intent)

@@ -8,6 +8,7 @@ import android.media.AudioManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.util.Log
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +30,6 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
     private lateinit var adapter: SoundAdapter
     private var selectedItem: String? = null
     private var volume: Int = 0
-    private var maxVolume: Int = 100
     private val headsetReceiver = HeadsetReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +65,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         binding.sbSoundVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 volume = p1
-                Utils.changeVolume(volume)
+                Utils.changeVolume(this@SoundActivity, volume)
                 binding.sbSoundVolume.setProgress(volume, true)
             }
 
@@ -92,7 +92,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
     override fun onStop() {
         super.onStop()
         adapter.playPosition = -1
-        Utils.changeVolume(null)
+        Utils.changeVolume(this@SoundActivity, null)
         Utils.stopAlarmSound()
     }
 
@@ -108,12 +108,15 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         val isConnected =
             audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
 
-        handleHeadsetConnection(isConnected)
+        volume = Utils.handleHeadsetConnection(this, isConnected, volume)
+        changeProgressValue(isConnected, volume)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(headsetReceiver)
+        try {
+            unregisterReceiver(headsetReceiver)
+        }catch (e:Exception){ }
     }
 
     override fun getSelectedSound(item: String) {
@@ -122,21 +125,13 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
     }
 
     override fun onHeadsetConnected(isConnected: Boolean) {
-        handleHeadsetConnection(isConnected)
+        volume = Utils.handleHeadsetConnection(this, isConnected, volume)
+        changeProgressValue(isConnected, volume)
     }
 
-    private fun handleHeadsetConnection(isConnected: Boolean) {
-        if (isConnected) {
-            maxVolume = 75
-            if (volume > maxVolume) {
-                volume = maxVolume
-            }
-            Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
-        } else {
-            maxVolume = 100
-        }
-        Utils.changeVolume(volume)
-        binding.sbSoundVolume.max = maxVolume
+    private fun changeProgressValue(isConnected: Boolean, volume: Int){
+        binding.sbSoundVolume.max = if(isConnected) 75 else 100
+        Log.d("confirm max", "$isConnected, $volume, ${binding.sbSoundVolume.max}")
         binding.sbSoundVolume.setProgress(volume, true)
     }
 
