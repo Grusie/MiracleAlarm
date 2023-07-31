@@ -44,8 +44,8 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
             unregisterReceiver(headsetReceiver)
         } catch (e: Exception) {
         }
-        Utils.stopAlarmSound()
-        Utils.changeVolume(applicationContext, null)
+        Utils.stopAlarmSound(this)
+        Utils.changeVolume(this, null)
 /*        if (wakeLock.isHeld) {
             wakeLock.release()
         }*/
@@ -69,11 +69,11 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
 
 
         if (alarm.flagSound) {
-            val sound = Utils.getAlarmSound(applicationContext, alarm.sound)
-            Utils.initVolume(applicationContext)
+            val sound = Utils.getAlarmSound(this, alarm.sound)
+            Utils.initVolume(this)
             headsetCheck()
-            Utils.changeVolume(applicationContext, alarm.volume)
-            Utils.playAlarmSound(applicationContext, sound)
+            Utils.changeVolume(this, alarm.volume)
+            Utils.playAlarmSound(this, sound)
         }
 
         NOTIFICATION_ID = System.currentTimeMillis().toInt()

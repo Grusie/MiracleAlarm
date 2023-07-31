@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.GetSelectedSound
@@ -55,7 +56,8 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
 
         adapter = SoundAdapter(this, this, soundArray)
         adapter.selectedPosition = soundArray.indexOf(selectedItem)
-        binding.lvAlarmSound.adapter = adapter
+        binding.rvAlarmSound.adapter = adapter
+        binding.rvAlarmSound.layoutManager = LinearLayoutManager(this)
 
         volume = intent.getIntExtra("param2", 0)
 
@@ -91,9 +93,8 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
 
     override fun onStop() {
         super.onStop()
-        adapter.playPosition = -1
         Utils.changeVolume(this@SoundActivity, null)
-        Utils.stopAlarmSound()
+        Utils.stopAlarmSound(this@SoundActivity)
     }
 
     private fun headsetCheck() {
@@ -119,11 +120,6 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         }catch (e:Exception){ }
     }
 
-    override fun getSelectedSound(item: String) {
-        selectedItem = item
-        binding.viewModel?.logLine("confirmSelectedItem", "$item, $selectedItem")
-    }
-
     override fun onHeadsetConnected(isConnected: Boolean) {
         volume = Utils.handleHeadsetConnection(this, isConnected, volume)
         changeProgressValue(isConnected, volume)
@@ -138,5 +134,10 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
     override fun onResume() {
         super.onResume()
         adapter.notifyDataSetChanged()
+    }
+
+    override fun getSelectedSound(selectFlag: Boolean, position: Int) {
+        selectedItem = soundArray[position]
+        adapter.changeSelectedPosition(selectFlag, position)
     }
 }

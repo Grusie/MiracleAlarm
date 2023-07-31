@@ -5,7 +5,10 @@
             name="sound"
             type="String" />
         <variable
-            name="flag"
+            name="soundFlag"
+            type="Boolean" />
+        <variable
+            name="checkedFlag"
             type="Boolean" />
     </data>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -21,6 +24,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:checked="@{checkedFlag}"
         android:text="@{sound}"/>
 
     <Button
@@ -31,7 +35,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         style="@style/customButtonStyle"
-        android:text="@{flag ? @string/string_stop : @string/string_play}"
+        android:text="@{soundFlag ? @string/string_stop : @string/string_play}"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>
 

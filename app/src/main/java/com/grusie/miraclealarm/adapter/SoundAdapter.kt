@@ -3,100 +3,97 @@ package com.grusie.miraclealarm.adapter
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ItemAlarmSoundBinding
 import com.grusie.miraclealarm.function.Utils
 
 interface GetSelectedSound {
-    fun getSelectedSound(item: String)
+    fun getSelectedSound(selectFlag: Boolean, position: Int)
 }
 
 class SoundAdapter(
     val context: Context,
-    val listener: GetSelectedSound,
+    private val listener: GetSelectedSound,
     private val soundList: Array<String>
-) : BaseAdapter() {
+) : RecyclerView.Adapter<SoundViewHolder>() {
     private lateinit var binding: ItemAlarmSoundBinding
     var selectedPosition: Int = -1
-    var playPosition: Int = -1
+    var selectedSoundPosition: Int = -1
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SoundViewHolder {
+        binding = ItemAlarmSoundBinding.bind(
+            LayoutInflater.from(parent.context).inflate(R.layout.item_alarm_sound, parent, false)
+        )
 
-    override fun getCount(): Int {
+        return SoundViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: SoundViewHolder, position: Int) {
+        holder.bind(context, soundList[position], listener, position, selectedPosition, selectedSoundPosition)
+    }
+
+    override fun getItemCount(): Int {
         return soundList.size
     }
 
-    override fun getItem(position: Int): String {
-        return soundList[position]
-    }
+    fun changeSelectedPosition(selectFlag: Boolean, position: Int) {
+        if(selectFlag) {
+            val prePosition = selectedPosition
+            if (prePosition == position)
+                return
 
-    override fun getItemId(position: Int): Long {
-        return 0
-    }
+            selectedPosition = position
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        var view = convertView
-        val viewHolder: SoundViewHolder
-        if (view == null) {
-            binding = ItemAlarmSoundBinding.inflate(LayoutInflater.from(context))
-            viewHolder = SoundViewHolder(binding)
-            view = binding.root
-            view.tag = viewHolder
+            notifyItemChanged(prePosition)
+            notifyItemChanged(selectedPosition)
         } else {
-            viewHolder = view.tag as SoundViewHolder
+            val prePosition = selectedSoundPosition
+            if (prePosition == position)
+                return
+
+            selectedSoundPosition = position
+
+            notifyItemChanged(prePosition)
+            notifyItemChanged(selectedSoundPosition)
         }
-
-        val sound = getItem(position)
-        viewHolder.bind(sound, position)
-
-        val isSelected = selectedPosition == position
-        viewHolder.setSelected(isSelected)
-
-        return view
     }
+}
 
-    private inner class SoundViewHolder(private val binding: ItemAlarmSoundBinding) {
-        fun bind(sound: String, position: Int) {
-            binding.sound = sound
-            binding.flag = false
+class SoundViewHolder(private val binding: ItemAlarmSoundBinding) :
+    RecyclerView.ViewHolder(binding.root) {
+    fun bind(
+        context: Context,
+        sound: String,
+        listener: GetSelectedSound,
+        position: Int,
+        selectedPosition: Int,
+        selectedSoundPosition: Int
+    ) {
 
-            // 선택 상태 업데이트
-            val isSelected = selectedPosition == position
-            setSelected(isSelected)
+        binding.apply {
+            checkedFlag = selectedPosition == position
+            this.sound = sound
+            soundFlag = selectedSoundPosition == position
 
-            val isPlayed = playPosition == position
-            setPlayed(isPlayed)
-
-            binding.root.setOnClickListener {
-                selectedPosition = position
-                notifyDataSetChanged()
-
-                setSelected(true)
-
-                listener.getSelectedSound(binding.rbAlarmSound.text as String)
-                Log.d("confirm clickEvent", "$position, $selectedPosition, ${binding.rbAlarmSound.isChecked}")
+            root.setOnClickListener {
+                listener.getSelectedSound(true, position)
+            }
+            rbAlarmSound.setOnClickListener {
+                listener.getSelectedSound(true, position)
             }
 
-            binding.btnAlarmSound.setOnClickListener {
-                if(!(binding.flag as Boolean)) {
-                    playPosition = position
-                    notifyDataSetChanged()
+            btnAlarmSound.setOnClickListener {
+                if (!soundFlag!!) {
                     val playSound = Utils.getAlarmSound(context, sound)
-                    Utils.stopAlarmSound()
+                    Utils.stopAlarmSound(context)
                     Utils.playAlarmSound(context, playSound)
-                    binding.flag = true
-                }else {
-                    Utils.stopAlarmSound()
-                    binding.flag = false
+                } else {
+                    Utils.stopAlarmSound(context)
                 }
+                soundFlag = !soundFlag!!
+                listener.getSelectedSound(false, position)
             }
-        }
-        fun setSelected(isSelected: Boolean) {
-            binding.rbAlarmSound.isChecked = isSelected
-        }
-
-        fun setPlayed(isPlayed: Boolean) {
-            binding.flag = isPlayed
         }
     }
 }

@@ -3,6 +3,7 @@ package com.grusie.miraclealarm.activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -35,7 +36,7 @@ class CreateAlarmActivity : AppCompatActivity() {
     private lateinit var currCal: Calendar
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private var exist = false
-    private lateinit var oldAlarm : AlarmData
+    private var oldAlarm = AlarmData()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,7 +146,7 @@ class CreateAlarmActivity : AppCompatActivity() {
         binding.apply {
             viewModel?.alarm?.value?.apply {
                 if(exist){
-                    oldAlarm = this
+                    oldAlarm = this.copy()
                 }
                 title = etAlarmTitle.text.toString()
                 holiday = viewModel?.flagHoliday?.value == true

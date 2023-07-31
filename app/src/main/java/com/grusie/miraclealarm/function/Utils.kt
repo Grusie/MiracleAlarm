@@ -6,6 +6,7 @@ import android.app.AlarmManager
 import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -15,6 +16,7 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.MutableLiveData
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.model.AlarmData
@@ -22,6 +24,8 @@ import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.logging.Logger
+import kotlin.math.log
 import kotlin.system.exitProcess
 
 class Utils {
@@ -31,10 +35,10 @@ class Utils {
         private var mp: MediaPlayer? = null
         private lateinit var am : AudioManager
         var initVolume = 0
-
-
+        var hasAudioFocus = false
 
         fun updateAlarm(context: Context, exist : Boolean, oldAlarm: AlarmData, newAlarm: AlarmData){
+            Log.d("confirm oldAlarm", "confirm oldAlarm : $oldAlarm, $newAlarm")
             if(exist){
                 delAlarm(context, oldAlarm)
             }
@@ -261,6 +265,10 @@ class Utils {
 
             return returnSound
         }
+
+        /**
+         * 이어폰 착용 시 작동 함수
+         **/
         fun handleHeadsetConnection(context: Context, isConnected: Boolean, volume: Int) : Int{
             var resultVolume = volume
             var maxVolume = 75
@@ -273,35 +281,85 @@ class Utils {
             return resultVolume
         }
 
+
+        /**
+         * 알람 종료
+         **/
         fun stopAlarm(context: Context){
             val intent = Intent(context, ForegroundAlarmService::class.java)
             context.stopService(intent)
-            stopAlarmSound()
+            stopAlarmSound(context)
             changeVolume(context, null)
         }
 
         /**
-         * 알람 사운드 플레이
+         * 알람 포커스 요청
          **/
         fun playAlarmSound(context: Context, sound: Int){
+            audioFocus(context)
+            startMusic(context, sound)
+        }
+
+        fun audioFocus(context: Context){
+            // 오디오 포커스 요청
+            val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
+            val result = audioManager.requestAudioFocus(audioFocusChangeListener,
+                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                hasAudioFocus = true
+            } else {
+                Toast.makeText(context, "오디오 포커스 요청 실패", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        /**
+         * 사운드 플레이
+         **/
+        private fun startMusic(context: Context, sound: Int){
             mp = MediaPlayer.create(context, sound)
             mp?.isLooping = true
             mp?.start()
         }
 
+
+        /**
+         * 오디오 포커스 리스너
+         **/
+        private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+            when (focusChange) {
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                    // 오디오 포커스를 잃은 경우 노래를 일시적으로 정지
+                    mp?.pause()
+                }
+                AudioManager.AUDIOFOCUS_GAIN -> {
+                    // 오디오 포커스를 얻은 경우 다시 노래 재생
+                    mp?.start()
+                }
+            }
+        }
+
         /**
          * 알람 사운드 스탑
          **/
-        fun stopAlarmSound(){
+        fun stopAlarmSound(context: Context){
             Log.d("confirm stopAlarm", "$mp")
+
+            if (hasAudioFocus) {
+                val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
+                audioManager.abandonAudioFocus(audioFocusChangeListener)
+            }
             mp?.stop()
+            mp?.release()
+            mp = null
         }
 
         /**
          * 알람 볼륨 조절
          **/
         fun changeVolume(context: Context, volume: Int?) {
-            am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am = context.getSystemService(AUDIO_SERVICE) as AudioManager
             val changeVolume: Int = if(volume != null) {
                 am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * volume / 100
             }else {
@@ -318,7 +376,7 @@ class Utils {
          * 볼륨 조절 전 볼륨 값 가져오기
          **/
         fun initVolume(context: Context){
-            am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am = context.getSystemService(AUDIO_SERVICE) as AudioManager
             initVolume = am.getStreamVolume(AudioManager.STREAM_MUSIC)
         }
 
