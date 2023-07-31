@@ -1,7 +1,6 @@
 package com.grusie.miraclealarm.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +29,14 @@ class SoundAdapter(
     }
 
     override fun onBindViewHolder(holder: SoundViewHolder, position: Int) {
-        holder.bind(context, soundList[position], listener, position, selectedPosition, selectedSoundPosition)
+        holder.bind(
+            context,
+            soundList[position],
+            listener,
+            position,
+            selectedPosition,
+            selectedSoundPosition
+        )
     }
 
     override fun getItemCount(): Int {
@@ -38,7 +44,7 @@ class SoundAdapter(
     }
 
     fun changeSelectedPosition(selectFlag: Boolean, position: Int) {
-        if(selectFlag) {
+        if (selectFlag) {
             val prePosition = selectedPosition
             if (prePosition == position)
                 return

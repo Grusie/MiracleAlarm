@@ -33,7 +33,7 @@ class Utils {
         lateinit var receiverIntent: Intent
         lateinit var alarmManager: AlarmManager
         private var mp: MediaPlayer? = null
-        private lateinit var am : AudioManager
+        private var am : AudioManager? = null
         var initVolume = 0
         var hasAudioFocus = false
 
@@ -223,7 +223,7 @@ class Utils {
          * 권한 체크 및 요청 setting용 권한인 경우 따로 처리
          * **/
         fun createPermission(permission: String) {
-            val permissionlistener: PermissionListener = object : PermissionListener {
+            val permissionListener: PermissionListener = object : PermissionListener {
                 override fun onPermissionGranted() {
                 }
 
@@ -231,7 +231,7 @@ class Utils {
                 }
             }
             TedPermission.create()
-                .setPermissionListener(permissionlistener)
+                .setPermissionListener(permissionListener)
                 .setDeniedMessage("알람을 사용하려면 권한을 허용하여 주셔야 합니다.")
                 .setPermissions(permission)
                 .check()
@@ -266,21 +266,6 @@ class Utils {
             return returnSound
         }
 
-        /**
-         * 이어폰 착용 시 작동 함수
-         **/
-        fun handleHeadsetConnection(context: Context, isConnected: Boolean, volume: Int) : Int{
-            var resultVolume = volume
-            var maxVolume = 75
-            if (isConnected) {
-                resultVolume = if(resultVolume > maxVolume) maxVolume else resultVolume
-                Toast.makeText(context, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
-            }
-
-            changeVolume(context, resultVolume)
-            return resultVolume
-        }
-
 
         /**
          * 알람 종료
@@ -289,7 +274,7 @@ class Utils {
             val intent = Intent(context, ForegroundAlarmService::class.java)
             context.stopService(intent)
             stopAlarmSound(context)
-            changeVolume(context, null)
+            changeVolume(context, null, false)
         }
 
         /**
@@ -358,26 +343,40 @@ class Utils {
         /**
          * 알람 볼륨 조절
          **/
-        fun changeVolume(context: Context, volume: Int?) {
-            am = context.getSystemService(AUDIO_SERVICE) as AudioManager
-            val changeVolume: Int = if(volume != null) {
-                am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * volume / 100
-            }else {
+        fun changeVolume(context: Context, volume: Int?, isConnected: Boolean) {
+            if(am == null)
+                am = context.getSystemService(AUDIO_SERVICE) as AudioManager
+            Log.d("confirm volume", "$volume")
+
+            val changeVolume = if(volume != null){
+                var tempVolume =
+                    if(!isConnected)
+                        am!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * volume / 100
+                    else{
+                        var maxVolume = 70
+                        if(volume > maxVolume) maxVolume else volume
+                    }
+                am!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * tempVolume / 100
+            }else{
                 initVolume
             }
-            am.setStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                changeVolume,
-                AudioManager.FLAG_SHOW_UI
-            )
+
+            if(changeVolume != am!!.getStreamVolume(AudioManager.STREAM_MUSIC)) {
+                am!!.setStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    changeVolume,
+                    AudioManager.FLAG_SHOW_UI
+                )
+            }
         }
 
         /**
          * 볼륨 조절 전 볼륨 값 가져오기
          **/
         fun initVolume(context: Context){
-            am = context.getSystemService(AUDIO_SERVICE) as AudioManager
-            initVolume = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+            if(am == null)
+                am = context.getSystemService(AUDIO_SERVICE) as AudioManager
+            initVolume = am!!.getStreamVolume(AudioManager.STREAM_MUSIC)
         }
 
         /**

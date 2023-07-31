@@ -22,6 +22,9 @@ import com.grusie.miraclealarm.adapter.SoundAdapter
 import com.grusie.miraclealarm.databinding.ActivitySoundBinding
 import com.grusie.miraclealarm.function.HeadsetReceiver
 import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.function.Utils.Companion.audioFocus
+import com.grusie.miraclealarm.function.Utils.Companion.changeVolume
+import com.grusie.miraclealarm.function.Utils.Companion.hasAudioFocus
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 
 class SoundActivity : AppCompatActivity(), GetSelectedSound,
@@ -32,6 +35,8 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
     private var selectedItem: String? = null
     private var volume: Int = 0
     private val headsetReceiver = HeadsetReceiver()
+    private var isConnected = false
+    private var changeVolumeFlag = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,13 +66,18 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
 
         volume = intent.getIntExtra("param2", 0)
 
+        binding.sbSoundVolume.setProgress(volume, true)
+
         Utils.initVolume(this)
         headsetCheck()
 
         binding.sbSoundVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 volume = p1
-                Utils.changeVolume(this@SoundActivity, volume)
+                if(!hasAudioFocus)
+                    audioFocus(this@SoundActivity)
+                changeVolume(this@SoundActivity, volume, isConnected)
+                changeVolumeFlag = true
                 binding.sbSoundVolume.setProgress(volume, true)
             }
 
@@ -93,7 +103,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
 
     override fun onStop() {
         super.onStop()
-        Utils.changeVolume(this@SoundActivity, null)
+        changeVolume(this@SoundActivity, null, isConnected)
         Utils.stopAlarmSound(this@SoundActivity)
     }
 
@@ -106,11 +116,10 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         registerReceiver(headsetReceiver, intentFilter)
 
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val isConnected =
+        isConnected =
             audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
 
-        volume = Utils.handleHeadsetConnection(this, isConnected, volume)
-        changeProgressValue(isConnected, volume)
+        if(isConnected) Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
@@ -121,14 +130,8 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
     }
 
     override fun onHeadsetConnected(isConnected: Boolean) {
-        volume = Utils.handleHeadsetConnection(this, isConnected, volume)
-        changeProgressValue(isConnected, volume)
-    }
-
-    private fun changeProgressValue(isConnected: Boolean, volume: Int){
-        binding.sbSoundVolume.max = if(isConnected) 75 else 100
-        Log.d("confirm max", "$isConnected, $volume, ${binding.sbSoundVolume.max}")
-        binding.sbSoundVolume.setProgress(volume, true)
+        this.isConnected = isConnected
+        Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
@@ -138,6 +141,10 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
 
     override fun getSelectedSound(selectFlag: Boolean, position: Int) {
         selectedItem = soundArray[position]
+        if(!selectFlag && changeVolumeFlag){
+            changeVolume(this, volume, isConnected)
+            changeVolumeFlag = false
+        }
         adapter.changeSelectedPosition(selectFlag, position)
     }
 }

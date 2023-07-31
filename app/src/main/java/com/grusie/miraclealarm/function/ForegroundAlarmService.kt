@@ -8,10 +8,11 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.media.AudioManager
 import android.os.IBinder
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.activity.NotificationActivity
-import com.grusie.miraclealarm.function.Utils.Companion.handleHeadsetConnection
+import com.grusie.miraclealarm.function.Utils.Companion.changeVolume
 import com.grusie.miraclealarm.model.AlarmData
 import kotlin.properties.Delegates
 
@@ -24,6 +25,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
     private lateinit var editor: SharedPreferences.Editor
     private var headsetReceiver = HeadsetReceiver()
     private lateinit var alarm: AlarmData
+    private var isConnected = false
 
     override fun onCreate() {
         super.onCreate()
@@ -45,7 +47,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         } catch (e: Exception) {
         }
         Utils.stopAlarmSound(this)
-        Utils.changeVolume(this, null)
+        changeVolume(this, null, isConnected)
 /*        if (wakeLock.isHeld) {
             wakeLock.release()
         }*/
@@ -72,7 +74,6 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
             val sound = Utils.getAlarmSound(this, alarm.sound)
             Utils.initVolume(this)
             headsetCheck()
-            Utils.changeVolume(this, alarm.volume)
             Utils.playAlarmSound(this, sound)
         }
 
@@ -127,10 +128,11 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         registerReceiver(headsetReceiver, intentFilter)
 
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val isConnected =
+        isConnected =
             audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
 
-        handleHeadsetConnection(applicationContext, isConnected, alarm.volume)
+        changeVolume(applicationContext, alarm.volume, isConnected)
+        if (isConnected) Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -149,6 +151,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
     }
 
     override fun onHeadsetConnected(isConnected: Boolean) {
-        handleHeadsetConnection(this, isConnected, alarm.volume)
+        changeVolume(this, alarm.volume, isConnected)
+        Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
     }
 }
