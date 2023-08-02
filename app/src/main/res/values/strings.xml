@@ -42,4 +42,22 @@
         <item>벨소리 합성</item>
     </string-array>
 
+    <string-array name="vibration_array">
+        <item>Zig-zig-Zig</item>
+        <item>Short_Long_Short</item>
+        <item>Double-Triple</item>
+        <item>SOS Signal</item>
+        <item>Heartbeat</item>
+        <item>Ascending</item>
+        <item>Custom Morse Code</item>
+        <item>Pulse</item>
+        <item>Dit-Dit-Dah-Dah</item>
+        <item>Long-Short-Long</item>
+        <item>Ascending-Descending</item>
+        <item>Short Pause</item>
+        <item>Long Pause</item>
+        <item>Triple-Triple</item>
+        <item>SOS Twice</item>
+    </string-array>
+
 </resources>

@@ -90,6 +90,7 @@ class NotificationActivity : AppCompatActivity() {
         turnOffFlag = false
 
         alarmNotiReceiver.activity = null
+        Log.d("confirm turnOffAlarm", "turnOffAlarm $alarm")
 
         editor.putBoolean("openMainActivity", true)
         editor.apply()

@@ -6,15 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ItemAlarmSoundBinding
+import com.grusie.miraclealarm.function.GetSelectedItem
 import com.grusie.miraclealarm.function.Utils
-
-interface GetSelectedSound {
-    fun getSelectedSound(selectFlag: Boolean, position: Int)
-}
 
 class SoundAdapter(
     val context: Context,
-    private val listener: GetSelectedSound,
+    private val listener: GetSelectedItem,
     private val soundList: Array<String>
 ) : RecyclerView.Adapter<SoundViewHolder>() {
     private lateinit var binding: ItemAlarmSoundBinding
@@ -71,7 +68,7 @@ class SoundViewHolder(private val binding: ItemAlarmSoundBinding) :
     fun bind(
         context: Context,
         sound: String,
-        listener: GetSelectedSound,
+        listener: GetSelectedItem,
         position: Int,
         selectedPosition: Int,
         selectedSoundPosition: Int
@@ -82,11 +79,11 @@ class SoundViewHolder(private val binding: ItemAlarmSoundBinding) :
             this.sound = sound
             soundFlag = selectedSoundPosition == position
 
-            root.setOnClickListener {
-                listener.getSelectedSound(true, position)
+            itemView.setOnClickListener {
+                listener.getSelectedItem(true, position)
             }
             rbAlarmSound.setOnClickListener {
-                listener.getSelectedSound(true, position)
+                listener.getSelectedItem(true, position)
             }
 
             btnAlarmSound.setOnClickListener {
@@ -98,7 +95,7 @@ class SoundViewHolder(private val binding: ItemAlarmSoundBinding) :
                     Utils.stopAlarmSound(context)
                 }
                 soundFlag = !soundFlag!!
-                listener.getSelectedSound(false, position)
+                listener.getSelectedItem(false, position)
             }
         }
     }

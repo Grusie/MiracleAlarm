@@ -54,7 +54,9 @@ class AlarmNotiReceiver : BroadcastReceiver() {
             allAlarms.observeForever { alarmList ->
                 for (alarm in alarmList) {
                     if (alarm.enabled) {
-                        createAlarm(context, alarm)
+                        /*if(!alarm.dateRepeat){
+                        }*/
+                        Utils.setAlarm(context, alarm)
                     }
                 }
             }
@@ -80,11 +82,10 @@ class AlarmNotiReceiver : BroadcastReceiver() {
         }
         for (runningService in runningServices) {
             if (serviceName == runningService.service.className) {
-                Utils.stopAlarm(context)
-                serviceIntent.action = "duplication"
+                context.stopService(serviceIntent)
             }
         }
-        Log.d("confirm contentValue foreground", "startForeground")
+
         ContextCompat.startForegroundService(context, serviceIntent)
     }
 }

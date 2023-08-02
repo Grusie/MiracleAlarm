@@ -3,7 +3,7 @@ package com.grusie.miraclealarm.activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -30,10 +30,8 @@ class CreateAlarmActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreateAlarmBinding
     private lateinit var alarmViewModel: AlarmViewModel
     private var alarmId by Delegates.notNull<Int>()
-    private lateinit var timeCal: Calendar
 
-    //private lateinit var alarmCal: Calendar
-    private lateinit var currCal: Calendar
+    private lateinit var alarmCal: Calendar
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private var exist = false
     private var oldAlarm = AlarmData()
@@ -51,10 +49,8 @@ class CreateAlarmActivity : AppCompatActivity() {
         if (alarmId != -1) exist = true
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
 
-        timeCal = Calendar.getInstance()
-
-        currCal = Calendar.getInstance()
-        currCal.add(Calendar.DAY_OF_YEAR, 1)
+        alarmCal = Calendar.getInstance()
+        alarmCal.add(Calendar.MINUTE, 1)
 
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
@@ -71,10 +67,18 @@ class CreateAlarmActivity : AppCompatActivity() {
                         binding.viewModel?.changeVolume(volume)
                     }
                 }
+                else if(result.resultCode == Const.RESULT_CODE_VIBRATION){
+                    val vibration = result.data?.getStringExtra("vibration")
+                    if(vibration != null){
+                        binding.viewModel?.changeVibration(vibration)
+                    }
+                }
             }
 
         alarmViewModel.initAlarmData(alarmId)
 
+        binding.tpAlarmTime.hour = alarmCal.get(Calendar.HOUR_OF_DAY)
+        binding.tpAlarmTime.minute = alarmCal.get(Calendar.MINUTE)
 
         binding.viewModel?.timePickerToTime(
             binding.tpAlarmTime.hour,
@@ -106,6 +110,13 @@ class CreateAlarmActivity : AppCompatActivity() {
                     binding.viewModel?.volume?.value
                 )
             }
+            clAlarmVibe.setOnClickListener {
+                startOptionActivity(
+                    Intent(this@CreateAlarmActivity, VibrationActivity::class.java),
+                    binding.tvVibeSub.text as String,
+                    null
+                )
+            }
         }
     }
 
@@ -117,71 +128,64 @@ class CreateAlarmActivity : AppCompatActivity() {
     }
 
     private fun initDate() {
-        val year: Int
-        val month: Int
-        val day: Int
-        val dayOfWeek: Int
-        currCal.apply {
-            year = get(Calendar.YEAR)
-            month = get(Calendar.MONTH)
-            day = get(Calendar.DAY_OF_MONTH)
-            dayOfWeek = get(Calendar.DAY_OF_WEEK)
-        }
-
         binding.apply {
             viewModel?.date?.observe(this@CreateAlarmActivity) {
                 viewModel?.logLine("confirm day_of_week", it)
                 if (it.isNullOrEmpty()) {
-                    val date = viewModel?.dateFormat(year, month, day, dayOfWeek)!!
+                    val date = viewModel?.dateFormat(alarmCal)!!
                     viewModel?.onDateClicked(date, false)
                 } else {
                     if (viewModel?.alarm?.value?.dateRepeat == false)
-                        currCal = Utils.dateToCal(it, viewModel?.time?.value!!)
+                        alarmCal = Utils.dateToCal(it, viewModel?.time?.value!!)
                 }
             }
         }
     }
 
     private fun saveAlarm() {
-        binding.apply {
-            viewModel?.alarm?.value?.apply {
-                if(exist){
-                    oldAlarm = this.copy()
+        if(binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()){
+            Toast.makeText(this, "이미 지난 시간은 선택할 수 없습니다.", Toast.LENGTH_SHORT).show()
+        } else {
+            binding.apply {
+                viewModel?.alarm?.value?.apply {
+                    if (exist) {
+                        oldAlarm = this.copy()
+                    }
+                    title = etAlarmTitle.text.toString()
+                    holiday = viewModel?.flagHoliday?.value == true
+                    flagSound = viewModel?.flagSound?.value == true
+                    flagVibrate = viewModel?.flagVibe?.value == true
+                    flagOffWay = viewModel?.flagOffWay?.value == true
+                    flagRepeat = viewModel?.flagRepeat?.value == true
+
+                    time = viewModel?.time?.value.toString()
+
+                    this.date = viewModel?.date?.value!!
+                    enabled = true
+                    sound =
+                        if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
+                    volume = viewModel?.volume?.value!!
+                    vibrate =
+                        if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
+                    off_way =
+                        if (viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else off_way
+                    repeat =
+                        if (viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else repeat
                 }
-                title = etAlarmTitle.text.toString()
-                holiday = viewModel?.flagHoliday?.value == true
-                flagSound = viewModel?.flagSound?.value == true
-                flagVibrate = viewModel?.flagVibe?.value == true
-                flagOffWay = viewModel?.flagOffWay?.value == true
-                flagRepeat = viewModel?.flagRepeat?.value == true
 
-                time = viewModel?.time?.value.toString()
-
-                this.date = viewModel?.date?.value!!
-                enabled = true
-                sound =
-                    if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
-                volume = viewModel?.volume?.value!!
-                vibrate =
-                    if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
-                off_way =
-                    if (viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else off_way
-                repeat =
-                    if (viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else repeat
-            }
-
-            lifecycleScope.launch {
-                viewModel?.updateAlarmData()?.let {
-                    Utils.updateAlarm(
-                        this@CreateAlarmActivity,
-                        exist,
-                        oldAlarm,
-                        it
-                    )
+                lifecycleScope.launch {
+                    viewModel?.updateAlarmData()?.let {
+                        Utils.updateAlarm(
+                            this@CreateAlarmActivity,
+                            exist,
+                            oldAlarm,
+                            it
+                        )
+                    }
                 }
             }
+            finish()
         }
-        finish()
     }
 
 
@@ -189,17 +193,16 @@ class CreateAlarmActivity : AppCompatActivity() {
         val datePickerDialog = DatePickerDialog(
             this,
             { _, year, month, dayOfMonth ->
-                currCal.set(Calendar.YEAR, year)
-                currCal.set(Calendar.MONTH, month)
-                currCal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                val dayOfWeek = currCal.get(Calendar.DAY_OF_WEEK)
+                alarmCal.set(Calendar.YEAR, year)
+                alarmCal.set(Calendar.MONTH, month)
+                alarmCal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-                val date = binding.viewModel?.dateFormat(year, month, dayOfMonth, dayOfWeek)!!
+                val date = binding.viewModel?.dateFormat(alarmCal)!!
                 binding.viewModel?.onDateClicked(date, false)
             },
-            currCal.get(Calendar.YEAR),
-            currCal.get(Calendar.MONTH),
-            currCal.get(Calendar.DAY_OF_MONTH)
+            alarmCal.get(Calendar.YEAR),
+            alarmCal.get(Calendar.MONTH),
+            alarmCal.get(Calendar.DAY_OF_MONTH)
         )
         datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
         datePickerDialog.show()
@@ -214,9 +217,9 @@ class CreateAlarmActivity : AppCompatActivity() {
                 val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
                 val zoneId = ZoneId.systemDefault()
                 val date = Date.from(localDateTime.atZone(zoneId).toInstant())
-                timeCal.time = date
-                tpAlarmTime.hour = timeCal.get(Calendar.HOUR_OF_DAY)
-                tpAlarmTime.minute = timeCal.get(Calendar.MINUTE)
+                alarmCal.time = date
+                tpAlarmTime.hour = alarmCal.get(Calendar.HOUR_OF_DAY)
+                tpAlarmTime.minute = alarmCal.get(Calendar.MINUTE)
                 viewModel?.logLine(
                     "confirm Time",
                     "time = $it, hour = ${tpAlarmTime.hour}, minute = ${tpAlarmTime.minute}"

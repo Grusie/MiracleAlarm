@@ -231,7 +231,8 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_title">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_title"
+                    android:background="?attr/selectableItemBackground">
 
                     <TextView
                         android:id="@+id/tv_offWay_title"
@@ -268,7 +269,8 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_offWay">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_offWay"
+                    android:background="?attr/selectableItemBackground">
 
                     <TextView
                         android:id="@+id/tv_sound_title"
@@ -306,7 +308,8 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_sound">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_sound"
+                    android:background="?attr/selectableItemBackground">
 
                     <TextView
                         android:id="@+id/tv_vibe_title"
@@ -344,7 +347,8 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_vibe">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_vibe"
+                    android:background="?attr/selectableItemBackground">
 
                     <TextView
                         android:id="@+id/tv_repeat_title"

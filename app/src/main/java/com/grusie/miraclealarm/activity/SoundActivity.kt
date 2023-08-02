@@ -8,26 +8,23 @@ import android.media.AudioManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
-import android.util.Log
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.adapter.GetSelectedSound
 import com.grusie.miraclealarm.adapter.SoundAdapter
 import com.grusie.miraclealarm.databinding.ActivitySoundBinding
+import com.grusie.miraclealarm.function.GetSelectedItem
 import com.grusie.miraclealarm.function.HeadsetReceiver
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.function.Utils.Companion.audioFocus
 import com.grusie.miraclealarm.function.Utils.Companion.changeVolume
 import com.grusie.miraclealarm.function.Utils.Companion.hasAudioFocus
-import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 
-class SoundActivity : AppCompatActivity(), GetSelectedSound,
+class SoundActivity : AppCompatActivity(), GetSelectedItem,
     HeadsetReceiver.HeadsetConnectionListener {
     private lateinit var binding: ActivitySoundBinding
     private lateinit var soundArray: Array<String>
@@ -40,12 +37,11 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_sound)
         initUi()
     }
 
     private fun initUi() {
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_sound)
-        binding.viewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         binding.lifecycleOwner = this
 
         if (VERSION.SDK_INT >= VERSION_CODES.S) {
@@ -74,7 +70,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         binding.sbSoundVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 volume = p1
-                if(!hasAudioFocus)
+                if (!hasAudioFocus)
                     audioFocus(this@SoundActivity)
                 changeVolume(this@SoundActivity, volume, isConnected)
                 changeVolumeFlag = true
@@ -88,7 +84,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
             }
         })
 
-        binding.btnSoundSave.setOnClickListener {
+        binding.btnSave.setOnClickListener {
             val resultIntent = Intent()
             resultIntent.putExtra("sound", selectedItem)
             resultIntent.putExtra("volume", volume)
@@ -96,7 +92,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
             finish()
         }
 
-        binding.btnSoundCancel.setOnClickListener {
+        binding.btnCancel.setOnClickListener {
             finish()
         }
     }
@@ -119,14 +115,15 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         isConnected =
             audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
 
-        if(isConnected) Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
+        if (isConnected) Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         try {
             unregisterReceiver(headsetReceiver)
-        }catch (e:Exception){ }
+        } catch (e: Exception) {
+        }
     }
 
     override fun onHeadsetConnected(isConnected: Boolean) {
@@ -139,9 +136,9 @@ class SoundActivity : AppCompatActivity(), GetSelectedSound,
         adapter.notifyDataSetChanged()
     }
 
-    override fun getSelectedSound(selectFlag: Boolean, position: Int) {
+    override fun getSelectedItem(selectFlag: Boolean, position: Int) {
         selectedItem = soundArray[position]
-        if(!selectFlag && changeVolumeFlag){
+        if (!selectFlag && changeVolumeFlag) {
             changeVolume(this, volume, isConnected)
             changeVolumeFlag = false
         }

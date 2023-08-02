@@ -1,6 +1,5 @@
 package com.grusie.miraclealarm.function
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.AlertDialog
@@ -10,40 +9,41 @@ import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.net.Uri
-import android.provider.MediaStore.Audio
-import android.provider.Settings
+import android.os.*
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.lifecycle.MutableLiveData
 import com.grusie.miraclealarm.R
+import com.grusie.miraclealarm.function.Utils.Companion.initVolume
 import com.grusie.miraclealarm.model.AlarmData
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.logging.Logger
-import kotlin.math.log
-import kotlin.system.exitProcess
 
 class Utils {
     companion object {
         lateinit var receiverIntent: Intent
         lateinit var alarmManager: AlarmManager
         private var mp: MediaPlayer? = null
-        private var am : AudioManager? = null
+        private var am: AudioManager? = null
+        private var vm: VibratorManager? = null
+        private var vibrator: Vibrator? = null
         var initVolume = 0
         var hasAudioFocus = false
 
-        fun updateAlarm(context: Context, exist : Boolean, oldAlarm: AlarmData, newAlarm: AlarmData){
+        fun updateAlarm(
+            context: Context,
+            exist: Boolean,
+            oldAlarm: AlarmData,
+            newAlarm: AlarmData
+        ) {
             Log.d("confirm oldAlarm", "confirm oldAlarm : $oldAlarm, $newAlarm")
-            if(exist){
+            if (exist) {
                 delAlarm(context, oldAlarm)
             }
             setAlarm(context, newAlarm)
         }
+
         /**
          * 알람 생성하기
          * */
@@ -84,27 +84,27 @@ class Utils {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                val pendingIntentId = generateAlarmId(alarm, timeMillis)
+            val pendingIntentId = generateAlarmId(alarm, timeMillis)
 
-                receiverIntent.putExtra("alarmData", alarm)
+            receiverIntent.putExtra("alarmData", alarm)
 
-                val pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    pendingIntentId,
-                    receiverIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                pendingIntentId,
+                receiverIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
 
-                // 일회성 알람 설정
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent
-                )
-                val asd = Calendar.getInstance()
-                asd.timeInMillis = timeMillis
-                Log.d(
-                    "confirm contentValue",
-                    "${asd.time} ${alarm.time}, ${alarm.date}, ${alarm.id}, ${alarm.dateRepeat} 알람 설정 됨"
-                )
+            // 일회성 알람 설정
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent
+            )
+            val asd = Calendar.getInstance()
+            asd.timeInMillis = timeMillis
+            Log.d(
+                "confirm contentValue",
+                "${asd.time} ${alarm.time}, ${alarm.date}, ${alarm.id}, ${alarm.dateRepeat} 알람 설정 됨"
+            )
         }
 
 
@@ -148,7 +148,7 @@ class Utils {
         /**
          * 알람 울릴 시간 가져오기
          * **/
-        fun getAlarmTime(alarm :AlarmData): ArrayList<Calendar> {
+        private fun getAlarmTime(alarm: AlarmData): ArrayList<Calendar> {
             val inputFormat = SimpleDateFormat("a hh:mm")
             val calList = ArrayList<Calendar>()
 
@@ -189,7 +189,7 @@ class Utils {
                         Log.e("confirm getAlarmTime", "getAlarmTime try-catch2 ${e.stackTrace}")
                     }
                 }
-                for(i in calList)
+                for (i in calList)
                     Log.d("confirm getAlarmTime", "getAlarmTime ${i.time}")
             }
 
@@ -213,7 +213,10 @@ class Utils {
             } catch (e: java.lang.Exception) {
                 returnCal = Calendar.getInstance()
                 returnCal.add(Calendar.DAY_OF_YEAR, 1)
-                Log.e("confirm getAlarmTime", "getAlarmTime try-catch1 $date, ${returnCal.time} ${Log.getStackTraceString(e)}")
+                Log.e(
+                    "confirm getAlarmTime",
+                    "getAlarmTime try-catch1 $date, ${returnCal.time} ${Log.getStackTraceString(e)}"
+                )
             }
             return returnCal
         }
@@ -266,30 +269,43 @@ class Utils {
             return returnSound
         }
 
+        fun startAlarm(context: Context, alarm: AlarmData) {
+            if(alarm.flagSound) {
+                val sound = getAlarmSound(context, alarm.sound)
+                initVolume(context)
+                playAlarmSound(context, sound)
+            }
+            if (alarm.flagVibrate) {
+                startVibrator(context, getVibrationEffect(context, alarm.vibrate), 0)
+            }
+        }
 
         /**
          * 알람 종료
          **/
-        fun stopAlarm(context: Context){
+        fun stopAlarm(context: Context) {
             val intent = Intent(context, ForegroundAlarmService::class.java)
             context.stopService(intent)
             stopAlarmSound(context)
+            stopVibrator()
             changeVolume(context, null, false)
         }
 
         /**
          * 알람 포커스 요청
          **/
-        fun playAlarmSound(context: Context, sound: Int){
+        fun playAlarmSound(context: Context, sound: Int) {
             audioFocus(context)
             startMusic(context, sound)
         }
 
-        fun audioFocus(context: Context){
+        fun audioFocus(context: Context) {
             // 오디오 포커스 요청
             val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
-            val result = audioManager.requestAudioFocus(audioFocusChangeListener,
-                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+            val result = audioManager.requestAudioFocus(
+                audioFocusChangeListener,
+                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN
+            )
 
             if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 hasAudioFocus = true
@@ -301,7 +317,7 @@ class Utils {
         /**
          * 사운드 플레이
          **/
-        private fun startMusic(context: Context, sound: Int){
+        private fun startMusic(context: Context, sound: Int) {
             mp = MediaPlayer.create(context, sound)
             mp?.isLooping = true
             mp?.start()
@@ -311,24 +327,25 @@ class Utils {
         /**
          * 오디오 포커스 리스너
          **/
-        private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
-            when (focusChange) {
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                    // 오디오 포커스를 잃은 경우 노래를 일시적으로 정지
-                    mp?.pause()
-                }
-                AudioManager.AUDIOFOCUS_GAIN -> {
-                    // 오디오 포커스를 얻은 경우 다시 노래 재생
-                    mp?.start()
+        private val audioFocusChangeListener =
+            AudioManager.OnAudioFocusChangeListener { focusChange ->
+                when (focusChange) {
+                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                        // 오디오 포커스를 잃은 경우 노래를 일시적으로 정지
+                        mp?.pause()
+                    }
+                    AudioManager.AUDIOFOCUS_GAIN -> {
+                        // 오디오 포커스를 얻은 경우 다시 노래 재생
+                        mp?.start()
+                    }
                 }
             }
-        }
 
         /**
-         * 알람 사운드 스탑
+         * 알람 사운드 정지
          **/
-        fun stopAlarmSound(context: Context){
+        fun stopAlarmSound(context: Context) {
             Log.d("confirm stopAlarm", "$mp")
 
             if (hasAudioFocus) {
@@ -344,24 +361,24 @@ class Utils {
          * 알람 볼륨 조절
          **/
         fun changeVolume(context: Context, volume: Int?, isConnected: Boolean) {
-            if(am == null)
+            if (am == null)
                 am = context.getSystemService(AUDIO_SERVICE) as AudioManager
             Log.d("confirm volume", "$volume")
 
-            val changeVolume = if(volume != null){
+            val changeVolume = if (volume != null) {
                 var tempVolume =
-                    if(!isConnected)
-                        am!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * volume / 100
-                    else{
+                    if (!isConnected)
+                        volume
+                    else {
                         var maxVolume = 70
-                        if(volume > maxVolume) maxVolume else volume
+                        if (volume > maxVolume) maxVolume else volume
                     }
                 am!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * tempVolume / 100
-            }else{
+            } else {
                 initVolume
             }
 
-            if(changeVolume != am!!.getStreamVolume(AudioManager.STREAM_MUSIC)) {
+            if (changeVolume != am!!.getStreamVolume(AudioManager.STREAM_MUSIC)) {
                 am!!.setStreamVolume(
                     AudioManager.STREAM_MUSIC,
                     changeVolume,
@@ -373,24 +390,132 @@ class Utils {
         /**
          * 볼륨 조절 전 볼륨 값 가져오기
          **/
-        fun initVolume(context: Context){
-            if(am == null)
+        fun initVolume(context: Context) {
+            if (am == null)
                 am = context.getSystemService(AUDIO_SERVICE) as AudioManager
             initVolume = am!!.getStreamVolume(AudioManager.STREAM_MUSIC)
         }
 
         /**
+         * 진동 패턴 얻기
+         **/
+        fun getVibrationEffect(context: Context, vibration: String): Pair<LongArray, IntArray> {
+            val vibrationArray = context.resources.getStringArray(R.array.vibration_array)
+            return when (vibration) {
+                vibrationArray[0] -> Pair(
+                    longArrayOf(2000, 1000, 2000, 2000),
+                    intArrayOf(0, 100, 0, 200)
+                )
+                vibrationArray[1] -> Pair(
+                    longArrayOf(500, 1000, 500),
+                    intArrayOf(100, 0, 100)
+                )
+                vibrationArray[2] -> Pair(
+                    longArrayOf(500, 500, 500, 500, 500),
+                    intArrayOf(100, 0, 150, 0, 200)
+                )
+                vibrationArray[3] -> Pair(
+                    longArrayOf(1000, 500, 1000, 500, 1000, 2000),
+                    intArrayOf(100, 0, 100, 0, 100, 0)
+                )
+                vibrationArray[4] -> Pair(
+                    longArrayOf(400, 600, 400, 2000), intArrayOf(100, 0, 100, 0)
+                )
+                vibrationArray[5] -> Pair(
+                    longArrayOf(100, 200, 300, 400), intArrayOf(50, 0, 100, 0)
+                )
+                vibrationArray[6] -> Pair(
+                    longArrayOf(
+                        100, 200, 100, 200, 100, 600,  // dot
+                        400, 200, 400, 200, 400, 600,  // dash
+                        // Add more dots and dashes as per Morse Code sequence.
+                    ), intArrayOf(
+                        100, 0, 100, 0, 100, 0,         // dot
+                        150, 0, 150, 0, 150, 0,         // dash
+                        // Add corresponding amplitudes for dots and dashes.
+                    )
+                )
+                vibrationArray[7] -> Pair(
+                    longArrayOf(300, 200, 300, 1000),
+                    intArrayOf(100, 0, 100, 0)
+                )
+                vibrationArray[8] -> Pair(
+                    longArrayOf(200, 100, 200, 100, 600, 300, 100, 300, 100, 1000),
+                    intArrayOf(100, 0, 100, 0, 100, 0, 100, 0, 100, 0)
+                )
+                vibrationArray[9] -> Pair(
+                    longArrayOf(1000, 500, 1000),
+                    intArrayOf(100, 0, 100)
+                )
+                vibrationArray[10] -> Pair(
+                    longArrayOf(100, 200, 300, 400, 500, 400, 300, 200),
+                    intArrayOf(50, 0, 100, 0, 150, 0, 100, 0)
+                )
+                vibrationArray[11] -> Pair(
+                    longArrayOf(200, 200, 200), intArrayOf(100, 0, 100)
+                )
+                vibrationArray[12] -> Pair(
+                    longArrayOf(1000, 1000, 1000),
+                    intArrayOf(100, 0, 100)
+                )
+                vibrationArray[13] -> Pair(
+                    longArrayOf(500, 500, 500, 500, 500, 500),
+                    intArrayOf(100, 0, 150, 0, 200, 0)
+                )
+
+                else -> Pair(longArrayOf(2000, 1000, 2000, 2000), intArrayOf(0, 100, 0, 200))
+            }
+        }
+
+
+        /**
+         * 알람 진동 시작
+         **/
+        fun startVibrator(context: Context, vibrationPair: Pair<LongArray, IntArray>, loop: Int) {
+            val vibrationEffect =
+                VibrationEffect.createWaveform(vibrationPair.first, vibrationPair.second, loop)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (vm == null) vm =
+                    context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+
+                vm?.cancel()
+                vm?.vibrate(CombinedVibration.createParallel(vibrationEffect))
+            } else {
+                if (vibrator == null) context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                vibrator?.cancel()
+
+                vibrator?.vibrate(vibrationEffect)
+            }
+        }
+
+
+        /**
+         * 알람 진동 정지
+         **/
+        fun stopVibrator() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                vm?.cancel()
+                vm = null
+            } else {
+                vibrator?.cancel()
+                vibrator = null
+            }
+        }
+
+
+        /**
          * confirm 다이얼로그 만들기
          * */
-        fun createConfirm(activity: Activity,permission: String, title:String, message:String){
-            val builder = AlertDialog.Builder(activity).apply{
+        fun createConfirm(activity: Activity, permission: String, title: String, message: String) {
+            val builder = AlertDialog.Builder(activity).apply {
                 setTitle(title)
                 setMessage(message)
                 setCancelable(false)
-                setNegativeButton("취소"){dialog, _ ->
+                setNegativeButton("취소") { dialog, _ ->
                     dialog.dismiss()
                 }
-                setPositiveButton("수락"){_, _ ->
+                setPositiveButton("수락") { _, _ ->
                     createPermission(permission)
                 }
             }

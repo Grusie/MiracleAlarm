@@ -106,7 +106,7 @@ class AlarmListAdapter(
 
             itemView.setOnLongClickListener {
                 if (binding.viewModel?.modifyMode?.value == false) {
-                    binding.viewModel?.modifyMode?.value = true
+                    binding.viewModel?.changeModifyMode()
                     binding.cbAlarmSelect.isChecked = true
                 }
                 true

@@ -69,13 +69,10 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
             return super.onStartCommand(intent, flags, startId)
         }
 
-
         if (alarm.flagSound) {
-            val sound = Utils.getAlarmSound(this, alarm.sound)
-            Utils.initVolume(this)
             headsetCheck()
-            Utils.playAlarmSound(this, sound)
         }
+        Utils.startAlarm(this, alarm)
 
         NOTIFICATION_ID = System.currentTimeMillis().toInt()
 

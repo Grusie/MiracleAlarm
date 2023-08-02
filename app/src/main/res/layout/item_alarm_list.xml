@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_marginBottom="@dimen/margin_default"
-        android:background="@drawable/border_round"
+        android:background="@drawable/item_alarm_list_effect"
         android:backgroundTint="@color/white"
         android:paddingHorizontal="@dimen/padding_half"
         android:paddingVertical="@dimen/padding_half">

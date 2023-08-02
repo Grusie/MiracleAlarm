@@ -15,7 +15,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/padding_half">
+    android:padding="@dimen/padding_half"
+    android:background="@drawable/item_click_effect">
 
     <RadioButton
         android:id="@+id/rb_alarmSound"
