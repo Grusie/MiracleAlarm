@@ -5,19 +5,20 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.AlarmListAdapter
 import com.grusie.miraclealarm.databinding.ActivityMainBinding
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.function.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.function.Utils.Companion.createPermission
+import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import java.util.Calendar
 
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var alarmViewModel: AlarmViewModel
     private var backpressedTime: Long = 0
-    private lateinit var currentCal:Calendar
+    private lateinit var currentCal: Calendar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUi() {
-        currentCal = Calendar.getInstance()
         initPermission()
 
         layoutManager = LinearLayoutManager(this)
@@ -52,15 +52,9 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel?.allAlarms?.observe(this) { alarmList ->
             alarmViewModel.logLine("alarmList : ", "$alarmList")
 
+            currentCal = Calendar.getInstance()
             alarmList.forEach {
-                if(!it.dateRepeat) {
-                    val alarmCal = Utils.dateToCal(it.date, it.time)
-                    if (currentCal > alarmCal) {
-                        alarmCal.add(Calendar.DAY_OF_YEAR, 1)
-                        val date = binding.viewModel?.dateFormat(alarmCal)!!
-                        binding.viewModel?.changeAlarmDate(it, date)
-                    }
-                }
+                checkPastDate(it)
             }
             alarmViewModel.sortAlarm(alarmList)
             adapter.alarmList = alarmList
@@ -89,7 +83,9 @@ class MainActivity : AppCompatActivity() {
             btnDelete.setOnClickListener {
                 for (alarm in viewModel?.modifyList?.value!!) {
                     viewModel?.delete(alarm)
-                    Utils.delAlarm(this@MainActivity, alarm)
+                    Utils.delAlarm(this@MainActivity, alarm).forEach {
+                        viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
+                    }
                 }
                 viewModel?.modifyList?.value?.clear()
                 viewModel?.changeModifyMode()
@@ -97,18 +93,36 @@ class MainActivity : AppCompatActivity() {
             }
 
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
+                currentCal = Calendar.getInstance()
                 viewModel?.initAlarmData(alarm)
                 viewModel?.logLine("confirm clearAlarm", "$alarm, ${alarm.enabled}")
                 if (alarm.enabled) {
-                    Utils.setAlarm(this@MainActivity,  alarm)
+                    checkPastDate(alarm)
+                    Utils.setAlarm(this@MainActivity, alarm).forEach {
+                        viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
+                    }
                 } else
-                    Utils.delAlarm(this@MainActivity, alarm)
+                    Utils.delAlarm(this@MainActivity, alarm).forEach {
+                        viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
+                    }
             }
 
         }
     }
 
-    private fun initPermission(){
+    private fun checkPastDate(alarm: AlarmData){
+        if (!alarm.dateRepeat) {
+            val alarmCal = Utils.dateToCal(alarm.date, alarm.time)
+            if (currentCal > alarmCal) {
+                alarmCal.add(Calendar.DAY_OF_YEAR, 1)
+                val date = binding.viewModel?.dateFormat(alarmCal)!!
+
+                binding.viewModel?.changeAlarmDate(alarm, date)
+            }
+        }
+    }
+
+    private fun initPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             createPermission(Manifest.permission.POST_NOTIFICATIONS)
         }

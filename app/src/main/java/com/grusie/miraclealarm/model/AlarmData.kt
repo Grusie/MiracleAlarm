@@ -6,7 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "alarm_table")
+@Entity(tableName = "alarm_table")      //알람 테이블
 data class AlarmData(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     var title: String = "",                //알람 제목

@@ -13,8 +13,8 @@ import android.os.*
 import android.util.Log
 import android.widget.Toast
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.function.Utils.Companion.initVolume
 import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.AlarmTimeData
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.text.SimpleDateFormat
@@ -28,33 +28,26 @@ class Utils {
         private var am: AudioManager? = null
         private var vm: VibratorManager? = null
         private var vibrator: Vibrator? = null
-        var initVolume = 0
+        private var initVolume = 0
         var hasAudioFocus = false
-
-        fun updateAlarm(
-            context: Context,
-            exist: Boolean,
-            oldAlarm: AlarmData,
-            newAlarm: AlarmData
-        ) {
-            Log.d("confirm oldAlarm", "confirm oldAlarm : $oldAlarm, $newAlarm")
-            if (exist) {
-                delAlarm(context, oldAlarm)
-            }
-            setAlarm(context, newAlarm)
-        }
 
         /**
          * 알람 생성하기
          * */
-        fun setAlarm(context: Context, alarm: AlarmData) {
+        fun setAlarm(context: Context, alarm: AlarmData): MutableList<AlarmTimeData> {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmTimeList = mutableListOf<AlarmTimeData>()
 
             getAlarmTime(alarm).forEach { alarmTime ->
 
                 val pendingIntentId = generateAlarmId(alarm, alarmTime.timeInMillis)
+                val alarmTimeData = AlarmTimeData().apply {
+                    id = pendingIntentId
+                    timeInMillis = alarmTime.timeInMillis
+                    alarmId = alarm.id
+                }
 
                 receiverIntent.putExtra("alarmData", alarm)
 
@@ -66,21 +59,36 @@ class Utils {
                 )
 
                 // 일회성 알람 설정
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, pendingIntent
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val alarmClockInfo = AlarmManager.AlarmClockInfo(alarmTime.timeInMillis, pendingIntent)
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                    } else {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, pendingIntent
+                        )
+                    }
+                } else {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, pendingIntent
+                    )
+                }
+
+                alarmTimeList.add(alarmTimeData)
 
                 Log.d(
                     "confirm contentValue",
                     "${alarm.time}, ${alarm.date}, ${alarm.id}, ${alarm.dateRepeat} 알람 설정 됨"
                 )
             }
+
+            return alarmTimeList
         }
 
         /**
          * 알람 개별 생성하기
          * */
-        fun setAlarm(context: Context, timeMillis: Long, alarm: AlarmData) {
+        fun setAlarm(context: Context, timeMillis: Long, alarm: AlarmData): AlarmTimeData{
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -99,12 +107,8 @@ class Utils {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent
             )
-            val asd = Calendar.getInstance()
-            asd.timeInMillis = timeMillis
-            Log.d(
-                "confirm contentValue",
-                "${asd.time} ${alarm.time}, ${alarm.date}, ${alarm.id}, ${alarm.dateRepeat} 알람 설정 됨"
-            )
+
+            return AlarmTimeData(pendingIntentId, timeMillis, alarm.id)
         }
 
 
@@ -123,14 +127,21 @@ class Utils {
         /**
          * 알람 지우기
          * */
-        fun delAlarm(context: Context, alarm: AlarmData) {
+        fun delAlarm(context: Context, alarm: AlarmData): MutableList<AlarmTimeData> {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmTimeList = mutableListOf<AlarmTimeData>()
 
 
             getAlarmTime(alarm).forEach { alarmTime ->
                 val pendingIntentId = generateAlarmId(alarm, alarmTime.timeInMillis)
+
+                val alarmTimeData = AlarmTimeData().apply {
+                    id = pendingIntentId
+                    timeInMillis = alarmTime.timeInMillis
+                    alarmId = alarm.id
+                }
 
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
@@ -139,9 +150,11 @@ class Utils {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 alarmManager.cancel(pendingIntent)
+                alarmTimeList.add(alarmTimeData)
             }
 
             Log.d("confirm contentValue", "${alarm.id} 알람 제거 됨")
+            return alarmTimeList
         }
 
 
@@ -270,7 +283,7 @@ class Utils {
         }
 
         fun startAlarm(context: Context, alarm: AlarmData) {
-            if(alarm.flagSound) {
+            if (alarm.flagSound) {
                 val sound = getAlarmSound(context, alarm.sound)
                 initVolume(context)
                 playAlarmSound(context, sound)

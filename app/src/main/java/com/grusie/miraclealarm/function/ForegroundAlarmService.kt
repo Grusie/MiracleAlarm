@@ -1,6 +1,10 @@
 package com.grusie.miraclealarm.function
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.bluetooth.BluetoothHeadset
 import android.content.Context
 import android.content.Intent
@@ -8,16 +12,17 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.media.AudioManager
 import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.grusie.miraclealarm.R
+import com.grusie.miraclealarm.activity.MainActivity
 import com.grusie.miraclealarm.activity.NotificationActivity
 import com.grusie.miraclealarm.function.Utils.Companion.changeVolume
 import com.grusie.miraclealarm.model.AlarmData
 import kotlin.properties.Delegates
 
 class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListener {
-    //private lateinit var wakeLock: PowerManager.WakeLock
     private var NOTIFICATION_ID by Delegates.notNull<Int>()
     private val CHANNEL_ID = "channel_id"
     private val CHANNEL_NAME = "channel_name"
@@ -26,20 +31,6 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
     private var headsetReceiver = HeadsetReceiver()
     private lateinit var alarm: AlarmData
     private var isConnected = false
-
-    override fun onCreate() {
-        super.onCreate()
-
-/*        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(
-            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP or
-                    PowerManager.ON_AFTER_RELEASE, "app:com.grusie.miraclealarm"
-        )
-
-        wakeLock.acquire()*/
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         try {
@@ -48,12 +39,18 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         }
         Utils.stopAlarmSound(this)
         changeVolume(this, null, isConnected)
-/*        if (wakeLock.isHeld) {
-            wakeLock.release()
-        }*/
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        NOTIFICATION_ID = System.currentTimeMillis().toInt()
+
+        if (intent?.action == "MISSED_ALARM") {
+            val count = intent.getIntExtra("missedCount", 0)
+            Log.d("confirm missedCount", "confirm missedCount Service: $count")
+            startMissedAlarmNotification(count)
+            return START_NOT_STICKY
+        }
+
         alarm = intent?.getParcelableExtra("alarmData") ?: AlarmData()
 
         // NotificationActivity에서 MainActivity로 넘길지에 대한 값 초기화
@@ -69,15 +66,12 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
             return super.onStartCommand(intent, flags, startId)
         }
 
+        createNotificationChannel(NotificationManager.IMPORTANCE_LOW)
+
         if (alarm.flagSound) {
             headsetCheck()
         }
         Utils.startAlarm(this, alarm)
-
-        NOTIFICATION_ID = System.currentTimeMillis().toInt()
-
-        createNotificationChannel()
-
 
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -92,7 +86,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
 
         startActivity(notificationIntent)
 
-        return START_NOT_STICKY
+        return START_REDELIVER_INTENT
     }
 
     private fun createNotificationIntent(alarm: AlarmData): Intent {
@@ -100,6 +94,18 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra("alarmData", alarm)
         }
+    }
+
+    private fun startMissedAlarmNotification(count: Int) {
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = createMissedNotification(count, pendingIntent)
+        startForeground(NOTIFICATION_ID, notification)
     }
 
     private fun createNotification(
@@ -113,6 +119,22 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
             .setContentIntent(pendingIntent)
             .setAutoCancel(false)
             .setOngoing(true)
+            .build()
+    }
+
+    private fun createMissedNotification(
+        count: Int,
+        pendingIntent: PendingIntent,
+    ): Notification {
+        Log.d("confirm missedCount", "confirm missedCount notification: $count")
+        createNotificationChannel(NotificationManager.IMPORTANCE_HIGH)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("")
+            .setContentText("부재중 알람이 ${count}개 있습니다.")
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setSmallIcon(R.drawable.ic_alarm_noti)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .build()
     }
 
@@ -133,11 +155,11 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
     }
 
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannel(important: Int) {
         val channel = NotificationChannel(
             CHANNEL_ID,
             CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_LOW
+            important
         )
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager?.createNotificationChannel(channel)

@@ -6,10 +6,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.model.AlarmData
-import com.grusie.miraclealarm.model.AlarmDatabase
-import com.grusie.miraclealarm.model.AlarmRepository
+import com.grusie.miraclealarm.model.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +18,7 @@ import java.util.*
 
 class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: AlarmRepository
+    private val alarmTimeDao: AlarmTimeDao
 
     val allAlarms: LiveData<MutableList<AlarmData>>
 
@@ -67,7 +67,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
      * **/
     init {
         val alarmDao = AlarmDatabase.getDatabase(application).alarmDao()
+        alarmTimeDao = AlarmDatabase.getDatabase(application).alarmTimeDao()
         repository = AlarmRepository(alarmDao)
+
         allAlarms = repository.allAlarms
         _modifyMode.value = false
         _modifyList.value = mutableSetOf()
@@ -92,7 +94,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         logLine("confirm instance", "인스턴스 생성 완료")
     }
 
-    fun getString(id: Int): String {
+    private fun getString(id: Int): String {
         return getApplication<Application>().getString(id)
     }
 
@@ -145,14 +147,14 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * DAO CRUD
+     * AlarmRepository CRUD
      * **/
-    suspend fun insert(alarm: AlarmData): Long {
+    private suspend fun insert(alarm: AlarmData): Long {
         logLine("confirm insert", "$alarm")
         return repository.insert(alarm)
     }
 
-    suspend fun update(alarm: AlarmData) {
+    private suspend fun update(alarm: AlarmData) {
         logLine("confirm update", "$alarm")
         repository.update(alarm)
     }
@@ -161,6 +163,30 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         logLine("confirm delete", "$alarm")
         repository.delete(alarm)
     }
+
+    /**
+     * AlarmTimeDAO CRUD
+     * **/
+    private suspend fun insertAlarmTime(alarmTime: AlarmTimeData){
+        logLine("confirm insert", "$alarmTime")
+        alarmTimeDao.insert(alarmTime)
+    }
+    private fun deleteAlarmTime(alarmTime: AlarmTimeData) = viewModelScope.launch {
+        logLine("confirm delete", "$alarmTime")
+        alarmTimeDao.delete(alarmTime)
+    }
+
+
+    fun updateAlarmTimeData(flag: Int ,alarmTimeData: AlarmTimeData){
+        viewModelScope.launch {
+            when(flag) {
+                Const.INSERT_ALARM_TIME -> insertAlarmTime(alarmTimeData)
+                Const.DELETE_ALARM_TIME -> deleteAlarmTime(alarmTimeData)
+            }
+        }
+    }
+
+
 
     /**
      * 해당 알람 객체 가져오기
@@ -202,6 +228,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun changeAlarmDate(alarm: AlarmData, date: String) {
         alarm.date = date
+        alarm.enabled = false
         viewModelScope.launch { update(alarm) }
     }
 
@@ -231,7 +258,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun timePickerToTime(hour: Int, minute: Int) {
-        var timeString: String
+        val timeString: String
         val amPm = if (hour >= 12) "오후" else "오전"
         val displayHour = if (hour > 12) hour - 12 else hour
 

@@ -33,8 +33,7 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     private lateinit var alarmCal: Calendar
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
-    private var exist = false
-    private var oldAlarm = AlarmData()
+    private var oldAlarm : AlarmData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +45,6 @@ class CreateAlarmActivity : AppCompatActivity() {
 
     private fun initUi() {
         alarmId = intent.getIntExtra("id", -1)
-        if (alarmId != -1) exist = true
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
 
         alarmCal = Calendar.getInstance()
@@ -148,7 +146,7 @@ class CreateAlarmActivity : AppCompatActivity() {
         } else {
             binding.apply {
                 viewModel?.alarm?.value?.apply {
-                    if (exist) {
+                    if (alarmId != -1) {
                         oldAlarm = this.copy()
                     }
                     title = etAlarmTitle.text.toString()
@@ -174,13 +172,13 @@ class CreateAlarmActivity : AppCompatActivity() {
                 }
 
                 lifecycleScope.launch {
-                    viewModel?.updateAlarmData()?.let {
-                        Utils.updateAlarm(
-                            this@CreateAlarmActivity,
-                            exist,
-                            oldAlarm,
-                            it
-                        )
+                    viewModel?.updateAlarmData()?.let {alarmData ->
+                        oldAlarm?.let{Utils.delAlarm(this@CreateAlarmActivity, it)}?.forEach{
+                            viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
+                        }
+                        Utils.setAlarm(this@CreateAlarmActivity, alarmData).forEach{
+                            viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
+                        }
                     }
                 }
             }
