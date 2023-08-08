@@ -18,18 +18,62 @@
         android:layout_height="match_parent"
         android:background="@color/gray">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/tb_main"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_main_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_height="0dp"
+            android:minHeight="?attr/actionBarSize"
+            android:padding="@dimen/padding_half"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tv_min_alarm_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/dark_gray"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="40dp"
+                android:textAlignment="center"
+                android:text="다음 알람"/>
+
+            <TextView
+                android:id="@+id/tv_min_alarm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_large"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_min_alarm_title" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_alarm_function"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/rv_alarm_list"
+            app:layout_constraintTop_toBottomOf="@id/cl_main_toolbar"
+            >
+
+            <ImageButton
+                android:id="@+id/ib_alarm_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/gray"
+                android:src="@drawable/plus_svgrepo_com"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_alarm_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toTopOf="@id/ll_modify_tab"
-            app:layout_constraintTop_toBottomOf="@id/tb_main"
+            app:layout_constraintTop_toBottomOf="@id/cl_alarm_function"
             tools:listitem="@layout/item_alarm_list" />
 
         <TextView
@@ -37,21 +81,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="알람이 없습니다."
-            android:textSize="@dimen/text_middle_title"
+            android:textSize="@dimen/text_large"
+            android:textColor="@color/dark_gray"
             android:visibility="@{viewModel.allAlarms.size() == 0 ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fb_alarm_add"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/margin_default"
-            android:src="@drawable/plus_svgrepo_com"
-            app:layout_constraintBottom_toTopOf="@id/ll_modify_tab"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/rv_alarm_list" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/ll_modify_tab"
@@ -63,10 +99,10 @@
 
             <Button
                 android:id="@+id/btn_delete"
+                style="@style/customButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                style="@style/customButtonStyle"
                 android:text="@string/string_delete" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>

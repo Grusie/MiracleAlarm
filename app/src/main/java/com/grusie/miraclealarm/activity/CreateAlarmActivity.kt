@@ -154,7 +154,7 @@ class CreateAlarmActivity : AppCompatActivity() {
                     flagSound = viewModel?.flagSound?.value == true
                     flagVibrate = viewModel?.flagVibe?.value == true
                     flagOffWay = viewModel?.flagOffWay?.value == true
-                    flagRepeat = viewModel?.flagRepeat?.value == true
+                    flagDelay = viewModel?.flagDelay?.value == true
 
                     time = viewModel?.time?.value.toString()
 
@@ -167,8 +167,8 @@ class CreateAlarmActivity : AppCompatActivity() {
                         if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
                     off_way =
                         if (viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else off_way
-                    repeat =
-                        if (viewModel?.flagRepeat?.value == true) tvRepeatSub.text.toString() else repeat
+                    delay =
+                        if (viewModel?.flagDelay?.value == true) tvDelaySub.text.toString() else delay
                 }
 
                 lifecycleScope.launch {

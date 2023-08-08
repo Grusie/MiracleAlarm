@@ -19,11 +19,11 @@ data class AlarmData(
     var volume: Int = 1,                   //알람 볼륨
     var vibrate: String = "Basic call",    //알람 진동
     var off_way: String = "흔들어서 끄기", //알람 끄는 방법
-    var repeat: String = "5분,3회",        //반복 알람
+    var delay: String = "5분",             //미루기
     var flagSound: Boolean = true,         //알람 소리 사용 여부
     var flagVibrate: Boolean = true,       //알람 진동 사용 여부
     var flagOffWay: Boolean = true,        //알람 끄는 방법 사용 여부
-    var flagRepeat: Boolean = false,       //알람 반복 사용 여부
+    var flagDelay: Boolean = false,        //알람 미루기 사용 여부
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
@@ -57,11 +57,11 @@ data class AlarmData(
         parcel.writeInt(volume)
         parcel.writeString(vibrate)
         parcel.writeString(off_way)
-        parcel.writeString(repeat)
+        parcel.writeString(delay)
         parcel.writeByte(if (flagSound) 1 else 0)
         parcel.writeByte(if (flagVibrate) 1 else 0)
         parcel.writeByte(if (flagOffWay) 1 else 0)
-        parcel.writeByte(if (flagRepeat) 1 else 0)
+        parcel.writeByte(if (flagDelay) 1 else 0)
     }
 
     override fun describeContents(): Int {

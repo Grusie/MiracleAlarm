@@ -9,7 +9,11 @@ import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.*
+import android.os.Build
+import android.os.CombinedVibration
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import android.widget.Toast
 import com.grusie.miraclealarm.R
@@ -18,11 +22,13 @@ import com.grusie.miraclealarm.model.AlarmTimeData
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class Utils {
     companion object {
-        lateinit var receiverIntent: Intent
+        private lateinit var receiverIntent: Intent
         lateinit var alarmManager: AlarmManager
         private var mp: MediaPlayer? = null
         private var am: AudioManager? = null
@@ -60,7 +66,8 @@ class Utils {
 
                 // 일회성 알람 설정
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    val alarmClockInfo = AlarmManager.AlarmClockInfo(alarmTime.timeInMillis, pendingIntent)
+                    val alarmClockInfo =
+                        AlarmManager.AlarmClockInfo(alarmTime.timeInMillis, pendingIntent)
                     if (alarmManager.canScheduleExactAlarms()) {
                         alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
                     } else {
@@ -74,6 +81,11 @@ class Utils {
                     )
                 }
 
+                Toast.makeText(
+                    context,
+                    "${createAlarmMessage(true, alarmTime.timeInMillis)}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 alarmTimeList.add(alarmTimeData)
 
                 Log.d(
@@ -85,10 +97,48 @@ class Utils {
             return alarmTimeList
         }
 
+
+        /**
+         * 다음 울릴 알람 시간을 리턴 해주는 함수
+         */
+        fun createAlarmMessage(toastFlag: Boolean, timeInMillis: Long): String {
+            val currentTime = System.currentTimeMillis()
+            val diff = timeInMillis - currentTime
+
+            return if (diff < 60 * 1000) { // 1분 미만인 경우
+                String.format("1분 후 알람이 울립니다.")
+            } else if (diff < 60 * 60 * 1000) { // 1시간 미만인 경우
+                val minutes = diff / (60 * 1000)
+                String.format("%d분 후 알람이 울립니다.", minutes)
+            } else if (diff < 24 * 60 * 60 * 1000) { // 24시간 미만인 경우
+                val hours = diff / (60 * 60 * 1000)
+                val minutes = (diff % (60 * 60 * 1000)) / (60 * 1000)
+                String.format("%d시간 %d분 후 알람이 울립니다.", hours, minutes)
+            } else if(toastFlag){
+                val calendar = Calendar.getInstance()
+
+                // 현재 년도와 알람 년도를 비교하여 "yyyy년" 부분 처리
+                val currentYear = calendar.get(Calendar.YEAR)
+                calendar.timeInMillis = timeInMillis
+                val alarmYear = calendar.get(Calendar.YEAR)
+                val dateFormat = if (currentYear == alarmYear) {
+                    SimpleDateFormat("MM월 dd일 HH시 mm분", Locale.getDefault())
+                } else {
+                    SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분", Locale.getDefault())
+                }
+
+                val alarmTime = dateFormat.format(calendar.time)
+                "알람이 ${alarmTime}에 설정되었습니다."
+            } else {
+                val day = diff / (24 * 60 * 60 * 1000)
+                "${day}일 후 알람이 울립니다."
+            }
+        }
+
         /**
          * 알람 개별 생성하기
          * */
-        fun setAlarm(context: Context, timeMillis: Long, alarm: AlarmData): AlarmTimeData{
+        fun setAlarm(context: Context, timeMillis: Long, alarm: AlarmData): AlarmTimeData {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -104,15 +154,28 @@ class Utils {
             )
 
             // 일회성 알람 설정
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val alarmClockInfo = AlarmManager.AlarmClockInfo(timeMillis, pendingIntent)
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
+                } else {
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent
+                    )
+                }
+            } else {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent
+                )
+            }
 
             return AlarmTimeData(pendingIntentId, timeMillis, alarm.id)
         }
 
 
-        // 알람을 고유하게 식별하기 위한 requestCode 생성 함수
+        /**
+         * 알람을 고유하게 식별하기 위한 requestCode 생성 함수
+         **/
         fun generateAlarmId(alarm: AlarmData, timeMillis: Long): Int {
             val cal = Calendar.getInstance().apply {
                 timeInMillis = timeMillis
@@ -348,6 +411,7 @@ class Utils {
                         // 오디오 포커스를 잃은 경우 노래를 일시적으로 정지
                         mp?.pause()
                     }
+
                     AudioManager.AUDIOFOCUS_GAIN -> {
                         // 오디오 포커스를 얻은 경우 다시 노래 재생
                         mp?.start()
@@ -419,24 +483,30 @@ class Utils {
                     longArrayOf(2000, 1000, 2000, 2000),
                     intArrayOf(0, 100, 0, 200)
                 )
+
                 vibrationArray[1] -> Pair(
                     longArrayOf(500, 1000, 500),
                     intArrayOf(100, 0, 100)
                 )
+
                 vibrationArray[2] -> Pair(
                     longArrayOf(500, 500, 500, 500, 500),
                     intArrayOf(100, 0, 150, 0, 200)
                 )
+
                 vibrationArray[3] -> Pair(
                     longArrayOf(1000, 500, 1000, 500, 1000, 2000),
                     intArrayOf(100, 0, 100, 0, 100, 0)
                 )
+
                 vibrationArray[4] -> Pair(
                     longArrayOf(400, 600, 400, 2000), intArrayOf(100, 0, 100, 0)
                 )
+
                 vibrationArray[5] -> Pair(
                     longArrayOf(100, 200, 300, 400), intArrayOf(50, 0, 100, 0)
                 )
+
                 vibrationArray[6] -> Pair(
                     longArrayOf(
                         100, 200, 100, 200, 100, 600,  // dot
@@ -448,29 +518,36 @@ class Utils {
                         // Add corresponding amplitudes for dots and dashes.
                     )
                 )
+
                 vibrationArray[7] -> Pair(
                     longArrayOf(300, 200, 300, 1000),
                     intArrayOf(100, 0, 100, 0)
                 )
+
                 vibrationArray[8] -> Pair(
                     longArrayOf(200, 100, 200, 100, 600, 300, 100, 300, 100, 1000),
                     intArrayOf(100, 0, 100, 0, 100, 0, 100, 0, 100, 0)
                 )
+
                 vibrationArray[9] -> Pair(
                     longArrayOf(1000, 500, 1000),
                     intArrayOf(100, 0, 100)
                 )
+
                 vibrationArray[10] -> Pair(
                     longArrayOf(100, 200, 300, 400, 500, 400, 300, 200),
                     intArrayOf(50, 0, 100, 0, 150, 0, 100, 0)
                 )
+
                 vibrationArray[11] -> Pair(
                     longArrayOf(200, 200, 200), intArrayOf(100, 0, 100)
                 )
+
                 vibrationArray[12] -> Pair(
                     longArrayOf(1000, 1000, 1000),
                     intArrayOf(100, 0, 100)
                 )
+
                 vibrationArray[13] -> Pair(
                     longArrayOf(500, 500, 500, 500, 500, 500),
                     intArrayOf(100, 0, 150, 0, 200, 0)

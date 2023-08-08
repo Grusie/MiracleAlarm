@@ -342,7 +342,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/cl_alarm_repeat"
+                    android:id="@+id/cl_alarm_delay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="@dimen/padding_half"
@@ -351,29 +351,29 @@
                     android:background="?attr/selectableItemBackground">
 
                     <TextView
-                        android:id="@+id/tv_repeat_title"
+                        android:id="@+id/tv_delay_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/repeat_title"
+                        android:text="@string/delay_title"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
-                        android:id="@+id/tv_repeat_sub"
+                        android:id="@+id/tv_delay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagRepeat ? viewModel.repeat : @string/string_disabled}"
+                        android:text="@{viewModel.flagDelay ? viewModel.delay : @string/string_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tv_repeat_title" />
+                        app:layout_constraintTop_toBottomOf="@id/tv_delay_title" />
 
                     <Switch
-                        android:id="@+id/sw_repeat"
+                        android:id="@+id/sw_delay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="@{viewModel.alarm.flagRepeat}"
-                        android:onClick="@{() -> viewModel.onSwRepeatClicked()}"
+                        android:checked="@{viewModel.alarm.flagDelay}"
+                        android:onClick="@{() -> viewModel.onSwDelayClicked()}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />

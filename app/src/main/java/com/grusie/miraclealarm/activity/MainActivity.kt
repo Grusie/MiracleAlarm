@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
             currentCal = Calendar.getInstance()
             alarmList.forEach {
-                checkPastDate(it)
+                checkPastDate(it, false)
             }
             alarmViewModel.sortAlarm(alarmList)
             adapter.alarmList = alarmList
@@ -68,8 +68,14 @@ class MainActivity : AppCompatActivity() {
             rvAlarmList.layoutManager =
                 LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
 
-            fbAlarmAdd.setOnClickListener {
+            ibAlarmAdd.setOnClickListener {
                 startActivity(intent)
+            }
+
+            viewModel?.minAlarmTime?.observe(this@MainActivity){
+                tvMinAlarm.text = if(it != null){
+                    Utils.createAlarmMessage(false, it.timeInMillis)
+                } else getString(R.string.string_turn_off_all)
             }
 
             viewModel?.modifyMode?.observe(this@MainActivity) {
@@ -89,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 viewModel?.modifyList?.value?.clear()
                 viewModel?.changeModifyMode()
-                Toast.makeText(this@MainActivity, "알람이 삭제 되었습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, getString(R.string.string_delete_alarm), Toast.LENGTH_SHORT).show()
             }
 
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
@@ -97,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel?.initAlarmData(alarm)
                 viewModel?.logLine("confirm clearAlarm", "$alarm, ${alarm.enabled}")
                 if (alarm.enabled) {
-                    checkPastDate(alarm)
+                    checkPastDate(alarm, true)
                     Utils.setAlarm(this@MainActivity, alarm).forEach {
                         viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
                     }
@@ -110,14 +116,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPastDate(alarm: AlarmData){
+    private fun checkPastDate(alarm: AlarmData, enabled: Boolean){
         if (!alarm.dateRepeat) {
             val alarmCal = Utils.dateToCal(alarm.date, alarm.time)
             if (currentCal > alarmCal) {
                 alarmCal.add(Calendar.DAY_OF_YEAR, 1)
                 val date = binding.viewModel?.dateFormat(alarmCal)!!
 
-                binding.viewModel?.changeAlarmDate(alarm, date)
+                binding.viewModel?.changeAlarmDate(alarm, date, enabled)
             }
         }
     }

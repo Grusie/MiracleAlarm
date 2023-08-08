@@ -11,8 +11,8 @@ interface AlarmTimeDao {
     @Delete
     suspend fun delete(alarm: AlarmTimeData)
 
-    @Query("SELECT * FROM alarm_time_table")
-    suspend fun getAllAlarmTimes(): MutableList<AlarmTimeData>
+    @Query("SELECT * FROM alarm_time_table ORDER BY timeInMillis ASC LIMIT 1")
+    fun getMinAlarmTime(): LiveData<AlarmTimeData>
 
     @Query("SELECT * FROM alarm_time_table WHERE timeInMillis <= :currentTime")
     suspend fun getMissedAlarms(currentTime: Long): List<AlarmTimeData>
