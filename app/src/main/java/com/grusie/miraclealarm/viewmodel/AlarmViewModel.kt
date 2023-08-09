@@ -121,7 +121,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
      * **/
     fun initAlarmData(alarm: AlarmData) {
         logLine("confirm init AlarmData", "initalarmdata테스트")
-        this@AlarmViewModel._alarm.value = alarm
+        _alarm.value = alarm
         initEmptyAlarmData()
     }
 
@@ -130,21 +130,21 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
      * 뷰모델 알람 초기화
      * **/
     private fun initEmptyAlarmData() {
-        this.alarm.value?.apply {
-            this@AlarmViewModel._flagHoliday.value = holiday
-            this@AlarmViewModel._flagVibe.value = flagVibrate
-            this@AlarmViewModel._flagSound.value = flagSound
-            this@AlarmViewModel._flagDelay.value = flagDelay
-            this@AlarmViewModel._flagOffWay.value = flagOffWay
-            this@AlarmViewModel._sound.value = sound
-            this@AlarmViewModel._volume.value = volume
-            this@AlarmViewModel._offWay.value = off_way
-            this@AlarmViewModel._vibrate.value = vibrate
-            this@AlarmViewModel._delay.value = delay
-            this@AlarmViewModel._time.value = time
-            this@AlarmViewModel._dateList.value =
+        _alarm.value?.apply {
+            _flagHoliday.value = holiday
+            _flagVibe.value = flagVibrate
+            _flagSound.value = flagSound
+            _flagDelay.value = flagDelay
+            _flagOffWay.value = flagOffWay
+            _sound.value = sound
+            _volume.value = volume
+            _offWay.value = off_way
+            _vibrate.value = vibrate
+            _delay.value = delay
+            _time.value = time
+            _dateList.value =
                 if (date.isNotEmpty()) date.split(",").toMutableSet() else mutableSetOf()
-            this@AlarmViewModel._date.value = dateList.value!!.joinToString(",")     //초기 알람 날짜 값
+            _date.value = dateList.value!!.joinToString(",")     //초기 알람 날짜 값
         }
     }
 
@@ -259,14 +259,14 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         logLine("confirm date", "${dateList.value}, $dateItem, $isRepeat")
     }
 
-    fun timePickerToTime(hour: Int, minute: Int) {
+    fun timePickerToTime(hour: Int, minute: Int): String {
         val timeString: String
         val amPm = if (hour >= 12) "오후" else "오전"
         val displayHour = if (hour > 12) hour - 12 else hour
 
         timeString = String.format("$amPm %02d:%02d", displayHour, minute)
-        _time.value = timeString
-        logLine("confirm time - timePickerToTime", "${time.value}")
+
+        return timeString
     }
 
     /**
@@ -372,23 +372,40 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * 각 값들 변경
      **/
+
+    fun changeTime(time:String){
+        _time.value = time
+        logLine("confirm time - timePickerToTime", "$time")
+    }
     fun changeSound(sound: String) {
-        this._sound.value = sound
-        logLine("confirm sound", "${this.sound.value}, $sound")
+        _sound.value = sound
+        logLine("confirm sound", "${sound}, $sound")
     }
 
     fun changeVolume(volume: Int) {
-        this._volume.value = volume
-        logLine("confirm volume", "${this.volume.value}, $volume")
+        _volume.value = volume
+        logLine("confirm volume", "${volume}, $volume")
     }
 
     fun changeVibration(vibration: String) {
-        this._vibrate.value = vibration
-        logLine("confirm vibration", "${this.vibrate.value}, $vibration")
+        _vibrate.value = vibration
+        logLine("confirm vibration", "${vibrate}, $vibration")
+    }
+
+    fun changeDelay(delay: String) {
+        _delay.value = delay
+        logLine("confirm delay", "${delay}, $delay")
     }
 
     fun changeModifyMode() {
-        this._modifyMode.value = !this._modifyMode.value!!
+        _modifyMode.value = !_modifyMode.value!!
+    }
+
+    fun changeDelayCount(alarm: AlarmData, reduce : Boolean){
+        alarm.delayCount = if(reduce) alarm.delayCount - 1 else 3
+        viewModelScope.launch {
+            update(alarm)
+        }
     }
 
 /*    fun createOffWay(){

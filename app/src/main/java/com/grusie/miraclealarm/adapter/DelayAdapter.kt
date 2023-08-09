@@ -8,28 +8,26 @@ import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ItemAlarmValueListBinding
 import com.grusie.miraclealarm.function.GetSelectedItem
 
-class VibrationAdapter(
+class DelayAdapter(
     private val listener: GetSelectedItem,
-    private val vibrationList: Array<String>
-) : RecyclerView.Adapter<VibrationViewHolder>() {
+    private val delayList: Array<String>
+) : RecyclerView.Adapter<DelayViewHolder>() {
     lateinit var binding: ItemAlarmValueListBinding
     var selectedPosition = 0
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VibrationViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DelayViewHolder {
         binding = ItemAlarmValueListBinding.bind(
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_alarm_value_list, parent, false)
         )
-
-        return VibrationViewHolder(binding)
+        return DelayViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
-        return vibrationList.size
+        return delayList.size
     }
 
-    override fun onBindViewHolder(holder: VibrationViewHolder, position: Int) {
-        holder.onBind(vibrationList[position], listener, selectedPosition, position)
+    override fun onBindViewHolder(holder: DelayViewHolder, position: Int) {
+        holder.onBind(delayList[position], listener, selectedPosition, position)
     }
 
     fun changeSelectedPosition(position: Int) {
@@ -44,15 +42,15 @@ class VibrationAdapter(
     }
 }
 
-class VibrationViewHolder(private val binding: ItemAlarmValueListBinding) :
+class DelayViewHolder(private val binding: ItemAlarmValueListBinding) :
     RecyclerView.ViewHolder(binding.root) {
     fun onBind(
-        vibration: String,
+        delay: String,
         listener: GetSelectedItem,
         selectedPosition: Int,
         position: Int
     ) {
-        binding.value = vibration
+        binding.value = delay
         binding.checkedFlag = selectedPosition == position
         binding.visible = false
 

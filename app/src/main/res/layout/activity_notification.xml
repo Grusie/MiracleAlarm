@@ -8,32 +8,32 @@
         <variable
             name="viewModel"
             type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
+        <import type="android.view.View"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/tv_notification_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{viewModel.alarm.title}"
-            android:textSize="@dimen/text_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/tv_notification_time"/>
 
         <TextView
             android:id="@+id/tv_notification_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{viewModel.alarm.time}"
+            android:textSize="@dimen/text_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tv_notification_title"/>
+
+        <TextView
+            android:id="@+id/tv_notification_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{viewModel.alarm.title}"
             android:textSize="@dimen/text_middle_title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_notification_title"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/cl_offWay_content"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -77,6 +77,17 @@
                 app:layout_constraintTop_toTopOf="@id/tv_offWay_detail"
                 app:layout_constraintBottom_toBottomOf="@id/tv_offWay_detail"
                 />-->
+            <Button
+                android:id="@+id/btn_delay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="미루기"
+                android:backgroundTint="@color/light_blue"
+                app:layout_constraintBottom_toTopOf="@id/btn_turnOff"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:visibility="@{viewModel.flagDelay ? View.VISIBLE : View.GONE}"></Button>
+
             <Button
                 android:id="@+id/btn_turnOff"
                 android:layout_width="wrap_content"

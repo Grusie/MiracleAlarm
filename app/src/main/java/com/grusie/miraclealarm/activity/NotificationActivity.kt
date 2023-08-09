@@ -11,10 +11,11 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ServiceCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityNotificationBinding
 import com.grusie.miraclealarm.function.AlarmNotiReceiver
@@ -22,15 +23,14 @@ import com.grusie.miraclealarm.function.ForegroundAlarmService
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
-import kotlin.properties.Delegates
-import kotlin.system.exitProcess
+import java.util.Calendar
 
 class NotificationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNotificationBinding
     private lateinit var alarmViewModel: AlarmViewModel
     private lateinit var alarm: AlarmData
     private var turnOffFlag = true
-    private lateinit var preferences :SharedPreferences
+    private lateinit var preferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var keyguardManager: KeyguardManager
     private lateinit var alarmNotiReceiver: AlarmNotiReceiver
@@ -66,22 +66,55 @@ class NotificationActivity : AppCompatActivity() {
         alarmNotiReceiver.activity = this
         binding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
-        alarm = intent.getParcelableExtra("alarmData")?: AlarmData()
+        alarm = intent.getParcelableExtra("alarmData") ?: AlarmData()
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
         binding.viewModel?.logLine(
             "lifecycleConfirm",
             "onCreate $this"
         )
-
         binding.viewModel?.initAlarmData(alarm)
+        val currentTime = Calendar.getInstance()
+        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val minute = currentTime.get(Calendar.MINUTE)
 
-        if(!alarm.dateRepeat) {
+        binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
+
+        if (!alarm.dateRepeat) {
             binding.viewModel?.onAlarmFlagClicked(alarm)
         }
 
         binding.btnTurnOff.setOnClickListener {
+            binding.viewModel?.changeDelayCount(alarm, false)
             turnOffAlarm()
+        }
+
+        binding.btnDelay.setOnClickListener {
+            if (alarm.delayCount > 0) {
+                binding.viewModel?.changeDelayCount(alarm, true)
+                turnOffAlarm()
+                val minutes = alarm.delay.replace("분", "").toInt()
+                currentTime.add(Calendar.MINUTE, minutes)
+                val alarmTimeData =
+                    Utils.setAlarm(this, currentTime.timeInMillis, alarm)
+
+                binding.viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, alarmTimeData)
+
+                Toast.makeText(
+                    this@NotificationActivity,
+                    Utils.createAlarmMessage(
+                        true,
+                        alarmTimeData.timeInMillis
+                    ),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this@NotificationActivity,
+                    "남은 미루기 횟수가 없습니다."
+                    ,Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -107,7 +140,7 @@ class NotificationActivity : AppCompatActivity() {
             setShowWhenLocked(true)     //FLAG_SHOW_WHEN_LOCKED 대체
             setTurnScreenOn(true)       //FLAG_TURN_SCREEN_ON 대체
             keyguardManager.requestDismissKeyguard(this, null)      //FLAG_DISMISS_KEYGUARD 대체
-        }else {
+        } else {
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                         or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
@@ -120,7 +153,7 @@ class NotificationActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        if(turnOffFlag) {
+        if (turnOffFlag) {
             binding.viewModel?.logLine(
                 "lifecycleConfirm",
                 "onStop, $this"
@@ -142,15 +175,15 @@ class NotificationActivity : AppCompatActivity() {
      * 전체화면 설정
      * */
     private fun hideSystemUI() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.R){
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
             val controller = window.insetsController
-            if(controller != null){
+            if (controller != null) {
                 controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                controller.systemBarsBehavior =
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
-        }
-        else {
+        } else {
             window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
                     or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION

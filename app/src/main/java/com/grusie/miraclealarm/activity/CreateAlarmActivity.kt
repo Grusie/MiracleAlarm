@@ -13,6 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
+import com.grusie.miraclealarm.fragment.DelayBottomFragment
+import com.grusie.miraclealarm.fragment.OnDelayDataPassListener
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
@@ -22,18 +24,21 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Calendar
+import java.util.Collections
+import java.util.Date
+import java.util.Locale
 import kotlin.properties.Delegates
 
 
-class CreateAlarmActivity : AppCompatActivity() {
+class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
     private lateinit var binding: ActivityCreateAlarmBinding
     private lateinit var alarmViewModel: AlarmViewModel
     private var alarmId by Delegates.notNull<Int>()
 
     private lateinit var alarmCal: Calendar
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
-    private var oldAlarm : AlarmData? = null
+    private var oldAlarm: AlarmData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,10 +69,9 @@ class CreateAlarmActivity : AppCompatActivity() {
                     if (volume != null && volume != -1) {
                         binding.viewModel?.changeVolume(volume)
                     }
-                }
-                else if(result.resultCode == Const.RESULT_CODE_VIBRATION){
+                } else if (result.resultCode == Const.RESULT_CODE_VIBRATION) {
                     val vibration = result.data?.getStringExtra("vibration")
-                    if(vibration != null){
+                    if (vibration != null) {
                         binding.viewModel?.changeVibration(vibration)
                     }
                 }
@@ -78,9 +82,11 @@ class CreateAlarmActivity : AppCompatActivity() {
         binding.tpAlarmTime.hour = alarmCal.get(Calendar.HOUR_OF_DAY)
         binding.tpAlarmTime.minute = alarmCal.get(Calendar.MINUTE)
 
-        binding.viewModel?.timePickerToTime(
-            binding.tpAlarmTime.hour,
-            binding.tpAlarmTime.minute
+        binding.viewModel?.changeTime(
+            binding.viewModel?.timePickerToTime(
+                binding.tpAlarmTime.hour,
+                binding.tpAlarmTime.minute
+            )!!
         )
 
         binding.apply {
@@ -89,7 +95,7 @@ class CreateAlarmActivity : AppCompatActivity() {
             initDate()
 
             tpAlarmTime.setOnTimeChangedListener { _, hour, minute ->
-                viewModel?.timePickerToTime(hour, minute)
+                viewModel?.changeTime(viewModel?.timePickerToTime(hour, minute)!!)
             }
 
             btnSave.setOnClickListener {
@@ -114,6 +120,14 @@ class CreateAlarmActivity : AppCompatActivity() {
                     binding.tvVibeSub.text as String,
                     null
                 )
+            }
+
+            clAlarmDelay.setOnClickListener {
+                val delayBottomFragment = DelayBottomFragment()
+                val bundle = Bundle()
+                bundle.putString("delay", tvDelaySub.text.toString())
+                delayBottomFragment.arguments = bundle
+                delayBottomFragment.show(supportFragmentManager, delayBottomFragment.tag)
             }
         }
     }
@@ -141,7 +155,7 @@ class CreateAlarmActivity : AppCompatActivity() {
     }
 
     private fun saveAlarm() {
-        if(binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()){
+        if (binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()) {
             Toast.makeText(this, "이미 지난 시간은 선택할 수 없습니다.", Toast.LENGTH_SHORT).show()
         } else {
             binding.apply {
@@ -172,13 +186,23 @@ class CreateAlarmActivity : AppCompatActivity() {
                 }
 
                 lifecycleScope.launch {
-                    viewModel?.updateAlarmData()?.let {alarmData ->
-                        oldAlarm?.let{Utils.delAlarm(this@CreateAlarmActivity, it)}?.forEach{
+                    viewModel?.updateAlarmData()?.let { alarmData ->
+                        oldAlarm?.let { Utils.delAlarm(this@CreateAlarmActivity, it) }?.forEach {
                             viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
                         }
-                        Utils.setAlarm(this@CreateAlarmActivity, alarmData).forEach{
+                        val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
+                        alarmTimeList.forEach {
                             viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
                         }
+
+                        Toast.makeText(
+                            this@CreateAlarmActivity,
+                            Utils.createAlarmMessage(
+                                true,
+                                Collections.min(alarmTimeList.map { it.timeInMillis })
+                            ),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -225,5 +249,10 @@ class CreateAlarmActivity : AppCompatActivity() {
                 executePendingBindings()
             }
         }
+    }
+
+    override fun onDelayDataPass(data: String?) {
+        if (data != null)
+            binding.viewModel?.changeDelay(data)
     }
 }

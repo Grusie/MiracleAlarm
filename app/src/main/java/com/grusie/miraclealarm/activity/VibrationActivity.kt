@@ -29,7 +29,7 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem{
     private fun initUi() {
         vibrationArray = resources.getStringArray(R.array.vibration_array)
         selectedItem = intent.getStringExtra("param1")
-        adapter = VibrationAdapter(this, this, vibrationArray)
+        adapter = VibrationAdapter(this, vibrationArray)
 
         binding.rvAlarmSound.adapter = adapter
         binding.rvAlarmSound.layoutManager = LinearLayoutManager(this)

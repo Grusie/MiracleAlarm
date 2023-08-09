@@ -2,10 +2,11 @@ package com.grusie.miraclealarm.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.databinding.ItemAlarmSoundBinding
+import com.grusie.miraclealarm.databinding.ItemAlarmValueListBinding
 import com.grusie.miraclealarm.function.GetSelectedItem
 import com.grusie.miraclealarm.function.Utils
 
@@ -14,12 +15,13 @@ class SoundAdapter(
     private val listener: GetSelectedItem,
     private val soundList: Array<String>
 ) : RecyclerView.Adapter<SoundViewHolder>() {
-    private lateinit var binding: ItemAlarmSoundBinding
+    private lateinit var binding: ItemAlarmValueListBinding
     var selectedPosition: Int = -1
     var selectedSoundPosition: Int = -1
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SoundViewHolder {
-        binding = ItemAlarmSoundBinding.bind(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_alarm_sound, parent, false)
+        binding = ItemAlarmValueListBinding.bind(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_alarm_value_list, parent, false)
         )
 
         return SoundViewHolder(binding)
@@ -63,7 +65,7 @@ class SoundAdapter(
     }
 }
 
-class SoundViewHolder(private val binding: ItemAlarmSoundBinding) :
+class SoundViewHolder(private val binding: ItemAlarmValueListBinding) :
     RecyclerView.ViewHolder(binding.root) {
     fun bind(
         context: Context,
@@ -76,15 +78,16 @@ class SoundViewHolder(private val binding: ItemAlarmSoundBinding) :
 
         binding.apply {
             checkedFlag = selectedPosition == position
-            this.sound = sound
+            this.value = sound
+            visible = true
             soundFlag = selectedSoundPosition == position
 
-            itemView.setOnClickListener {
+            val clickListener = View.OnClickListener {
                 listener.getSelectedItem(true, position)
             }
-            rbAlarmSound.setOnClickListener {
-                listener.getSelectedItem(true, position)
-            }
+
+            binding.rbAlarmSound.setOnClickListener(clickListener)
+            itemView.setOnClickListener(clickListener)
 
             btnAlarmSound.setOnClickListener {
                 if (!soundFlag!!) {

@@ -21,6 +21,7 @@ import com.grusie.miraclealarm.function.Utils.Companion.createPermission
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import java.util.Calendar
+import java.util.Collections
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -72,8 +73,8 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
 
-            viewModel?.minAlarmTime?.observe(this@MainActivity){
-                tvMinAlarm.text = if(it != null){
+            viewModel?.minAlarmTime?.observe(this@MainActivity) {
+                tvMinAlarm.text = if (it != null) {
                     Utils.createAlarmMessage(false, it.timeInMillis)
                 } else getString(R.string.string_turn_off_all)
             }
@@ -95,7 +96,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 viewModel?.modifyList?.value?.clear()
                 viewModel?.changeModifyMode()
-                Toast.makeText(this@MainActivity, getString(R.string.string_delete_alarm), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@MainActivity,
+                    getString(R.string.string_delete_alarm),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
@@ -104,9 +109,18 @@ class MainActivity : AppCompatActivity() {
                 viewModel?.logLine("confirm clearAlarm", "$alarm, ${alarm.enabled}")
                 if (alarm.enabled) {
                     checkPastDate(alarm, true)
-                    Utils.setAlarm(this@MainActivity, alarm).forEach {
+                    val alarmTimeList = Utils.setAlarm(this@MainActivity, alarm)
+                    alarmTimeList.forEach {
                         viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
                     }
+                    Toast.makeText(
+                        this@MainActivity,
+                        Utils.createAlarmMessage(
+                            true,
+                            Collections.min(alarmTimeList.map { it.timeInMillis })
+                        ),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else
                     Utils.delAlarm(this@MainActivity, alarm).forEach {
                         viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
@@ -116,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPastDate(alarm: AlarmData, enabled: Boolean){
+    private fun checkPastDate(alarm: AlarmData, enabled: Boolean) {
         if (!alarm.dateRepeat) {
             val alarmCal = Utils.dateToCal(alarm.date, alarm.time)
             if (currentCal > alarmCal) {

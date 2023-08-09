@@ -69,6 +69,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         createNotificationChannel(NotificationManager.IMPORTANCE_LOW)
 
         if (alarm.flagSound) {
+            Utils.initVolume(this)
             headsetCheck()
         }
         Utils.startAlarm(this, alarm)

@@ -81,11 +81,6 @@ class Utils {
                     )
                 }
 
-                Toast.makeText(
-                    context,
-                    "${createAlarmMessage(true, alarmTime.timeInMillis)}",
-                    Toast.LENGTH_SHORT
-                ).show()
                 alarmTimeList.add(alarmTimeData)
 
                 Log.d(
@@ -105,15 +100,13 @@ class Utils {
             val currentTime = System.currentTimeMillis()
             val diff = timeInMillis - currentTime
 
-            return if (diff < 60 * 1000) { // 1분 미만인 경우
-                String.format("1분 후 알람이 울립니다.")
-            } else if (diff < 60 * 60 * 1000) { // 1시간 미만인 경우
+            return if (diff < 60 * 60 * 1000) { // 1시간 미만인 경우
                 val minutes = diff / (60 * 1000)
-                String.format("%d분 후 알람이 울립니다.", minutes)
+                String.format("%d분 후 알람이 울립니다.", minutes + 1)
             } else if (diff < 24 * 60 * 60 * 1000) { // 24시간 미만인 경우
                 val hours = diff / (60 * 60 * 1000)
                 val minutes = (diff % (60 * 60 * 1000)) / (60 * 1000)
-                String.format("%d시간 %d분 후 알람이 울립니다.", hours, minutes)
+                String.format("%d시간 %d분 후 알람이 울립니다.", hours, minutes + 1)
             } else if(toastFlag){
                 val calendar = Calendar.getInstance()
 
@@ -348,7 +341,6 @@ class Utils {
         fun startAlarm(context: Context, alarm: AlarmData) {
             if (alarm.flagSound) {
                 val sound = getAlarmSound(context, alarm.sound)
-                initVolume(context)
                 playAlarmSound(context, sound)
             }
             if (alarm.flagVibrate) {
