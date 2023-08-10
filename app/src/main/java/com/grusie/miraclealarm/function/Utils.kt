@@ -107,7 +107,7 @@ class Utils {
                 val hours = diff / (60 * 60 * 1000)
                 val minutes = (diff % (60 * 60 * 1000)) / (60 * 1000)
                 String.format("%d시간 %d분 후 알람이 울립니다.", hours, minutes + 1)
-            } else if(toastFlag){
+            } else if (toastFlag) {
                 val calendar = Calendar.getInstance()
 
                 // 현재 년도와 알람 년도를 비교하여 "yyyy년" 부분 처리
@@ -183,34 +183,18 @@ class Utils {
         /**
          * 알람 지우기
          * */
-        fun delAlarm(context: Context, alarm: AlarmData): MutableList<AlarmTimeData> {
+        fun delAlarm(context: Context, alarmTimeId: Int) {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val alarmTimeList = mutableListOf<AlarmTimeData>()
 
-
-            getAlarmTime(alarm).forEach { alarmTime ->
-                val pendingIntentId = generateAlarmId(alarm, alarmTime.timeInMillis)
-
-                val alarmTimeData = AlarmTimeData().apply {
-                    id = pendingIntentId
-                    timeInMillis = alarmTime.timeInMillis
-                    alarmId = alarm.id
-                }
-
-                val pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    pendingIntentId,
-                    receiverIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                alarmManager.cancel(pendingIntent)
-                alarmTimeList.add(alarmTimeData)
-            }
-
-            Log.d("confirm contentValue", "${alarm.id} 알람 제거 됨")
-            return alarmTimeList
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                alarmTimeId,
+                receiverIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.cancel(pendingIntent)
         }
 
 

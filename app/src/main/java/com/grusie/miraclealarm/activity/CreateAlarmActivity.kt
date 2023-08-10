@@ -129,6 +129,13 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
                 delayBottomFragment.arguments = bundle
                 delayBottomFragment.show(supportFragmentManager, delayBottomFragment.tag)
             }
+
+            clAlarmOffWay.setOnClickListener {
+                val intent = Intent(this@CreateAlarmActivity, OffWayActivity::class.java)
+                intent.putExtra("param1", viewModel?.offWay?.value)
+                intent.putExtra("param2", viewModel?.offWayCount?.value)
+                startActivity(intent)
+            }
         }
     }
 
@@ -179,20 +186,21 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
                     volume = viewModel?.volume?.value!!
                     vibrate =
                         if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
-                    off_way =
-                        if (viewModel?.flagOffWay?.value == true) tvOffWaySub.text.toString() else off_way
                     delay =
                         if (viewModel?.flagDelay?.value == true) tvDelaySub.text.toString() else delay
                 }
 
                 lifecycleScope.launch {
                     viewModel?.updateAlarmData()?.let { alarmData ->
-                        oldAlarm?.let { Utils.delAlarm(this@CreateAlarmActivity, it) }?.forEach {
-                            viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
-                        }
+                        oldAlarm?.let {oldAlarm ->
+                            viewModel?.getAlarmTimesByAlarmId(oldAlarm)?.forEach {
+                                Utils.delAlarm(this@CreateAlarmActivity, it.id)
+                            }
+                            viewModel?.deleteAlarmTimeById(oldAlarm) }
+
                         val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
                         alarmTimeList.forEach {
-                            viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
+                            viewModel?.insertAlarmTime(it)
                         }
 
                         Toast.makeText(
@@ -247,6 +255,19 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
                     "time = $it, hour = ${tpAlarmTime.hour}, minute = ${tpAlarmTime.minute}"
                 )
                 executePendingBindings()
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        if(intent != null){
+            val offWay = intent.getStringExtra("offWay")
+            val offWayCount = intent.getIntExtra("offWayCount", 0)
+
+            if (offWay != null) {
+                binding.viewModel?.changeOffWay(offWay, offWayCount)
             }
         }
     }

@@ -34,6 +34,7 @@ class NotificationActivity : AppCompatActivity() {
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var keyguardManager: KeyguardManager
     private lateinit var alarmNotiReceiver: AlarmNotiReceiver
+    private lateinit var currentTime: Calendar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,22 +64,20 @@ class NotificationActivity : AppCompatActivity() {
     private fun initUi() {
         initKeyguard()
         alarmNotiReceiver = AlarmNotiReceiver()
-        alarmNotiReceiver.activity = this
         binding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
-        alarm = intent.getParcelableExtra("alarmData") ?: AlarmData()
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
-        binding.viewModel?.logLine(
-            "lifecycleConfirm",
-            "onCreate $this"
-        )
+
+        alarm = intent?.getParcelableExtra("alarmData") ?: AlarmData()
         binding.viewModel?.initAlarmData(alarm)
-        val currentTime = Calendar.getInstance()
+
+        currentTime = Calendar.getInstance()
+
         val hour = currentTime.get(Calendar.HOUR_OF_DAY)
         val minute = currentTime.get(Calendar.MINUTE)
-
         binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
+        Log.d("confirm alarmData noti", "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}")
 
         if (!alarm.dateRepeat) {
             binding.viewModel?.onAlarmFlagClicked(alarm)
@@ -98,7 +97,8 @@ class NotificationActivity : AppCompatActivity() {
                 val alarmTimeData =
                     Utils.setAlarm(this, currentTime.timeInMillis, alarm)
 
-                binding.viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, alarmTimeData)
+                binding.viewModel?.insertAlarmTime(alarmTimeData)
+                Log.d("confirm alarmData noti", "$alarm")
 
                 Toast.makeText(
                     this@NotificationActivity,
@@ -118,11 +118,26 @@ class NotificationActivity : AppCompatActivity() {
         }
     }
 
-    fun turnOffAlarm() {
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        alarm = intent?.getParcelableExtra("alarmData") ?: AlarmData()
+        binding.viewModel?.initAlarmData(alarm)
+
+        currentTime = Calendar.getInstance()
+
+        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val minute = currentTime.get(Calendar.MINUTE)
+
+
+        binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
+        Log.d("confirm alarmData noti", "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}")
+    }
+
+    private fun turnOffAlarm() {
         Utils.stopAlarm(this)
         turnOffFlag = false
 
-        alarmNotiReceiver.activity = null
         Log.d("confirm turnOffAlarm", "turnOffAlarm $alarm")
 
         editor.putBoolean("openMainActivity", true)

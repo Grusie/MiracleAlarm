@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
@@ -20,6 +22,7 @@ import com.grusie.miraclealarm.function.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.function.Utils.Companion.createPermission
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Collections
 
@@ -90,8 +93,12 @@ class MainActivity : AppCompatActivity() {
             btnDelete.setOnClickListener {
                 for (alarm in viewModel?.modifyList?.value!!) {
                     viewModel?.delete(alarm)
-                    Utils.delAlarm(this@MainActivity, alarm).forEach {
-                        viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
+
+                    lifecycleScope.launch {
+                        viewModel?.getAlarmTimesByAlarmId(alarm)?.forEach {
+                            Utils.delAlarm(this@MainActivity, it.id)
+                        }
+                        viewModel?.deleteAlarmTimeById(alarm)
                     }
                 }
                 viewModel?.modifyList?.value?.clear()
@@ -111,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                     checkPastDate(alarm, true)
                     val alarmTimeList = Utils.setAlarm(this@MainActivity, alarm)
                     alarmTimeList.forEach {
-                        viewModel?.updateAlarmTimeData(Const.INSERT_ALARM_TIME, it)
+                        viewModel?.insertAlarmTime(it)
                     }
                     Toast.makeText(
                         this@MainActivity,
@@ -121,10 +128,14 @@ class MainActivity : AppCompatActivity() {
                         ),
                         Toast.LENGTH_SHORT
                     ).show()
-                } else
-                    Utils.delAlarm(this@MainActivity, alarm).forEach {
-                        viewModel?.updateAlarmTimeData(Const.DELETE_ALARM_TIME, it)
+                } else {
+                    lifecycleScope.launch {
+                        viewModel?.getAlarmTimesByAlarmId(alarm)?.forEach {
+                            Utils.delAlarm(this@MainActivity, it.id)
+                        }
+                        viewModel?.deleteAlarmTimeById(alarm)
                     }
+                }
             }
 
         }

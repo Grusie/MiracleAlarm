@@ -5,11 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [AlarmData::class, AlarmTimeData::class], version = 2)
+@Database(entities = [AlarmData::class, AlarmTimeData::class, AlarmTurnOffData::class], version = 3)
 abstract class AlarmDatabase : RoomDatabase() {
 
     abstract fun alarmDao(): AlarmDao
     abstract fun alarmTimeDao(): AlarmTimeDao
+    abstract fun alarmTurnOffDao(): AlarmTurnOffDao
 
     companion object {
         @Volatile

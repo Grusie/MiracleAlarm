@@ -1,4 +1,4 @@
-package com.grusie.miraclealarm
+package com.grusie.miraclealarm.function
 
 import android.app.Application
 

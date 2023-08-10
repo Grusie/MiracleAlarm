@@ -30,8 +30,6 @@ class AlarmNotiReceiver : BroadcastReceiver() {
     private lateinit var repository: AlarmRepository
     private lateinit var alarmTimeDao: AlarmTimeDao
     private lateinit var missedAlarmList: List<AlarmTimeData>
-    var activity: NotificationActivity? = null
-
     override fun onReceive(context: Context, intent: Intent) {
         activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         runningServices = activityManager.getRunningServices(Int.MAX_VALUE)
@@ -41,10 +39,6 @@ class AlarmNotiReceiver : BroadcastReceiver() {
         alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val alarm = intent.getParcelableExtra("alarmData") ?: AlarmData()
-
-        if (activity != null) {
-            activity?.turnOffAlarm()
-        }
 
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             val allAlarms = repository.allAlarms

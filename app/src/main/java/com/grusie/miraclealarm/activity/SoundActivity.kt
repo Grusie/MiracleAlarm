@@ -8,6 +8,7 @@ import android.media.AudioManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -55,6 +56,10 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
 
         soundArray = resources.getStringArray(R.array.sound_array)
 
+        setSupportActionBar(binding.icToolbar.tbTitle)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "소리"
+
         adapter = SoundAdapter(this, this, soundArray)
         adapter.selectedPosition = soundArray.indexOf(selectedItem)
         binding.rvAlarmSound.adapter = adapter
@@ -89,10 +94,6 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
             resultIntent.putExtra("sound", selectedItem)
             resultIntent.putExtra("volume", volume)
             setResult(Const.RESULT_CODE_SOUND, resultIntent)
-            finish()
-        }
-
-        binding.btnCancel.setOnClickListener {
             finish()
         }
     }
@@ -136,6 +137,15 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
         adapter.notifyDataSetChanged()
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            android.R.id.home -> {
+                finish()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
     override fun getSelectedItem(selectFlag: Boolean, position: Int) {
         selectedItem = soundArray[position]
         if (!selectFlag && changeVolumeFlag) {

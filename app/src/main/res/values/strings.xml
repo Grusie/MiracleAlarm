@@ -69,7 +69,9 @@
         <item>30분</item>
     </string-array>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
+    <string-array name="off_way_array">
+        <item>흔들어서 끄기</item>
+        <item>수학 문제 풀기</item>
+        <item>순발력 게임</item>
+    </string-array>
 </resources>

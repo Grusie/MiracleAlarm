@@ -2,6 +2,7 @@ package com.grusie.miraclealarm.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -31,6 +32,10 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem{
         selectedItem = intent.getStringExtra("param1")
         adapter = VibrationAdapter(this, vibrationArray)
 
+        setSupportActionBar(binding.icToolbar.tbTitle)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "진동"
+
         binding.rvAlarmSound.adapter = adapter
         binding.rvAlarmSound.layoutManager = LinearLayoutManager(this)
         adapter.selectedPosition = vibrationArray.indexOf(selectedItem)
@@ -41,10 +46,16 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem{
             setResult(Const.RESULT_CODE_VIBRATION, resultIntent)
             finish()
         }
+    }
 
-        binding.btnCancel.setOnClickListener {
-            finish()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            android.R.id.home -> {
+                finish()
+                return true
+            }
         }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun getSelectedItem(selectFlag: Boolean, position: Int) {
