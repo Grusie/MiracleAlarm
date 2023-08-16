@@ -8,12 +8,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.model.*
+import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.AlarmDatabase
+import com.grusie.miraclealarm.model.AlarmRepository
+import com.grusie.miraclealarm.model.AlarmTimeDao
+import com.grusie.miraclealarm.model.AlarmTimeData
+import com.grusie.miraclealarm.model.AlarmTurnOffDao
+import com.grusie.miraclealarm.model.AlarmTurnOffData
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Calendar
 
 
 class AlarmViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,8 +29,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     val allAlarms: LiveData<MutableList<AlarmData>>
 
-    private val _alarm = MutableLiveData<AlarmData?>()
-    private val _flagHoliday = MutableLiveData<Boolean>()                //공휴일 스위치 값
+    private val _alarm = MutableLiveData<AlarmData?>()/*
+    private val _flagHoliday = MutableLiveData<Boolean>()                //공휴일 스위치 값*/
     private val _flagSound = MutableLiveData<Boolean>()                  //소리 스위치 값
     private val _flagVibe = MutableLiveData<Boolean>()                   //진동 스위치 값
     private val _flagOffWay = MutableLiveData<Boolean>()                 //끄는 방법 스위치 값
@@ -43,8 +49,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     private val _clearAlarm = MutableLiveData<AlarmData>()               //제거할 알람 값
     private val _alarmTurnOffData = MutableLiveData<AlarmTurnOffData>()  //알람 끄는 방법 데이터
 
-    val alarm: LiveData<AlarmData?> = _alarm
-    val flagHoliday: LiveData<Boolean> = _flagHoliday
+    val alarm: LiveData<AlarmData?> = _alarm/*
+    val flagHoliday: LiveData<Boolean> = _flagHoliday*/
     val flagSound: LiveData<Boolean> = _flagSound
     val flagVibe: LiveData<Boolean> = _flagVibe
     val flagOffWay: LiveData<Boolean> = _flagOffWay
@@ -63,7 +69,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     val clearAlarm: LiveData<AlarmData> = _clearAlarm
     private val daysOfWeek: Array<String>
     private val dayOfWeekMap: Map<String, Int>
-    val minAlarmTime : LiveData<AlarmTimeData>
+    val minAlarmTime: LiveData<AlarmTimeData>
 
     /**
      * 초기화 작업
@@ -136,7 +142,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
      * **/
     private fun initEmptyAlarmData() {
         _alarm.value?.apply {
-            _flagHoliday.value = holiday
+            /*_flagHoliday.value = holiday*/
             _flagVibe.value = flagVibrate
             _flagSound.value = flagSound
             _flagDelay.value = flagDelay
@@ -150,8 +156,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 if (date.isNotEmpty()) date.split(",").toMutableSet() else mutableSetOf()
             _date.value = dateList.value!!.joinToString(",")     //초기 알람 날짜 값
         }
-        _offWay.value = "흔들어서 끄기"
-        _offWayCount.value = 0
+        _offWay.value = "흔들어서끄기"
+        _offWayCount.value = 30
     }
 
     /**
@@ -175,16 +181,17 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * AlarmTimeDAO CRUD
      * **/
-    fun insertAlarmTime(alarmTime: AlarmTimeData) = viewModelScope.launch{
+    fun insertAlarmTime(alarmTime: AlarmTimeData) = viewModelScope.launch {
         logLine("confirm insert", "$alarmTime")
         alarmTimeDao.insert(alarmTime)
     }
+
     fun deleteAlarmTimeById(alarm: AlarmData) = viewModelScope.launch {
         logLine("confirm delete", "$alarm")
         alarmTimeDao.deleteByAlarmId(alarm.id)
     }
 
-    suspend fun getAlarmTimesByAlarmId(alarm: AlarmData) :List<AlarmTimeData> {
+    suspend fun getAlarmTimesByAlarmId(alarm: AlarmData): List<AlarmTimeData> {
         logLine("confirm selectAlarm", "$alarm")
         return alarmTimeDao.getAlarmTimesByAlarmId(alarm.id)
     }
@@ -192,29 +199,29 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * AlarmTurnOffDAO CRUD
      **/
-    private suspend fun insertAlarmTurnOff(alarmTurnOffData: AlarmTurnOffData){
+    private suspend fun insertAlarmTurnOff(alarmTurnOffData: AlarmTurnOffData) {
         alarmTurnOffDao.insert(alarmTurnOffData)
     }
-    private suspend fun updateAlarmTurnOff(alarmTurnOffData: AlarmTurnOffData){
-        alarmTurnOffDao.update(alarmTurnOffData)
-    }
-    private suspend fun deleteAlarmTurnOff(alarmTurnOffData: AlarmTurnOffData){
-        alarmTurnOffDao.delete(alarmTurnOffData)
+
+    private suspend fun deleteAlarmTurnOff(alarm: AlarmData) {
+        alarmTurnOffDao.delete(alarm.id)
     }
 
-    private fun updateAlarmTurnOff(exist: Boolean){
-        if(_flagOffWay.value == true) {
-            _alarmTurnOffData.value?.turnOffWay = _offWay.value!!
-            _alarmTurnOffData.value?.count = _offWayCount.value!!
-        }
+    fun updateAlarmTurnOff(query: Int, alarm: AlarmData) {
         viewModelScope.launch {
-            if(exist){
-                if(_flagOffWay.value == false)
-                    deleteAlarmTurnOff(_alarmTurnOffData.value!!)
-                else updateAlarmTurnOff(_alarmTurnOffData.value!!)
-            }
-            else {
-                insertAlarmTurnOff(_alarmTurnOffData.value!!)
+            when (query) {
+                Const.INSERT_ALARM_TURN_OFF -> {
+                    if (_flagOffWay.value == true) {
+                        _alarmTurnOffData.value?.turnOffWay = _offWay.value!!
+                        _alarmTurnOffData.value?.count = _offWayCount.value!!
+                        _alarmTurnOffData.value?.alarmId = alarm.id
+                        insertAlarmTurnOff(_alarmTurnOffData.value!!)
+                    }
+                }
+
+                Const.DELETE_ALARM_TURN_OFF -> {
+                    deleteAlarmTurnOff(alarm)
+                }
             }
         }
     }
@@ -246,9 +253,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         _flagDelay.value = !flagDelay.value!!
     }
 
-    fun onSwHolidayClicked() {
-        _flagHoliday.value = !flagHoliday.value!!
-    }
+    /*    fun onSwHolidayClicked() {
+            _flagHoliday.value = !flagHoliday.value!!
+        }*/
 
     fun onAlarmFlagClicked(alarm: AlarmData) {
         alarm.enabled = !alarm.enabled
@@ -305,10 +312,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         val deferred = CompletableDeferred<AlarmData>()
         viewModelScope.launch {
             val alarmId = if (alarm.value?.id == 0) {
-                updateAlarmTurnOff(false)
                 alarm.value?.let { insert(it) } ?: 0
             } else {
-                updateAlarmTurnOff(true)
                 alarm.value?.let { update(it) }
                 alarm.value?.id
             }
@@ -404,10 +409,11 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
      * 각 값들 변경
      **/
 
-    fun changeTime(time:String){
+    fun changeTime(time: String) {
         _time.value = time
         logLine("confirm time - timePickerToTime", "$time")
     }
+
     fun changeSound(sound: String) {
         _sound.value = sound
         logLine("confirm sound", "${sound}, $sound")
@@ -428,16 +434,17 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         logLine("confirm delay", "${delay}, $delay")
     }
 
-    fun changeOffWay(offWay: String, offWayCount: Int){
+    fun changeOffWay(offWay: String, offWayCount: Int) {
         _offWay.value = offWay
         _offWayCount.value = offWayCount
     }
+
     fun changeModifyMode() {
         _modifyMode.value = !_modifyMode.value!!
     }
 
-    fun changeDelayCount(alarm: AlarmData, reduce : Boolean){
-        alarm.delayCount = if(reduce) alarm.delayCount - 1 else 3
+    fun changeDelayCount(alarm: AlarmData, reduce: Boolean) {
+        alarm.delayCount = if (reduce) alarm.delayCount - 1 else 3
         viewModelScope.launch {
             update(alarm)
         }

@@ -5,10 +5,12 @@
     tools:context=".activity.NotificationActivity">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
-        <import type="android.view.View"/>
+
+        <import type="android.view.View" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,9 +23,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_title"
+            app:layout_constraintBottom_toTopOf="@id/tv_notification_title"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/tv_notification_title"/>
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/tv_notification_title"
@@ -31,73 +33,42 @@
             android:layout_height="wrap_content"
             android:text="@{viewModel.alarm.title}"
             android:textSize="@dimen/text_middle_title"
+            app:layout_constraintBottom_toTopOf="@id/cl_notification_btns"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/cl_offWay_content"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_offWay_content"
+            android:id="@+id/cl_notification_btns"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="@dimen/padding_default"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:padding="@dimen/padding_default">
+            app:layout_constraintTop_toTopOf="parent">
 
-<!--            <TextView
-                android:id="@+id/tv_offWay_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:textSize="@dimen/text_title"
-                android:text="끄는 방법"
-                />
-
-            <TextView
-                android:id="@+id/tv_offWay_detail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/tv_offWay_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:textSize="@dimen/text_middle_title"
-                android:layout_marginVertical="@dimen/margin_half"
-                android:text="25 + 13 = "
-                />
-            <EditText
-                android:id="@+id/et_offWay_answer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_middle_title"
-                app:layout_constraintStart_toEndOf="@id/tv_offWay_detail"
-                app:layout_constraintTop_toTopOf="@id/tv_offWay_detail"
-                app:layout_constraintBottom_toBottomOf="@id/tv_offWay_detail"
-                />-->
             <Button
                 android:id="@+id/btn_delay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="미루기"
                 android:backgroundTint="@color/light_blue"
+                android:text="미루기"
+                android:visibility="@{viewModel.flagDelay ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toTopOf="@id/btn_turnOff"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:visibility="@{viewModel.flagDelay ? View.VISIBLE : View.GONE}"></Button>
+                app:layout_constraintStart_toStartOf="parent"></Button>
 
             <Button
                 android:id="@+id/btn_turnOff"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="끄기"
                 android:backgroundTint="@color/light_blue"
-                app:layout_constraintTop_toTopOf="parent"
+                android:text="끄기"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"></Button>
+                app:layout_constraintTop_toTopOf="parent"></Button>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

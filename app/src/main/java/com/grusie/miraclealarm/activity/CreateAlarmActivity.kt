@@ -3,6 +3,7 @@ package com.grusie.miraclealarm.activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,14 +20,10 @@ import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Collections
-import java.util.Date
 import java.util.Locale
 import kotlin.properties.Delegates
 
@@ -163,6 +160,10 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
     private fun saveAlarm() {
         if (binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()) {
+            Log.d(
+                "confirm alarmCal",
+                "${alarmCal.get(Calendar.DAY_OF_MONTH)}, ${binding.viewModel?.alarm?.value!!}"
+            )
             Toast.makeText(this, "이미 지난 시간은 선택할 수 없습니다.", Toast.LENGTH_SHORT).show()
         } else {
             binding.apply {
@@ -171,7 +172,6 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
                         oldAlarm = this.copy()
                     }
                     title = etAlarmTitle.text.toString()
-                    holiday = viewModel?.flagHoliday?.value == true
                     flagSound = viewModel?.flagSound?.value == true
                     flagVibrate = viewModel?.flagVibe?.value == true
                     flagOffWay = viewModel?.flagOffWay?.value == true
@@ -192,11 +192,15 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
                 lifecycleScope.launch {
                     viewModel?.updateAlarmData()?.let { alarmData ->
-                        oldAlarm?.let {oldAlarm ->
+                        oldAlarm?.let { oldAlarm ->
                             viewModel?.getAlarmTimesByAlarmId(oldAlarm)?.forEach {
                                 Utils.delAlarm(this@CreateAlarmActivity, it.id)
                             }
-                            viewModel?.deleteAlarmTimeById(oldAlarm) }
+                            viewModel?.deleteAlarmTimeById(oldAlarm)
+                            viewModel?.updateAlarmTurnOff(Const.DELETE_ALARM_TURN_OFF, oldAlarm)
+                        }
+
+                        viewModel?.updateAlarmTurnOff(Const.INSERT_ALARM_TURN_OFF, alarmData)
 
                         val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
                         alarmTimeList.forEach {
@@ -229,6 +233,13 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
                 val date = binding.viewModel?.dateFormat(alarmCal)!!
                 binding.viewModel?.onDateClicked(date, false)
+                Log.d("confirm alarmCal Date", "$year, $month, $dayOfMonth")
+                Log.d(
+                    "confirm alarmCal Date",
+                    "${alarmCal.get(Calendar.YEAR)}, ${alarmCal.get(Calendar.MONTH)}, ${
+                        alarmCal.get(Calendar.DAY_OF_MONTH)
+                    }"
+                )
             },
             alarmCal.get(Calendar.YEAR),
             alarmCal.get(Calendar.MONTH),
@@ -240,20 +251,20 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
     private fun initTime() {
         binding.apply {
-            viewModel?.time?.observe(this@CreateAlarmActivity) { it ->
-                val formatter =
-                    DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
+            viewModel?.time?.observe(this@CreateAlarmActivity) {
+                val formatter = DateTimeFormatter.ofPattern("a hh:mm", Locale.KOREAN)
                 val localTime = LocalTime.parse(it.toString(), formatter)
-                val localDateTime = LocalDateTime.of(LocalDate.now(), localTime)
-                val zoneId = ZoneId.systemDefault()
-                val date = Date.from(localDateTime.atZone(zoneId).toInstant())
-                alarmCal.time = date
+
+                alarmCal.apply {
+                    set(Calendar.HOUR_OF_DAY, localTime.hour)
+                    set(Calendar.MINUTE, localTime.minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+
                 tpAlarmTime.hour = alarmCal.get(Calendar.HOUR_OF_DAY)
                 tpAlarmTime.minute = alarmCal.get(Calendar.MINUTE)
-                viewModel?.logLine(
-                    "confirm Time",
-                    "time = $it, hour = ${tpAlarmTime.hour}, minute = ${tpAlarmTime.minute}"
-                )
+
                 executePendingBindings()
             }
         }
@@ -262,7 +273,7 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        if(intent != null){
+        if (intent != null) {
             val offWay = intent.getStringExtra("offWay")
             val offWayCount = intent.getIntExtra("offWayCount", 0)
 

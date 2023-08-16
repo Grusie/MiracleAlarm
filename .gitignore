@@ -5,6 +5,7 @@
 /captures/
 .gradle/
 build/
+gradle/wrapper/
 local.properties
 *.iml
 .idea/

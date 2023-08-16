@@ -8,29 +8,51 @@ import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityOffWayCountBinding
 
 class OffWayCountActivity : AppCompatActivity() {
-    lateinit var binding: ActivityOffWayCountBinding
-    var offWay: String? = null
-    var offWayCount = 0
+    private lateinit var binding: ActivityOffWayCountBinding
+    private var offWay: String? = null
+    private var offWayCount = 0
+    private lateinit var offWayArray: Array<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_off_way_count)
         initUi()
     }
-    private fun initUi(){
+
+    private fun initUi() {
+        offWayArray = resources.getStringArray(R.array.off_way_array)
         offWay = intent.getStringExtra("offWay")
         offWayCount = intent.getIntExtra("offWayCount", 0)
 
         binding.offWay = offWay
+        val min: Int
+        val max: Int
+        val step: Int
 
-        val min = 5
-        val max = 30
-        val step = 5
+        when (offWay) {
+            offWayArray[1] -> {
+                min = 1
+                max = 7
+                step = 1
+            }
+
+            offWayArray[2] -> {
+                min = 2
+                max = 20
+                step = 2
+            }
+
+            else -> {
+                min = 10
+                max = 70
+                step = 5
+            }
+        }
 
         val values = (min..max step step).map { it.toString() }.toTypedArray()
 
         binding.npOffWayCount.apply {
-            minValue = 0
-            maxValue = values.size - 1
+            minValue = 1
+            maxValue = values.size
             displayedValues = values
             value = offWayCount
 

@@ -82,6 +82,7 @@ class Utils {
                 }
 
                 alarmTimeList.add(alarmTimeData)
+                Log.d("confirm contentValue alarmTimeList", "$alarmTimeList")
 
                 Log.d(
                     "confirm contentValue",
@@ -96,37 +97,65 @@ class Utils {
         /**
          * 다음 울릴 알람 시간을 리턴 해주는 함수
          */
-        fun createAlarmMessage(toastFlag: Boolean, timeInMillis: Long): String {
-            val currentTime = System.currentTimeMillis()
-            val diff = timeInMillis - currentTime
+        fun calculateDaysDiff(currentDate: Calendar, alarmDate: Calendar): Int {
+            val currentYear = currentDate.get(Calendar.YEAR)
+            val alarmYear = alarmDate.get(Calendar.YEAR)
 
-            return if (diff < 60 * 60 * 1000) { // 1시간 미만인 경우
-                val minutes = diff / (60 * 1000)
-                String.format("%d분 후 알람이 울립니다.", minutes + 1)
-            } else if (diff < 24 * 60 * 60 * 1000) { // 24시간 미만인 경우
-                val hours = diff / (60 * 60 * 1000)
-                val minutes = (diff % (60 * 60 * 1000)) / (60 * 1000)
-                String.format("%d시간 %d분 후 알람이 울립니다.", hours, minutes + 1)
-            } else if (toastFlag) {
-                val calendar = Calendar.getInstance()
-
-                // 현재 년도와 알람 년도를 비교하여 "yyyy년" 부분 처리
-                val currentYear = calendar.get(Calendar.YEAR)
-                calendar.timeInMillis = timeInMillis
-                val alarmYear = calendar.get(Calendar.YEAR)
-                val dateFormat = if (currentYear == alarmYear) {
-                    SimpleDateFormat("MM월 dd일 HH시 mm분", Locale.getDefault())
-                } else {
-                    SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분", Locale.getDefault())
-                }
-
-                val alarmTime = dateFormat.format(calendar.time)
-                "알람이 ${alarmTime}에 설정되었습니다."
+            if (currentYear == alarmYear) {
+                return alarmDate.get(Calendar.DAY_OF_YEAR) - currentDate.get(Calendar.DAY_OF_YEAR)
             } else {
-                val day = diff / (24 * 60 * 60 * 1000)
-                "${day}일 후 알람이 울립니다."
+                val daysInCurrentYear = currentDate.getActualMaximum(Calendar.DAY_OF_YEAR) -
+                        currentDate.get(Calendar.DAY_OF_YEAR) + 1
+                val daysInAlarmYear = alarmDate.get(Calendar.DAY_OF_YEAR)
+                return daysInCurrentYear + daysInAlarmYear
             }
         }
+
+        fun createAlarmMessage(toastFlag: Boolean, timeInMillis: Long): String {
+            val currentTime = Calendar.getInstance()
+            val alarmTime = Calendar.getInstance().apply {
+                this.timeInMillis = timeInMillis
+            }
+
+            val daysDiff = calculateDaysDiff(currentTime, alarmTime)
+
+            val minutesDiff = (timeInMillis - currentTime.timeInMillis) / (60 * 1000)
+            val hoursDiff = (timeInMillis - currentTime.timeInMillis) / (60 * 60 * 1000)
+            val remainingMinutes = (minutesDiff % 60)
+
+            fun formatTime(hours: Long, minutes: Long): String {
+                return if (minutes + 1 >= 60) {
+                    "${hours + 1}시간 후 알람이 울립니다."
+                } else if (hours >= 1) {
+                    "${hours}시간 ${minutes + 1}분 후 알람이 울립니다."
+                } else {
+                    "${minutes + 1}분 후 알람이 울립니다."
+                }
+            }
+
+            return when {
+                minutesDiff < 1 -> {
+                    "1분 후 알람이 울립니다."
+                }
+
+                daysDiff == 0 && (timeInMillis - currentTime.timeInMillis) < 60 * 60 * 1000 -> {
+                    formatTime(0, minutesDiff)
+                }
+
+                daysDiff == 0 || daysDiff == 1 -> {
+                    formatTime(hoursDiff, remainingMinutes)
+                }
+
+                toastFlag -> {
+                    val dateFormat = SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분", Locale.KOREAN)
+                    val alarmTimeString = dateFormat.format(alarmTime.time)
+                    "알람이 ${alarmTimeString}에 설정되었습니다."
+                }
+
+                else -> "${daysDiff}일 후 알람이 울립니다."
+            }
+        }
+
 
         /**
          * 알람 개별 생성하기
@@ -202,7 +231,7 @@ class Utils {
          * 알람 울릴 시간 가져오기
          * **/
         private fun getAlarmTime(alarm: AlarmData): ArrayList<Calendar> {
-            val inputFormat = SimpleDateFormat("a hh:mm")
+            val inputFormat = SimpleDateFormat("a hh:mm", Locale.KOREAN)
             val calList = ArrayList<Calendar>()
 
             alarm.apply {
@@ -239,7 +268,10 @@ class Utils {
                             calList.add(cal)
                         }
                     } catch (e: Exception) {
-                        Log.e("confirm getAlarmTime", "getAlarmTime try-catch2 ${e.stackTrace}")
+                        Log.e(
+                            "confirm getAlarmTime",
+                            "getAlarmTime try-catch2 ${e.stackTraceToString()}"
+                        )
                     }
                 }
                 for (i in calList)

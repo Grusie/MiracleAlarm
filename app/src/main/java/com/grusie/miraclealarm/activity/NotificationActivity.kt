@@ -69,15 +69,26 @@ class NotificationActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
-        alarm = intent?.getParcelableExtra("alarmData") ?: AlarmData()
+        alarm =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent?.getParcelableExtra(
+                "alarmData",
+                AlarmData::class.java
+            ) ?: AlarmData()
+            else intent?.getParcelableExtra("alarmData") ?: AlarmData()
         binding.viewModel?.initAlarmData(alarm)
+
+        if (intent.action == Const.ACTION_NOTIFICATION)
+            binding.btnDelay.visibility = View.GONE
 
         currentTime = Calendar.getInstance()
 
         val hour = currentTime.get(Calendar.HOUR_OF_DAY)
         val minute = currentTime.get(Calendar.MINUTE)
         binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
-        Log.d("confirm alarmData noti", "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}")
+        Log.d(
+            "confirm alarmData noti",
+            "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}"
+        )
 
         if (!alarm.dateRepeat) {
             binding.viewModel?.onAlarmFlagClicked(alarm)
@@ -85,10 +96,21 @@ class NotificationActivity : AppCompatActivity() {
 
         binding.btnTurnOff.setOnClickListener {
             binding.viewModel?.changeDelayCount(alarm, false)
-            turnOffAlarm()
+            turnOffFlag = false
+
+            val intent = Intent(this, TurnOffAlarmActivity::class.java)
+            intent.putExtra("alarm", alarm)
+            startActivity(intent)
+            finish()
+
+            //turnOffAlarm()
         }
 
         binding.btnDelay.setOnClickListener {
+            if (!alarm.dateRepeat) {
+                binding.viewModel?.onAlarmFlagClicked(alarm)
+            }
+
             if (alarm.delayCount > 0) {
                 binding.viewModel?.changeDelayCount(alarm, true)
                 turnOffAlarm()
@@ -111,8 +133,7 @@ class NotificationActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(
                     this@NotificationActivity,
-                    "남은 미루기 횟수가 없습니다."
-                    ,Toast.LENGTH_SHORT
+                    "남은 미루기 횟수가 없습니다.", Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -131,7 +152,10 @@ class NotificationActivity : AppCompatActivity() {
 
 
         binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
-        Log.d("confirm alarmData noti", "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}")
+        Log.d(
+            "confirm alarmData noti",
+            "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}"
+        )
     }
 
     private fun turnOffAlarm() {
@@ -175,7 +199,7 @@ class NotificationActivity : AppCompatActivity() {
             )
             val intent = Intent(this, ForegroundAlarmService::class.java).apply {
                 putExtra("alarmData", alarm)
-                action = "startActivity"
+                action = Const.ACTION_START_ACTIVITY
             }
             startForegroundService(intent)
         }

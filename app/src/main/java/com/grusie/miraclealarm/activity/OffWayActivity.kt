@@ -13,11 +13,12 @@ import com.grusie.miraclealarm.function.GetSelectedItem
 import com.grusie.miraclealarm.function.Utils
 
 class OffWayActivity : AppCompatActivity(), GetSelectedItem {
-    lateinit var binding: ActivityOffWayBinding
-    lateinit var offWayArray: Array<String>
+    private lateinit var binding: ActivityOffWayBinding
+    private lateinit var offWayArray: Array<String>
     private var selectedItem: String? = null
     private var offWayCount: Int = 0
     private lateinit var adapter: OffWayAdapter
+    private var defaultCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +30,13 @@ class OffWayActivity : AppCompatActivity(), GetSelectedItem {
     private fun initUi() {
         offWayArray = resources.getStringArray(R.array.off_way_array)
         selectedItem = intent.getStringExtra("param1")
-        offWayCount = intent.getIntExtra("param2", 0)
+        defaultCount = when (selectedItem) {
+            offWayArray[1] -> 3
+            offWayArray[2] -> 10
+            else -> 30
+        }
+
+        offWayCount = intent.getIntExtra("param2", defaultCount)
 
         adapter = OffWayAdapter(this, offWayArray)
         setSupportActionBar(binding.icToolbar.tbTitle)

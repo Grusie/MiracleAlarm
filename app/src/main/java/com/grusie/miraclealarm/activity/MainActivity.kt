@@ -11,12 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.AlarmListAdapter
 import com.grusie.miraclealarm.databinding.ActivityMainBinding
+import com.grusie.miraclealarm.function.ForegroundAlarmService
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.function.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.function.Utils.Companion.createPermission
@@ -42,6 +42,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUi() {
+        if (intent?.action == Const.ACTION_STOP_SERVICE) {
+            val stopServiceIntent = Intent(this, ForegroundAlarmService::class.java)
+            stopService(stopServiceIntent)
+        }
         initPermission()
 
         layoutManager = LinearLayoutManager(this)
@@ -52,18 +56,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
-
-        binding.viewModel?.allAlarms?.observe(this) { alarmList ->
-            alarmViewModel.logLine("alarmList : ", "$alarmList")
-
-            currentCal = Calendar.getInstance()
-            alarmList.forEach {
-                checkPastDate(it, false)
-            }
-            alarmViewModel.sortAlarm(alarmList)
-            adapter.alarmList = alarmList
-            adapter.notifyDataSetChanged()
-        }
 
         binding.apply {
             val intent = Intent(this@MainActivity, CreateAlarmActivity::class.java)
@@ -141,14 +133,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.viewModel?.allAlarms?.observe(this) { alarmList ->
+            alarmViewModel.logLine("alarmList : ", "$alarmList")
+
+            currentCal = Calendar.getInstance()
+            alarmList.forEach {
+                checkPastDate(it, false)
+            }
+            alarmViewModel.sortAlarm(alarmList)
+            adapter.alarmList = alarmList
+            adapter.notifyDataSetChanged()
+        }
+    }
+
     private fun checkPastDate(alarm: AlarmData, enabled: Boolean) {
         if (!alarm.dateRepeat) {
-            val alarmCal = Utils.dateToCal(alarm.date, alarm.time)
-            if (currentCal > alarmCal) {
-                alarmCal.add(Calendar.DAY_OF_YEAR, 1)
-                val date = binding.viewModel?.dateFormat(alarmCal)!!
+            lifecycleScope.launch {
+                val alarmCal = Utils.dateToCal(alarm.date, alarm.time)
+                if (currentCal > alarmCal && binding.viewModel?.getAlarmTimesByAlarmId(alarm)?.size == 0) {
+                    alarmCal.add(Calendar.DAY_OF_YEAR, 1)
+                    val date = binding.viewModel?.dateFormat(alarmCal)!!
 
-                binding.viewModel?.changeAlarmDate(alarm, date, enabled)
+                    binding.viewModel?.changeAlarmDate(alarm, date, enabled)
+                }
             }
         }
     }

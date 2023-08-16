@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.grusie.miraclealarm.viewmodel.AlarmTurnOffViewModel" />
+
+        <variable
+            name="problem"
+            type="String" />
+
+        <import type="android.view.View" />
+
+        <variable
+            name="offWayArray"
+            type="java.lang.String[]" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activity.TurnOffAlarmActivity">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_offWay_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:padding="@dimen/padding_default"
+            app:layout_constraintHeight_percent="0.8"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_offWay_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{viewModel.offWay.equals(offWayArray[0]) ? View.VISIBLE : View.GONE}" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_offWay_problem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/padding_default"
+                android:visibility="@{viewModel.offWay.equals(offWayArray[1]) ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/tv_problem"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/margin_half"
+                    android:text="@{viewModel.problem + ` = `}"
+                    android:textSize="@dimen/text_middle_title"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/et_problem"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_answer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/margin_half"
+                    android:text="@{viewModel.answer.toString()}"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_problem" />
+
+                <EditText
+                    android:id="@+id/et_problem"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:textSize="@dimen/text_middle_title"
+                    app:layout_constraintBaseline_toBaselineOf="@id/tv_problem"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_offWay_info"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:padding="@dimen/padding_default"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_offWay_content">
+
+            <TextView
+                android:id="@+id/tv_offWay_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{viewModel.currentCount.toString() + '/' + viewModel.offWayCount.toString()}"
+                android:textAlignment="center"
+                android:textSize="@dimen/text_title"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_offWay_error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_half"
+                android:text="끄는 방법 변경"
+                android:textColor="@color/dark_gray"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_offWay_count" />
+
+            <Button
+                android:id="@+id/btn_turnOff"
+                style="@style/customButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/margin_half"
+                android:layout_marginTop="@dimen/margin_half"
+                android:text="끄기"
+                app:layout_constraintBottom_toBottomOf="@id/tv_offWay_error"
+                app:layout_constraintStart_toEndOf="@id/tv_offWay_error"
+                app:layout_constraintTop_toTopOf="@id/tv_offWay_error" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

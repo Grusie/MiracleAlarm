@@ -6,9 +6,10 @@ import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.grusie.miraclealarm.activity.NotificationActivity
+import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.function.Utils.Companion.alarmManager
 import com.grusie.miraclealarm.model.AlarmDao
 import com.grusie.miraclealarm.model.AlarmData
@@ -38,7 +39,12 @@ class AlarmNotiReceiver : BroadcastReceiver() {
         repository = AlarmRepository(alarmDao)
         alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        val alarm = intent.getParcelableExtra("alarmData") ?: AlarmData()
+        val alarm =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent.getParcelableExtra(
+                "alarmData",
+                AlarmData::class.java
+            ) ?: AlarmData()
+            else intent.getParcelableExtra("alarmData") ?: AlarmData()
 
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             val allAlarms = repository.allAlarms
@@ -50,7 +56,8 @@ class AlarmNotiReceiver : BroadcastReceiver() {
                     missedAlarmList.forEach {
                         alarmTimeDao.delete(it)
                     }
-                    createMissedAlarm(context, missedAlarmList.size)
+                    if (missedAlarmList.isNotEmpty())
+                        createMissedAlarm(context, missedAlarmList.size)
 
                     for (alarmData in alarmList) {
                         if (alarmData.enabled && !missedAlarmList.map { it.alarmId }
@@ -87,13 +94,7 @@ class AlarmNotiReceiver : BroadcastReceiver() {
         Log.d("confirm missedCount", "confirm missedCount : $count")
         val serviceIntent = Intent(context, ForegroundAlarmService::class.java).apply {
             putExtra("missedCount", count)
-            action = "MISSED_ALARM"
-        }
-
-        for (runningService in runningServices) {
-            if (serviceName == runningService.service.className) {
-                context.stopService(serviceIntent)
-            }
+            action = Const.ACTION_MISSED_ALARM
         }
 
         ContextCompat.startForegroundService(context, serviceIntent)

@@ -70,7 +70,7 @@
     </string-array>
 
     <string-array name="off_way_array">
-        <item>흔들어서 끄기</item>
+        <item>흔들어서끄기</item>
         <item>수학 문제 풀기</item>
         <item>순발력 게임</item>
     </string-array>
