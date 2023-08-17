@@ -120,6 +120,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             if (alarmId != -1) {
                 _alarm.value = getAlarmById(alarmId)
+                _alarmTurnOffData.value = alarmTurnOffDao.getOffWayById(alarmId)
             } else {
                 _alarm.value = AlarmData()
             }
@@ -156,8 +157,10 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 if (date.isNotEmpty()) date.split(",").toMutableSet() else mutableSetOf()
             _date.value = dateList.value!!.joinToString(",")     //초기 알람 날짜 값
         }
-        _offWay.value = "흔들어서끄기"
-        _offWayCount.value = 30
+        _alarmTurnOffData.value?.apply {
+            _offWay.value = turnOffWay
+            _offWayCount.value = count
+        }
     }
 
     /**

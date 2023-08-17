@@ -12,5 +12,8 @@ class Const {
         const val ACTION_NOTIFICATION = "ACTION_NOTIFICATION"
         const val ACTION_MISSED_ALARM = "ACTION_MISSED_ALARM"
         const val ACTION_START_ACTIVITY = "ACTION_START_ACTIVITY"
+
+        const val SHAKE_SKIP_TIME = 300
+        const val SHAKE_THRESHOLD_GRAVITY = 1.7F
     }
 }

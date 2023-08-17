@@ -54,10 +54,17 @@ class OffWayCountActivity : AppCompatActivity() {
             minValue = 1
             maxValue = values.size
             displayedValues = values
-            value = offWayCount
+
+            val index = values.indexOf(offWayCount.toString())
+            value = if (index != -1) {
+                index + 1
+            } else {
+                displayedValues[values.size / 2].toInt()
+            }
+            offWayCount = displayedValues[value - 1].toInt()
 
             setOnValueChangedListener { _, _, newVal ->
-                offWayCount = newVal
+                offWayCount = displayedValues[newVal - 1].toInt()
             }
         }
 
