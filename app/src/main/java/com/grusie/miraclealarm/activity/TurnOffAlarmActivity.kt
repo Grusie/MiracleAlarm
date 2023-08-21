@@ -1,6 +1,7 @@
 package com.grusie.miraclealarm.activity
 
 import android.annotation.SuppressLint
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -15,6 +16,9 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
+import android.view.WindowManager
+import android.view.animation.AnimationUtils
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -38,6 +42,7 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
     private var shakeSensorManager: SensorManager? = null
     private var shakeAccelerometer: Sensor? = null
     private var shakeTime = 0L
+    private lateinit var keyguardManager: KeyguardManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +71,7 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initUi() {
+        initKeyguard()
         val turnOffViewModel = ViewModelProvider(this)[AlarmTurnOffViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = turnOffViewModel
@@ -89,32 +95,42 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
                         if (viewModel?.answer?.value!!.toString() == etProblem.text.toString()) {
                             viewModel?.increaseCurrentCount()
                             viewModel?.createProblem()
+                        } else {
+
+                            clOffWayProblem.startAnimation(AnimationUtils.loadAnimation(this@TurnOffAlarmActivity, R.anim.wrong_answer_anim))
                         }
                         etProblem.setText("")
                         true
                     }
 
                     else -> {
-                        true
+                        false
                     }
                 }
             }
 
-            binding.btnTurnOff.setOnClickListener {
+/*            btnTurnOff.setOnClickListener {
                 turnOffAlarm()
-            }
+            }*/
 
-            binding.btnQuickness.setOnTouchListener { view, motionEvent ->
+            btnQuickness.setOnTouchListener { _, motionEvent ->
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        binding.viewModel?.increaseCurrentCount()
-                        view.isEnabled = false
+                        viewModel?.increaseCurrentCount()
+                        viewModel?.changeEnabled(false)
                         true
                     }
 
                     else -> false
                 }
             }
+
+            tvOffWayChange.setOnClickListener {
+                viewModel?.changeOffWay()
+            }
+
+            setSupportActionBar(icToolbar.tbTitle)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
         }
     }
 
@@ -123,7 +139,14 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
             if (!it.isNullOrEmpty()) {
                 if (glideFlag)
                     Glide.with(this@TurnOffAlarmActivity).clear(binding.ivOffWayContent)
+
                 shakeSensorManager?.unregisterListener(this)
+
+                binding.viewModel?.stopQuickness()
+                binding.btnQuickness.visibility = View.GONE
+
+                binding.icToolbar.title = it
+
                 when (it) {
                     offWayArray[0] -> {
                         Glide.with(this).asGif().load(R.drawable.shaking)
@@ -149,12 +172,12 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
 
                                 binding.viewModel?.startQuickness(
                                     Pair(
-                                        binding.clOffWayContent.left,
-                                        binding.clOffWayContent.top
+                                        binding.clOffWayContentInner.left,
+                                        binding.clOffWayContentInner.top
                                     ),
                                     Pair(
-                                        binding.clOffWayContent.right,
-                                        binding.clOffWayContent.bottom
+                                        binding.clOffWayContentInner.right,
+                                        binding.clOffWayContentInner.bottom
                                     ),
                                     binding.btnQuickness.width
                                 )
@@ -186,7 +209,7 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
             binding.btnQuickness.x = it.first
             binding.btnQuickness.y = it.second
 
-            binding.btnQuickness.isEnabled = true
+            binding.viewModel?.changeEnabled(true)
         }
     }
 
@@ -226,6 +249,36 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         binding.viewModel?.stopQuickness()
     }
 
+    /**
+     * 잠금화면 설정
+     * */
+    private fun initKeyguard() {
+        keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)     //FLAG_SHOW_WHEN_LOCKED 대체
+            setTurnScreenOn(true)       //FLAG_TURN_SCREEN_ON 대체
+            keyguardManager.requestDismissKeyguard(this, null)      //FLAG_DISMISS_KEYGUARD 대체
+        } else {
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                        or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+            )
+        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    private fun hideKeyboard() {
+        binding.etProblem.clearFocus()
+        val inputManager: InputMethodManager =
+            this.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        inputManager.hideSoftInputFromWindow(
+            this.currentFocus?.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
             val x = event.values?.get(0)!!
@@ -253,5 +306,10 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        hideKeyboard()
+        return super.dispatchTouchEvent(ev)
     }
 }

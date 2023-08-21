@@ -33,8 +33,9 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem{
         adapter = VibrationAdapter(this, vibrationArray)
 
         setSupportActionBar(binding.icToolbar.tbTitle)
+        binding.icToolbar.title = "진동"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "진동"
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         binding.rvAlarmSound.adapter = adapter
         binding.rvAlarmSound.layoutManager = LinearLayoutManager(this)

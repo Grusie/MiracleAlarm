@@ -57,8 +57,9 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
         soundArray = resources.getStringArray(R.array.sound_array)
 
         setSupportActionBar(binding.icToolbar.tbTitle)
+        binding.icToolbar.title = "소리"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "소리"
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         adapter = SoundAdapter(this, this, soundArray)
         adapter.selectedPosition = soundArray.indexOf(selectedItem)

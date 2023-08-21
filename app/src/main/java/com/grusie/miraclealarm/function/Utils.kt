@@ -475,10 +475,18 @@ class Utils {
         /**
          * 볼륨 조절 전 볼륨 값 가져오기
          **/
-        fun initVolume(context: Context) {
+        fun initVolume(context: Context): Int {
             if (am == null)
                 am = context.getSystemService(AUDIO_SERVICE) as AudioManager
             initVolume = am!!.getStreamVolume(AudioManager.STREAM_MUSIC)
+
+            return initVolume
+        }
+
+        fun getCurrentVolume(context: Context): Int {
+            if (am == null)
+                am = context.getSystemService(AUDIO_SERVICE) as AudioManager
+            return am!!.getStreamVolume(AudioManager.STREAM_MUSIC)
         }
 
         /**

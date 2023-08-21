@@ -192,7 +192,7 @@ class NotificationActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        if (turnOffFlag) {
+        if (turnOffFlag && !isFinishing) {
             binding.viewModel?.logLine(
                 "lifecycleConfirm",
                 "onStop, $this"

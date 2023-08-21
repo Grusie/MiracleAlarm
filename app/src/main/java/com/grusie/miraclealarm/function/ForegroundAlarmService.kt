@@ -22,9 +22,16 @@ import com.grusie.miraclealarm.activity.MainActivity
 import com.grusie.miraclealarm.activity.NotificationActivity
 import com.grusie.miraclealarm.function.Utils.Companion.changeVolume
 import com.grusie.miraclealarm.model.AlarmData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
-class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListener {
+class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListener, CoroutineScope {
     private var NOTIFICATION_ID by Delegates.notNull<Int>()
     private val CHANNEL_ID = "channel_id"
     private val CHANNEL_NAME = "channel_name"
@@ -33,6 +40,12 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
     private var headsetReceiver = HeadsetReceiver()
     private lateinit var alarm: AlarmData
     private var isConnected = false
+    private var initVolume = 0
+
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
+
     override fun onDestroy() {
         super.onDestroy()
         try {
@@ -41,6 +54,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         }
         Utils.stopAlarmSound(this)
         changeVolume(this, null, isConnected)
+        job.cancel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -75,7 +89,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         }
 
         if (alarm.flagSound) {
-            Utils.initVolume(this)
+            initVolume = Utils.initVolume(this)
             headsetCheck()
         }
         Utils.startAlarm(this, alarm)
@@ -91,11 +105,23 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
 
         val notification = createNotification(alarm, pendingIntent)
 
+        if(alarm.flagSound)
+            changeVolumeEternally(alarm)
+
         startForeground(NOTIFICATION_ID, notification)
 
         startActivity(notificationIntent)
 
         return START_REDELIVER_INTENT
+    }
+    private fun changeVolumeEternally(alarm: AlarmData){
+        launch {
+            while (isActive) {
+                delay(10000)
+                if(initVolume < Utils.getCurrentVolume(this@ForegroundAlarmService))
+                    changeVolume(this@ForegroundAlarmService, alarm.volume, isConnected)
+            }
+        }
     }
 
     private fun createNotificationIntent(alarm: AlarmData): Intent {
@@ -183,4 +209,5 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         changeVolume(this, alarm.volume, isConnected)
         Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
     }
+
 }

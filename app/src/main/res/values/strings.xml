@@ -22,56 +22,5 @@
     <string name="string_stop">정지</string>
     <string name="string_turn_off_all">모든 알람이 꺼진 상태입니다.</string>
     <string name="string_delete_alarm">알람이 삭제 되었습니다.</string>
-
-    <string-array name="sound_array">
-        <item>탁상시계 알람소리</item>
-        <item>시계알람</item>
-        <item>생명 유지 장치 알람소리</item>
-        <item>기상나팔 소리</item>
-        <item>알람소리1</item>
-        <item>알람소리2</item>
-        <item>알람소리3</item>
-        <item>알람소리4</item>
-        <item>학교 벨소리</item>
-        <item>닭 소리</item>
-        <item>전화 벨소리</item>
-        <item>자명종 소리</item>
-        <item>비상 벨소리</item>
-        <item>방사능 위험 소리</item>
-        <item>벨소리 합성</item>
-    </string-array>
-
-    <string-array name="vibration_array">
-        <item>Zig-zig-Zig</item>
-        <item>Short_Long_Short</item>
-        <item>Double-Triple</item>
-        <item>SOS Signal</item>
-        <item>Heartbeat</item>
-        <item>Ascending</item>
-        <item>Custom Morse Code</item>
-        <item>Pulse</item>
-        <item>Dit-Dit-Dah-Dah</item>
-        <item>Long-Short-Long</item>
-        <item>Ascending-Descending</item>
-        <item>Short Pause</item>
-        <item>Long Pause</item>
-        <item>Triple-Triple</item>
-        <item>SOS Twice</item>
-    </string-array>
-
-    <string-array name="delay_array">
-        <item>1분</item>
-        <item>5분</item>
-        <item>10분</item>
-        <item>15분</item>
-        <item>20분</item>
-        <item>25분</item>
-        <item>30분</item>
-    </string-array>
-
-    <string-array name="off_way_array">
-        <item>흔들어서 끄기</item>
-        <item>수학 문제 풀기</item>
-        <item>순발력 게임</item>
-    </string-array>
+    <string name="string_change_turn_offWay"><u>끄는 방법 변경</u></string>
 </resources>

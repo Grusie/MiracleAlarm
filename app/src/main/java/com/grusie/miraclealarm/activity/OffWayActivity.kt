@@ -39,9 +39,10 @@ class OffWayActivity : AppCompatActivity(), GetSelectedItem {
         offWayCount = intent.getIntExtra("param2", defaultCount)
 
         adapter = OffWayAdapter(this, offWayArray)
+        binding.icToolbar.title = "끄는 방법"
         setSupportActionBar(binding.icToolbar.tbTitle)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "끄는 방법"
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         binding.rvAlarmSound.adapter = adapter
         binding.rvAlarmSound.layoutManager = LinearLayoutManager(this)

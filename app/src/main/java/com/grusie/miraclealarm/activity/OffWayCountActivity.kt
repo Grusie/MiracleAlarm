@@ -36,7 +36,7 @@ class OffWayCountActivity : AppCompatActivity() {
             }
 
             offWayArray[2] -> {
-                min = 2
+                min = 4
                 max = 20
                 step = 2
             }

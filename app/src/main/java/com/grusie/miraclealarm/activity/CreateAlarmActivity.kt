@@ -97,6 +97,7 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
             btnSave.setOnClickListener {
                 saveAlarm()
+                //testSaveAlarm()
             }
             btnCancel.setOnClickListener {
                 finish()
@@ -221,6 +222,62 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
             finish()
         }
     }
+
+/*    private fun testSaveAlarm() {
+            binding.apply {
+                viewModel?.alarm?.value?.apply {
+                    if (alarmId != -1) {
+                        oldAlarm = this.copy()
+                    }
+                    title = etAlarmTitle.text.toString()
+                    flagSound = viewModel?.flagSound?.value == true
+                    flagVibrate = viewModel?.flagVibe?.value == true
+                    flagOffWay = viewModel?.flagOffWay?.value == true
+                    flagDelay = viewModel?.flagDelay?.value == true
+
+                    time = viewModel?.time?.value.toString()
+
+                    this.date = viewModel?.date?.value!!
+                    enabled = true
+                    sound =
+                        if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
+                    volume = viewModel?.volume?.value!!
+                    vibrate =
+                        if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
+                    delay =
+                        if (viewModel?.flagDelay?.value == true) tvDelaySub.text.toString() else delay
+                }
+
+                lifecycleScope.launch {
+                    viewModel?.updateAlarmData()?.let { alarmData ->
+                        oldAlarm?.let { oldAlarm ->
+                            viewModel?.getAlarmTimesByAlarmId(oldAlarm)?.forEach {
+                                Utils.delAlarm(this@CreateAlarmActivity, it.id)
+                            }
+                            viewModel?.deleteAlarmTimeById(oldAlarm)
+                            viewModel?.updateAlarmTurnOff(Const.DELETE_ALARM_TURN_OFF, oldAlarm)
+                        }
+
+                        viewModel?.updateAlarmTurnOff(Const.INSERT_ALARM_TURN_OFF, alarmData)
+
+                        val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
+                        alarmTimeList.forEach {
+                            viewModel?.insertAlarmTime(it)
+                        }
+
+                        Toast.makeText(
+                            this@CreateAlarmActivity,
+                            Utils.createAlarmMessage(
+                                true,
+                                Collections.min(alarmTimeList.map { it.timeInMillis })
+                            ),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+            finish()
+    }*/
 
 
     private fun showDateDialog() {
