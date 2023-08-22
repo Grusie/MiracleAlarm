@@ -32,10 +32,6 @@ class AlarmListAdapter(
         val alarm = alarmList[position]
         holder.binding.cbAlarmSelect.isChecked =
             holder.binding.viewModel?.modifyList?.value?.contains(alarm) ?: false
-        viewModel.logLine(
-            "onBindViewHolder",
-            " alarm = $alarm list = ${holder.binding.viewModel?.modifyList?.value} check = ${holder.binding.cbAlarmSelect.isChecked}"
-        )
         holder.bind(alarm, viewModel, lifecycleOwner)
     }
 

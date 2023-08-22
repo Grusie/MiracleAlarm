@@ -2,6 +2,8 @@ package com.grusie.miraclealarm
 
 class Const {
     companion object {
+        var IS_DEBUG = BuildConfig.DEBUG
+
         const val RESULT_CODE_SOUND = 1001
         const val RESULT_CODE_VIBRATION = 1002
 

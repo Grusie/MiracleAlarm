@@ -6,8 +6,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
+import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
@@ -15,12 +15,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.Glide
+import com.google.android.gms.ads.AdRequest
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityNotificationBinding
 import com.grusie.miraclealarm.function.AlarmNotiReceiver
 import com.grusie.miraclealarm.function.ForegroundAlarmService
 import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.function.Utils.Companion.getWidthInDp
+import com.grusie.miraclealarm.function.Utils.Companion.initAdView
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import java.util.Calendar
@@ -60,6 +64,15 @@ class NotificationActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Glide.with(this).asGif().load(R.drawable.ring_alarm).into(binding.ivRingAlarm)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Glide.with(this).clear(binding.ivRingAlarm)
+    }
 
     private fun initUi() {
         initKeyguard()
@@ -71,24 +84,27 @@ class NotificationActivity : AppCompatActivity() {
 
         alarm =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent?.getParcelableExtra(
-                "alarmData",
-                AlarmData::class.java
+                "alarmData", AlarmData::class.java
             ) ?: AlarmData()
             else intent?.getParcelableExtra("alarmData") ?: AlarmData()
         binding.viewModel?.initAlarmData(alarm)
 
-        if (intent.action == Const.ACTION_NOTIFICATION)
-            binding.btnDelay.visibility = View.GONE
+        if (intent.action == Const.ACTION_NOTIFICATION) binding.btnDelay.visibility = View.GONE
+
+        binding.llAdViewContainer.viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val widthInDp = binding.llAdViewContainer.getWidthInDp()
+                loadAdView(widthInDp)
+                binding.llAdViewContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
 
         currentTime = Calendar.getInstance()
 
         val hour = currentTime.get(Calendar.HOUR_OF_DAY)
         val minute = currentTime.get(Calendar.MINUTE)
         binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
-        Log.d(
-            "confirm alarmData noti",
-            "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}"
-        )
 
         if (!alarm.dateRepeat) {
             binding.viewModel?.onAlarmFlagClicked(alarm)
@@ -98,13 +114,21 @@ class NotificationActivity : AppCompatActivity() {
             binding.viewModel?.changeDelayCount(alarm, false)
             turnOffFlag = false
 
-            val intent = Intent(this, TurnOffAlarmActivity::class.java)
-            intent.putExtra("alarm", alarm)
-            startActivity(intent)
-            finish()
-
-            //turnOffAlarm()
+            if(!alarm.flagOffWay){
+                turnOffAlarm()
+            }
+            else {
+                val intent = Intent(this, TurnOffAlarmActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                intent.putExtra("alarm", alarm)
+                startActivity(intent)
+                finish()
+            }
         }
+
+        /**
+         * 알람 미루기
+         **/
 
         binding.btnDelay.setOnClickListener {
             if (!alarm.dateRepeat) {
@@ -116,24 +140,18 @@ class NotificationActivity : AppCompatActivity() {
                 turnOffAlarm()
                 val minutes = alarm.delay.replace("분", "").toInt()
                 currentTime.add(Calendar.MINUTE, minutes)
-                val alarmTimeData =
-                    Utils.setAlarm(this, currentTime.timeInMillis, alarm)
+                val alarmTimeData = Utils.setAlarm(this, currentTime.timeInMillis, alarm)
 
                 binding.viewModel?.insertAlarmTime(alarmTimeData)
-                Log.d("confirm alarmData noti", "$alarm")
 
                 Toast.makeText(
-                    this@NotificationActivity,
-                    Utils.createAlarmMessage(
-                        true,
-                        alarmTimeData.timeInMillis
-                    ),
-                    Toast.LENGTH_SHORT
+                    this@NotificationActivity, Utils.createAlarmMessage(
+                        true, alarmTimeData.timeInMillis
+                    ), Toast.LENGTH_SHORT
                 ).show()
             } else {
                 Toast.makeText(
-                    this@NotificationActivity,
-                    "남은 미루기 횟수가 없습니다.", Toast.LENGTH_SHORT
+                    this@NotificationActivity, "남은 미루기 횟수가 없습니다.", Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -152,17 +170,19 @@ class NotificationActivity : AppCompatActivity() {
 
 
         binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
-        Log.d(
-            "confirm alarmData noti",
-            "$alarm, $hour, $minute, ${binding.viewModel?.timePickerToTime(hour, minute)}"
-        )
+    }
+
+    private fun loadAdView(width: Int) {
+        val adView = initAdView(this, width)
+
+        binding.llAdViewContainer.addView(adView)
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
     }
 
     private fun turnOffAlarm() {
         Utils.stopAlarm(this)
         turnOffFlag = false
-
-        Log.d("confirm turnOffAlarm", "turnOffAlarm $alarm")
 
         editor.putBoolean("openMainActivity", true)
         editor.apply()
@@ -181,9 +201,7 @@ class NotificationActivity : AppCompatActivity() {
             keyguardManager.requestDismissKeyguard(this, null)      //FLAG_DISMISS_KEYGUARD 대체
         } else {
             window.addFlags(
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                        or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
             )
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -193,10 +211,6 @@ class NotificationActivity : AppCompatActivity() {
         super.onStop()
 
         if (turnOffFlag && !isFinishing) {
-            binding.viewModel?.logLine(
-                "lifecycleConfirm",
-                "onStop, $this"
-            )
             val intent = Intent(this, ForegroundAlarmService::class.java).apply {
                 putExtra("alarmData", alarm)
                 action = Const.ACTION_START_ACTIVITY
@@ -223,12 +237,8 @@ class NotificationActivity : AppCompatActivity() {
                     WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
+            window.decorView.systemUiVisibility =
+                (View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
     }
 

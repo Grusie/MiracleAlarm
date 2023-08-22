@@ -1,27 +1,23 @@
 package com.grusie.miraclealarm.fragment
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.DelayAdapter
-import com.grusie.miraclealarm.adapter.VibrationAdapter
 import com.grusie.miraclealarm.databinding.FragmentDelayBottomBinding
 import com.grusie.miraclealarm.function.GetSelectedItem
-import com.grusie.miraclealarm.function.Utils
 
 class DelayBottomFragment : BottomSheetDialogFragment(), GetSelectedItem {
     var binding: FragmentDelayBottomBinding? = null
-    var selectedItem :String? = null
+    private var selectedItem: String? = null
     private lateinit var adapter: DelayAdapter
-    lateinit var delayArray: Array<String>
-    lateinit var listener: OnDelayDataPassListener
+    private lateinit var delayArray: Array<String>
+    private lateinit var listener: OnDelayDataPassListener
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +57,6 @@ class DelayBottomFragment : BottomSheetDialogFragment(), GetSelectedItem {
     }
 }
 
-interface OnDelayDataPassListener{
+interface OnDelayDataPassListener {
     fun onDelayDataPass(data: String?)
 }

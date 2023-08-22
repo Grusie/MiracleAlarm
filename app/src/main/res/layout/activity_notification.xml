@@ -25,7 +25,8 @@
             android:textSize="@dimen/text_title"
             app:layout_constraintBottom_toTopOf="@id/tv_notification_title"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
             android:id="@+id/tv_notification_title"
@@ -33,20 +34,27 @@
             android:layout_height="wrap_content"
             android:text="@{viewModel.alarm.title}"
             android:textSize="@dimen/text_middle_title"
-            app:layout_constraintBottom_toTopOf="@id/cl_notification_btns"
+            app:layout_constraintBottom_toTopOf="@id/iv_ring_alarm"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/tv_notification_time"/>
+
+        <ImageView
+            android:id="@+id/iv_ring_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintHeight_percent="0.4"
+            app:layout_constraintTop_toBottomOf="@id/tv_notification_title"
+            app:layout_constraintBottom_toTopOf="@id/cl_notification_btns"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_notification_btns"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="@dimen/padding_default"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/ll_ad_view_container"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintStart_toStartOf="parent">
 
             <Button
                 android:id="@+id/btn_delay"
@@ -54,6 +62,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/light_blue"
                 android:text="미루기"
+                android:padding="4dp"
                 android:visibility="@{viewModel.flagDelay ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toTopOf="@id/btn_turnOff"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -70,6 +79,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"></Button>
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_ad_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:gravity="center"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -22,6 +22,12 @@
         android:theme="@style/Theme.MiracleAlarm"
         tools:ignore="LockedOrientationActivity"
         tools:targetApi="32">
+
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-6416226231409915~2331517505" />   <!--google admob app id-->
+
         <activity
             android:name=".activity.TurnOffAlarmActivity"
             android:exported="false"

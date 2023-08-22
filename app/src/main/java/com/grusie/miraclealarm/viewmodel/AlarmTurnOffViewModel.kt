@@ -1,7 +1,6 @@
 package com.grusie.miraclealarm.viewmodel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -52,14 +51,17 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
     fun initOffWayById(alarm: AlarmData) {
         viewModelScope.launch {
             val alarmTurnOffData = alarmTurnOffDao.getOffWayById(alarm.id)
-            _offWay.value = alarmTurnOffData.turnOffWay
-            _offWayCount.value = alarmTurnOffData.count
-            Log.d("confirm offWay", "${_offWay.value}")
+            _offWay.value = alarmTurnOffData?.turnOffWay
+            _offWayCount.value = alarmTurnOffData?.count
         }
     }
 
-    fun changeOffWay(){
-        val filteredArray = offWayArray.filterIndexed { index, _ -> offWayArray[index] != _offWay.value}
+    /**
+     * 알람 끄는 방법 변경
+     **/
+    fun changeOffWay() {
+        val filteredArray =
+            offWayArray.filterIndexed { index, _ -> offWayArray[index] != _offWay.value }
 
         val randomIndex = (filteredArray.indices).random()
         _offWay.value = filteredArray[randomIndex]
@@ -67,6 +69,11 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
 
         _currentCount.value = 0
     }
+
+    /**
+     * 수학 문제 만들기
+     **/
+
     fun createProblem() {
         val tempProblem = Array(5) { "" }
         for (i in 0 until 5) {
@@ -96,6 +103,10 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
         return result
     }
 
+
+    /**
+     * 순발력 게임 조작
+     **/
     fun startQuickness(leftTop: Pair<Int, Int>, rightBottom: Pair<Int, Int>, width: Int) {
         job = viewModelScope.launch {
             _quicknessFlag.value = true
@@ -115,7 +126,7 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
         job?.cancel()
     }
 
-    fun changeEnabled(enabled : Boolean){
+    fun changeEnabled(enabled: Boolean) {
         _btnQuickEnabled.value = enabled
     }
 

@@ -6,8 +6,6 @@ import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import android.widget.Toast
 
 class HeadsetReceiver : BroadcastReceiver() {
     private var listener: HeadsetConnectionListener? = null
@@ -25,8 +23,8 @@ class HeadsetReceiver : BroadcastReceiver() {
             Intent.ACTION_HEADSET_PLUG -> {
                 val isConnected = intent.getIntExtra("state", 0) == 1
                 listener?.onHeadsetConnected(isConnected)
-                Log.d("confirm plug", "이어폰 상태 확인 $isConnected")
             }
+
             BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED -> {
                 val state = intent.getIntExtra(
                     BluetoothProfile.EXTRA_STATE,

@@ -1,13 +1,11 @@
 package com.grusie.miraclealarm.function
 
 import android.app.ActivityManager
-import android.app.ActivityManager.RunningServiceInfo
 import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.function.Utils.Companion.alarmManager
@@ -24,7 +22,7 @@ import kotlinx.coroutines.launch
 class AlarmNotiReceiver : BroadcastReceiver() {
 
     private lateinit var activityManager: ActivityManager
-    private lateinit var runningServices: MutableList<RunningServiceInfo>
+    private lateinit var runningServices: List<ActivityManager.RunningAppProcessInfo>
 
     private val serviceName = ForegroundAlarmService::class.java.name
     private lateinit var alarmDao: AlarmDao
@@ -33,7 +31,7 @@ class AlarmNotiReceiver : BroadcastReceiver() {
     private lateinit var missedAlarmList: List<AlarmTimeData>
     override fun onReceive(context: Context, intent: Intent) {
         activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        runningServices = activityManager.getRunningServices(Int.MAX_VALUE)
+        runningServices = activityManager.runningAppProcesses
         alarmDao = AlarmDatabase.getDatabase(context).alarmDao()
         alarmTimeDao = AlarmDatabase.getDatabase(context).alarmTimeDao()
         repository = AlarmRepository(alarmDao)
@@ -48,7 +46,6 @@ class AlarmNotiReceiver : BroadcastReceiver() {
 
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             val allAlarms = repository.allAlarms
-            Log.d("confirm contentValue2", "confirm contentValue : bootComplete")
             allAlarms.observeForever { alarmList ->
                 CoroutineScope(Dispatchers.IO).launch {
                     missedAlarmList = alarmTimeDao.getMissedAlarms(System.currentTimeMillis())
@@ -91,7 +88,6 @@ class AlarmNotiReceiver : BroadcastReceiver() {
     }
 
     private fun createMissedAlarm(context: Context, count: Int) {
-        Log.d("confirm missedCount", "confirm missedCount : $count")
         val serviceIntent = Intent(context, ForegroundAlarmService::class.java).apply {
             putExtra("missedCount", count)
             action = Const.ACTION_MISSED_ALARM
@@ -105,9 +101,11 @@ class AlarmNotiReceiver : BroadcastReceiver() {
             putExtra("alarmData", alarm)
         }
 
-        for (runningService in runningServices) {
-            if (serviceName == runningService.service.className) {
+        for (processInfo in runningServices) {
+            if (serviceName == processInfo.processName) {
                 context.stopService(serviceIntent)
+
+                break
             }
         }
 

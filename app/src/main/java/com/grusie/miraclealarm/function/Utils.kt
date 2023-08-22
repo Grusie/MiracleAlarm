@@ -7,6 +7,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
@@ -15,7 +17,11 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import android.view.View
 import android.widget.Toast
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.model.AlarmTimeData
@@ -82,12 +88,6 @@ class Utils {
                 }
 
                 alarmTimeList.add(alarmTimeData)
-                Log.d("confirm contentValue alarmTimeList", "$alarmTimeList")
-
-                Log.d(
-                    "confirm contentValue",
-                    "${alarm.time}, ${alarm.date}, ${alarm.id}, ${alarm.dateRepeat} 알람 설정 됨"
-                )
             }
 
             return alarmTimeList
@@ -97,17 +97,17 @@ class Utils {
         /**
          * 다음 울릴 알람 시간을 리턴 해주는 함수
          */
-        fun calculateDaysDiff(currentDate: Calendar, alarmDate: Calendar): Int {
+        private fun calculateDaysDiff(currentDate: Calendar, alarmDate: Calendar): Int {
             val currentYear = currentDate.get(Calendar.YEAR)
             val alarmYear = alarmDate.get(Calendar.YEAR)
 
-            if (currentYear == alarmYear) {
-                return alarmDate.get(Calendar.DAY_OF_YEAR) - currentDate.get(Calendar.DAY_OF_YEAR)
+            return if (currentYear == alarmYear) {
+                alarmDate.get(Calendar.DAY_OF_YEAR) - currentDate.get(Calendar.DAY_OF_YEAR)
             } else {
                 val daysInCurrentYear = currentDate.getActualMaximum(Calendar.DAY_OF_YEAR) -
                         currentDate.get(Calendar.DAY_OF_YEAR) + 1
                 val daysInAlarmYear = alarmDate.get(Calendar.DAY_OF_YEAR)
-                return daysInCurrentYear + daysInAlarmYear
+                daysInCurrentYear + daysInAlarmYear
             }
         }
 
@@ -274,8 +274,6 @@ class Utils {
                         )
                     }
                 }
-                for (i in calList)
-                    Log.d("confirm getAlarmTime", "getAlarmTime ${i.time}")
             }
 
             return calList
@@ -386,10 +384,18 @@ class Utils {
         fun audioFocus(context: Context) {
             // 오디오 포커스 요청
             val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
-            val result = audioManager.requestAudioFocus(
-                audioFocusChangeListener,
-                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN
-            )
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+
+            val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(audioAttributes)
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                .build()
+
+            val result = audioManager.requestAudioFocus(focusRequest)
 
             if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 hasAudioFocus = true
@@ -431,14 +437,20 @@ class Utils {
          * 알람 사운드 정지
          **/
         fun stopAlarmSound(context: Context) {
-            Log.d("confirm stopAlarm", "$mp")
-
             if (hasAudioFocus) {
                 val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
-                audioManager.abandonAudioFocus(audioFocusChangeListener)
+                val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setOnAudioFocusChangeListener(audioFocusChangeListener)
+                    .build()
+
+                audioManager.abandonAudioFocusRequest(focusRequest)
             }
-            mp?.stop()
-            mp?.release()
+            mp?.apply {
+                if(isPlaying){
+                    stop()
+                }
+                release()
+            }
             mp = null
         }
 
@@ -448,14 +460,12 @@ class Utils {
         fun changeVolume(context: Context, volume: Int?, isConnected: Boolean) {
             if (am == null)
                 am = context.getSystemService(AUDIO_SERVICE) as AudioManager
-            Log.d("confirm volume", "$volume")
-
             val changeVolume = if (volume != null) {
-                var tempVolume =
+                val tempVolume =
                     if (!isConnected)
                         volume
                     else {
-                        var maxVolume = 70
+                        val maxVolume = 70
                         if (volume > maxVolume) maxVolume else volume
                     }
                 am!!.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * tempVolume / 100
@@ -609,6 +619,27 @@ class Utils {
             }
         }
 
+        /**
+         * 뷰 너비를 dp형태로 반환
+         **/
+        fun View.getWidthInDp(): Int {
+            val density = resources.displayMetrics.density
+            return (width / density).toInt()
+        }
+
+
+        /**
+         * 광고 초기화
+         **/
+        fun initAdView(context: Context, width:Int) : AdView{
+            val adView = AdView(context)
+            adView.adUnitId =
+                if (Const.IS_DEBUG) context.getString(R.string.string_admob_test_id) else context.getString(R.string.string_admob_real_id)
+
+            adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, width))
+            return adView
+        }
+
 
         /**
          * confirm 다이얼로그 만들기
@@ -620,6 +651,7 @@ class Utils {
                 setCancelable(false)
                 setNegativeButton("취소") { dialog, _ ->
                     dialog.dismiss()
+                    activity.finish()
                 }
                 setPositiveButton("수락") { _, _ ->
                     createPermission(permission)

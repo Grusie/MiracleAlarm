@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.Const
@@ -14,10 +13,10 @@ import com.grusie.miraclealarm.databinding.ActivityVibrationBinding
 import com.grusie.miraclealarm.function.GetSelectedItem
 import com.grusie.miraclealarm.function.Utils
 
-class VibrationActivity : AppCompatActivity(), GetSelectedItem{
+class VibrationActivity : AppCompatActivity(), GetSelectedItem {
     lateinit var binding: ActivityVibrationBinding
-    lateinit var vibrationArray: Array<String>
-    private var selectedItem :String? = null
+    private lateinit var vibrationArray: Array<String>
+    private var selectedItem: String? = null
     private lateinit var adapter: VibrationAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +49,7 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem{
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             android.R.id.home -> {
                 finish()
                 return true

@@ -3,7 +3,8 @@ package com.grusie.miraclealarm.activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -96,14 +97,14 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
             }
 
             btnSave.setOnClickListener {
-                saveAlarm()
-                //testSaveAlarm()
+                //saveAlarm()
+                testSaveAlarm()
             }
             btnCancel.setOnClickListener {
                 finish()
             }
             ivCalendar.setOnClickListener {
-                showDateDialog()
+                showCalendar()
             }
             clAlarmSound.setOnClickListener {
                 startOptionActivity(
@@ -147,7 +148,6 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
     private fun initDate() {
         binding.apply {
             viewModel?.date?.observe(this@CreateAlarmActivity) {
-                viewModel?.logLine("confirm day_of_week", it)
                 if (it.isNullOrEmpty()) {
                     val date = viewModel?.dateFormat(alarmCal)!!
                     viewModel?.onDateClicked(date, false)
@@ -161,10 +161,6 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
     private fun saveAlarm() {
         if (binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()) {
-            Log.d(
-                "confirm alarmCal",
-                "${alarmCal.get(Calendar.DAY_OF_MONTH)}, ${binding.viewModel?.alarm?.value!!}"
-            )
             Toast.makeText(this, "이미 지난 시간은 선택할 수 없습니다.", Toast.LENGTH_SHORT).show()
         } else {
             binding.apply {
@@ -223,64 +219,64 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }
     }
 
-/*    private fun testSaveAlarm() {
-            binding.apply {
-                viewModel?.alarm?.value?.apply {
-                    if (alarmId != -1) {
-                        oldAlarm = this.copy()
+        private fun testSaveAlarm() {
+                binding.apply {
+                    viewModel?.alarm?.value?.apply {
+                        if (alarmId != -1) {
+                            oldAlarm = this.copy()
+                        }
+                        title = etAlarmTitle.text.toString()
+                        flagSound = viewModel?.flagSound?.value == true
+                        flagVibrate = viewModel?.flagVibe?.value == true
+                        flagOffWay = viewModel?.flagOffWay?.value == true
+                        flagDelay = viewModel?.flagDelay?.value == true
+
+                        time = viewModel?.time?.value.toString()
+
+                        this.date = viewModel?.date?.value!!
+                        enabled = true
+                        sound =
+                            if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
+                        volume = viewModel?.volume?.value!!
+                        vibrate =
+                            if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
+                        delay =
+                            if (viewModel?.flagDelay?.value == true) tvDelaySub.text.toString() else delay
                     }
-                    title = etAlarmTitle.text.toString()
-                    flagSound = viewModel?.flagSound?.value == true
-                    flagVibrate = viewModel?.flagVibe?.value == true
-                    flagOffWay = viewModel?.flagOffWay?.value == true
-                    flagDelay = viewModel?.flagDelay?.value == true
 
-                    time = viewModel?.time?.value.toString()
-
-                    this.date = viewModel?.date?.value!!
-                    enabled = true
-                    sound =
-                        if (viewModel?.flagSound?.value == true) tvSoundSub.text.toString() else sound
-                    volume = viewModel?.volume?.value!!
-                    vibrate =
-                        if (viewModel?.flagVibe?.value == true) tvVibeSub.text.toString() else vibrate
-                    delay =
-                        if (viewModel?.flagDelay?.value == true) tvDelaySub.text.toString() else delay
-                }
-
-                lifecycleScope.launch {
-                    viewModel?.updateAlarmData()?.let { alarmData ->
-                        oldAlarm?.let { oldAlarm ->
-                            viewModel?.getAlarmTimesByAlarmId(oldAlarm)?.forEach {
-                                Utils.delAlarm(this@CreateAlarmActivity, it.id)
+                    lifecycleScope.launch {
+                        viewModel?.updateAlarmData()?.let { alarmData ->
+                            oldAlarm?.let { oldAlarm ->
+                                viewModel?.getAlarmTimesByAlarmId(oldAlarm)?.forEach {
+                                    Utils.delAlarm(this@CreateAlarmActivity, it.id)
+                                }
+                                viewModel?.deleteAlarmTimeById(oldAlarm)
+                                viewModel?.updateAlarmTurnOff(Const.DELETE_ALARM_TURN_OFF, oldAlarm)
                             }
-                            viewModel?.deleteAlarmTimeById(oldAlarm)
-                            viewModel?.updateAlarmTurnOff(Const.DELETE_ALARM_TURN_OFF, oldAlarm)
+
+                            viewModel?.updateAlarmTurnOff(Const.INSERT_ALARM_TURN_OFF, alarmData)
+
+                            val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
+                            alarmTimeList.forEach {
+                                viewModel?.insertAlarmTime(it)
+                            }
+
+                            Toast.makeText(
+                                this@CreateAlarmActivity,
+                                Utils.createAlarmMessage(
+                                    true,
+                                    Collections.min(alarmTimeList.map { it.timeInMillis })
+                                ),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-
-                        viewModel?.updateAlarmTurnOff(Const.INSERT_ALARM_TURN_OFF, alarmData)
-
-                        val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
-                        alarmTimeList.forEach {
-                            viewModel?.insertAlarmTime(it)
-                        }
-
-                        Toast.makeText(
-                            this@CreateAlarmActivity,
-                            Utils.createAlarmMessage(
-                                true,
-                                Collections.min(alarmTimeList.map { it.timeInMillis })
-                            ),
-                            Toast.LENGTH_SHORT
-                        ).show()
                     }
                 }
-            }
-            finish()
-    }*/
+                finish()
+        }
 
 
-    private fun showDateDialog() {
+    private fun showCalendar() {
         val datePickerDialog = DatePickerDialog(
             this,
             { _, year, month, dayOfMonth ->
@@ -290,13 +286,6 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
                 val date = binding.viewModel?.dateFormat(alarmCal)!!
                 binding.viewModel?.onDateClicked(date, false)
-                Log.d("confirm alarmCal Date", "$year, $month, $dayOfMonth")
-                Log.d(
-                    "confirm alarmCal Date",
-                    "${alarmCal.get(Calendar.YEAR)}, ${alarmCal.get(Calendar.MONTH)}, ${
-                        alarmCal.get(Calendar.DAY_OF_MONTH)
-                    }"
-                )
             },
             alarmCal.get(Calendar.YEAR),
             alarmCal.get(Calendar.MONTH),
@@ -343,5 +332,20 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
     override fun onDelayDataPass(data: String?) {
         if (data != null)
             binding.viewModel?.changeDelay(data)
+    }
+
+    private fun hideKeyboard() {
+        binding.etAlarmTitle.clearFocus()
+        val inputManager: InputMethodManager =
+            this.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        inputManager.hideSoftInputFromWindow(
+            this.currentFocus?.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        hideKeyboard()
+        return super.dispatchTouchEvent(ev)
     }
 }

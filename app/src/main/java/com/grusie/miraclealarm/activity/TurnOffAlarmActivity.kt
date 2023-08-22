@@ -11,7 +11,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -92,27 +91,32 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
             etProblem.setOnKeyListener { _, keyCode, _ ->
                 when (keyCode) {
                     KeyEvent.KEYCODE_ENTER -> {
-                        if (viewModel?.answer?.value!!.toString() == etProblem.text.toString()) {
-                            viewModel?.increaseCurrentCount()
-                            viewModel?.createProblem()
-                        } else {
+                        val answer = viewModel?.answer?.value
+                        val inputText = etProblem.text.toString()
 
-                            clOffWayProblem.startAnimation(AnimationUtils.loadAnimation(this@TurnOffAlarmActivity, R.anim.wrong_answer_anim))
+                        try {
+                            val inputNumber = inputText.toInt()
+                            if (answer == inputNumber) {
+                                viewModel?.increaseCurrentCount()
+                                viewModel?.createProblem()
+                            } else {
+                                clOffWayProblem.startAnimation(
+                                    AnimationUtils.loadAnimation(
+                                        this@TurnOffAlarmActivity,
+                                        R.anim.wrong_answer_anim
+                                    )
+                                )
+                            }
+                            etProblem.setText("")
+                        } catch (e: NumberFormatException) {
+                            // 입력값을 정수로 파싱할 수 없는 경우의 예외 처리
+                            // 이 부분에 적절한 오류 처리를 추가하세요.
                         }
-                        etProblem.setText("")
                         true
                     }
-
-                    else -> {
-                        false
-                    }
+                    else -> false
                 }
             }
-
-/*            btnTurnOff.setOnClickListener {
-                turnOffAlarm()
-            }*/
-
             btnQuickness.setOnTouchListener { _, motionEvent ->
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -215,8 +219,6 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
 
     private fun turnOffAlarm() {
         Utils.stopAlarm(this)
-
-        Log.d("confirm turnOffAlarm", "turnOffAlarm $alarm")
 
         editor.putBoolean("openMainActivity", true)
         editor.apply()

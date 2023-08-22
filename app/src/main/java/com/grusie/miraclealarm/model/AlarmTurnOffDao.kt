@@ -14,5 +14,5 @@ interface AlarmTurnOffDao {
     suspend fun delete(alarmId: Int)
 
     @Query("SELECT * FROM alarm_turn_off_table WHERE alarmId = :alarmId")
-    suspend fun getOffWayById(alarmId: Int): AlarmTurnOffData
+    suspend fun getOffWayById(alarmId: Int): AlarmTurnOffData?
 }

@@ -23,4 +23,9 @@
     <string name="string_turn_off_all">모든 알람이 꺼진 상태입니다.</string>
     <string name="string_delete_alarm">알람이 삭제 되었습니다.</string>
     <string name="string_change_turn_offWay"><u>끄는 방법 변경</u></string>
+    <string name="string_next_alarm">다음 알람</string>
+    <string name="string_empty_alarm">알람이 없습니다.</string>
+
+    <string name="string_admob_test_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="string_admob_real_id">ca-app-pub-6416226231409915/8655035663</string>
 </resources>

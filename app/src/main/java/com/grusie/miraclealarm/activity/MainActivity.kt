@@ -6,12 +6,16 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.AlarmListAdapter
@@ -20,6 +24,7 @@ import com.grusie.miraclealarm.function.ForegroundAlarmService
 import com.grusie.miraclealarm.function.Utils
 import com.grusie.miraclealarm.function.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.function.Utils.Companion.createPermission
+import com.grusie.miraclealarm.function.Utils.Companion.getWidthInDp
 import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import kotlinx.coroutines.launch
@@ -42,45 +47,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUi() {
-        if (intent?.action == Const.ACTION_STOP_SERVICE) {
-            val stopServiceIntent = Intent(this, ForegroundAlarmService::class.java)
-            stopService(stopServiceIntent)
-        }
+        stopMissedAlarmService()
         initPermission()
 
-        layoutManager = LinearLayoutManager(this)
-        layoutManager.orientation = LinearLayoutManager.VERTICAL
-
+        layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
         adapter = AlarmListAdapter(alarmViewModel, this@MainActivity)
-        binding.rvAlarmList.layoutManager = layoutManager
 
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
-        binding.apply {
-            val intent = Intent(this@MainActivity, CreateAlarmActivity::class.java)
 
+        binding.llAdViewContainer.viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val widthInDp = binding.llAdViewContainer.getWidthInDp()
+                loadAdView(widthInDp)
+                binding.llAdViewContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
+
+        binding.apply {
             rvAlarmList.adapter = adapter
-            rvAlarmList.layoutManager =
-                LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
+            rvAlarmList.layoutManager = layoutManager
 
             ibAlarmAdd.setOnClickListener {
+                val intent = Intent(this@MainActivity, CreateAlarmActivity::class.java)
                 startActivity(intent)
             }
 
-            viewModel?.minAlarmTime?.observe(this@MainActivity) {
-                tvMinAlarm.text = if (it != null) {
-                    Utils.createAlarmMessage(false, it.timeInMillis)
-                } else getString(R.string.string_turn_off_all)
-            }
-
-            viewModel?.modifyMode?.observe(this@MainActivity) {
-                llModifyTab.visibility = if (it) View.VISIBLE else View.GONE
-
-                if (!it) {
-                    viewModel?.modifyList?.value?.clear()
-                }
-            }
+            observing()
 
             btnDelete.setOnClickListener {
                 for (alarm in viewModel?.modifyList?.value!!) {
@@ -101,11 +96,27 @@ class MainActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
 
+    private fun observing() {
+        binding.apply {
+            viewModel?.minAlarmTime?.observe(this@MainActivity) {
+                tvMinAlarm.text = if (it != null) {
+                    Utils.createAlarmMessage(false, it.timeInMillis)
+                } else getString(R.string.string_turn_off_all)
+            }
+
+            viewModel?.modifyMode?.observe(this@MainActivity) {
+                llModifyTab.visibility = if (it) View.VISIBLE else View.GONE
+
+                if (!it) {
+                    viewModel?.modifyList?.value?.clear()
+                }
+            }
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
                 currentCal = Calendar.getInstance()
                 viewModel?.initAlarmData(alarm)
-                viewModel?.logLine("confirm clearAlarm", "$alarm, ${alarm.enabled}")
                 if (alarm.enabled) {
                     checkPastDate(alarm, true)
                     val alarmTimeList = Utils.setAlarm(this@MainActivity, alarm)
@@ -129,14 +140,26 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+    private fun loadAdView(width: Int) {
+        val adView = Utils.initAdView(this, width)
 
+        binding.llAdViewContainer.addView(adView)
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+    }
+
+    private fun stopMissedAlarmService() {
+        if (intent?.action == Const.ACTION_STOP_SERVICE) {
+            val stopServiceIntent = Intent(this, ForegroundAlarmService::class.java)
+            stopService(stopServiceIntent)
         }
     }
 
     override fun onResume() {
         super.onResume()
         binding.viewModel?.allAlarms?.observe(this) { alarmList ->
-            alarmViewModel.logLine("alarmList : ", "$alarmList")
 
             currentCal = Calendar.getInstance()
             alarmList.forEach {

@@ -2,19 +2,17 @@ package com.grusie.miraclealarm.activity
 
 import android.content.Intent
 import android.graphics.drawable.Drawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.google.android.gms.ads.MobileAds
 import com.grusie.miraclealarm.R
-import kotlinx.coroutines.*
-import androidx.vectordrawable.graphics.drawable.Animatable2Compat
 import com.grusie.miraclealarm.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
@@ -24,14 +22,15 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val imageLoadListener = object : RequestListener<GifDrawable>{
+        MobileAds.initialize(this) {}
+
+        val imageLoadListener = object : RequestListener<GifDrawable> {
             override fun onLoadFailed(
                 e: GlideException?,
                 model: Any?,
                 target: Target<GifDrawable>?,
                 isFirstResource: Boolean
             ): Boolean {
-                Log.d("confirm failure", "fail, ${e?.message}")
                 navigateToMainActivity()
                 return false
             }
@@ -44,7 +43,7 @@ class SplashActivity : AppCompatActivity() {
                 isFirstResource: Boolean
             ): Boolean {
                 resource?.setLoopCount(1)
-                resource?.registerAnimationCallback(object : Animatable2Compat.AnimationCallback(){
+                resource?.registerAnimationCallback(object : Animatable2Compat.AnimationCallback() {
                     override fun onAnimationEnd(drawable: Drawable?) {
                         navigateToMainActivity()
                         super.onAnimationEnd(drawable)
@@ -54,7 +53,8 @@ class SplashActivity : AppCompatActivity() {
             }
         }
 
-        Glide.with(this).asGif().listener(imageLoadListener).load(R.drawable.splash_alarm).into(binding.ivSplash)
+        Glide.with(this).asGif().listener(imageLoadListener).load(R.drawable.splash_alarm)
+            .into(binding.ivSplash)
     }
 
     override fun onDestroy() {

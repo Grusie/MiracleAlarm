@@ -8,6 +8,7 @@ import android.media.AudioManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.SeekBar
 import android.widget.Toast
@@ -125,6 +126,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
         try {
             unregisterReceiver(headsetReceiver)
         } catch (e: Exception) {
+            Log.e("confirm registerReceiverError", e.stackTraceToString())
         }
     }
 

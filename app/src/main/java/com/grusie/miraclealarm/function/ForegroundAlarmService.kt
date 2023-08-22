@@ -13,7 +13,6 @@ import android.content.SharedPreferences
 import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.grusie.miraclealarm.Const
@@ -31,7 +30,8 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
-class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListener, CoroutineScope {
+class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListener,
+    CoroutineScope {
     private var NOTIFICATION_ID by Delegates.notNull<Int>()
     private val CHANNEL_ID = "channel_id"
     private val CHANNEL_NAME = "channel_name"
@@ -63,7 +63,6 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
 
         if (intent?.action == Const.ACTION_MISSED_ALARM) {
             val count = intent.getIntExtra("missedCount", 0)
-            Log.d("confirm missedCount", "confirm missedCount Service: $count")
             startMissedAlarmNotification(count)
             return START_NOT_STICKY
         }
@@ -105,7 +104,7 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
 
         val notification = createNotification(alarm, pendingIntent)
 
-        if(alarm.flagSound)
+        if (alarm.flagSound)
             changeVolumeEternally(alarm)
 
         startForeground(NOTIFICATION_ID, notification)
@@ -114,11 +113,12 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
 
         return START_REDELIVER_INTENT
     }
-    private fun changeVolumeEternally(alarm: AlarmData){
+
+    private fun changeVolumeEternally(alarm: AlarmData) {
         launch {
             while (isActive) {
                 delay(10000)
-                if(initVolume < Utils.getCurrentVolume(this@ForegroundAlarmService))
+                if (initVolume < Utils.getCurrentVolume(this@ForegroundAlarmService))
                     changeVolume(this@ForegroundAlarmService, alarm.volume, isConnected)
             }
         }
@@ -163,7 +163,6 @@ class ForegroundAlarmService : Service(), HeadsetReceiver.HeadsetConnectionListe
         count: Int,
         pendingIntent: PendingIntent,
     ): Notification {
-        Log.d("confirm missedCount", "confirm missedCount notification: $count")
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("")
             .setContentText("부재중 알람이 ${count}개 있습니다.")
