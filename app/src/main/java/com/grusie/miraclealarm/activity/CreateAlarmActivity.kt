@@ -97,8 +97,8 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
             }
 
             btnSave.setOnClickListener {
-                //saveAlarm()
-                testSaveAlarm()
+                saveAlarm()
+                //testSaveAlarm()
             }
             btnCancel.setOnClickListener {
                 finish()
@@ -219,7 +219,7 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }
     }
 
-        private fun testSaveAlarm() {
+    /*    private fun testSaveAlarm() {
                 binding.apply {
                     viewModel?.alarm?.value?.apply {
                         if (alarmId != -1) {
@@ -273,7 +273,7 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
                     }
                 }
                 finish()
-        }
+        }*/
 
 
     private fun showCalendar() {
