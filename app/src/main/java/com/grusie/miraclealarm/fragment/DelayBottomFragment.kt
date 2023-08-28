@@ -10,7 +10,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.DelayAdapter
 import com.grusie.miraclealarm.databinding.FragmentDelayBottomBinding
-import com.grusie.miraclealarm.function.GetSelectedItem
+import com.grusie.miraclealarm.interfaces.GetSelectedItem
+import com.grusie.miraclealarm.interfaces.OnDelayDataPassListener
 
 class DelayBottomFragment : BottomSheetDialogFragment(), GetSelectedItem {
     var binding: FragmentDelayBottomBinding? = null
@@ -57,6 +58,3 @@ class DelayBottomFragment : BottomSheetDialogFragment(), GetSelectedItem {
     }
 }
 
-interface OnDelayDataPassListener {
-    fun onDelayDataPass(data: String?)
-}

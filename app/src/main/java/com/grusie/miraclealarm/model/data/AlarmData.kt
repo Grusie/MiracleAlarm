@@ -1,4 +1,4 @@
-package com.grusie.miraclealarm.model
+package com.grusie.miraclealarm.model.data
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -16,7 +16,7 @@ data class AlarmData(
     var dateRepeat: Boolean = false,       //알람 요일 반복 여부
     var enabled: Boolean = true,           //알람 사용 여부
     var sound: String = "탁상시계 알람소리",      //알람 소리
-    var volume: Int = 1,                   //알람 볼륨
+    var volume: Int = 70,                   //알람 볼륨
     var vibrate: String = "Basic call",    //알람 진동
     /*var off_way: String = "흔들어서 끄기", //알람 끄는 방법*/
     var delay: String = "5분",             //미루기

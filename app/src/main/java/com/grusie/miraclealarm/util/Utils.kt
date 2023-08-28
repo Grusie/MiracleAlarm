@@ -1,5 +1,6 @@
-package com.grusie.miraclealarm.function
+package com.grusie.miraclealarm.util
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.AlertDialog
@@ -7,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -19,12 +21,17 @@ import android.os.VibratorManager
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.model.AlarmData
-import com.grusie.miraclealarm.model.AlarmTimeData
+import com.grusie.miraclealarm.receiver.AlarmNotiReceiver
+import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.model.data.AlarmTimeData
+import com.grusie.miraclealarm.service.ForegroundAlarmService
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.text.SimpleDateFormat
@@ -95,6 +102,17 @@ class Utils {
 
 
         /**
+         *액티비티에서 알람데이터 가져오기
+         **/
+        fun getAlarmData(intent: Intent?): AlarmData {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent?.getParcelableExtra(
+                "alarmData",
+                AlarmData::class.java
+            ) ?: AlarmData() else intent?.getParcelableExtra("alarmData") ?: AlarmData()
+        }
+
+
+        /**
          * 다음 울릴 알람 시간을 리턴 해주는 함수
          */
         private fun calculateDaysDiff(currentDate: Calendar, alarmDate: Calendar): Int {
@@ -154,6 +172,18 @@ class Utils {
 
                 else -> "${daysDiff}일 후 알람이 울립니다."
             }
+        }
+
+
+        /**
+         * AdView 생성
+         **/
+        fun loadAdView(context: Context, width: Int, adViewContainer: LinearLayoutCompat) {
+            val adView = initAdView(context, width)
+
+            adViewContainer.addView(adView)
+            val adRequest = AdRequest.Builder().build()
+            adView.loadAd(adRequest)
         }
 
 
@@ -304,13 +334,37 @@ class Utils {
             return returnCal
         }
 
+        /**
+         * 퍼미션 체크
+         **/
+        fun checkPermission(context: Context, permission: String): Boolean {
+            return ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
+        /**
+         * 블루투스 퍼미션 요청
+         **/
+        fun createBlueToothPermission(context: Context, grantCallback: Runnable?) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (!checkPermission(context, Manifest.permission.BLUETOOTH_CONNECT))
+                    createPermission(Manifest.permission.BLUETOOTH_CONNECT) { grantCallback }
+            } else {
+                if (!checkPermission(context, Manifest.permission.BLUETOOTH))
+                    createPermission(Manifest.permission.BLUETOOTH) { grantCallback }
+            }
+        }
+
 
         /**
          * 권한 체크 및 요청 setting용 권한인 경우 따로 처리
          * **/
-        fun createPermission(permission: String) {
+        fun createPermission(permission: String, grantCallback: Runnable?) {
             val permissionListener: PermissionListener = object : PermissionListener {
                 override fun onPermissionGranted() {
+                    grantCallback?.run()
                 }
 
                 override fun onPermissionDenied(deniedPermissions: List<String?>) {
@@ -352,6 +406,10 @@ class Utils {
             return returnSound
         }
 
+
+        /**
+         * 알람 실행
+         **/
         fun startAlarm(context: Context, alarm: AlarmData) {
             if (alarm.flagSound) {
                 val sound = getAlarmSound(context, alarm.sound)
@@ -446,7 +504,7 @@ class Utils {
                 audioManager.abandonAudioFocusRequest(focusRequest)
             }
             mp?.apply {
-                if(isPlaying){
+                if (isPlaying) {
                     stop()
                 }
                 release()
@@ -629,17 +687,23 @@ class Utils {
 
 
         /**
-         * 광고 초기화
+         * adView 초기화
          **/
-        fun initAdView(context: Context, width:Int) : AdView{
+        private fun initAdView(context: Context, width: Int): AdView {
             val adView = AdView(context)
             adView.adUnitId =
-                if (Const.IS_DEBUG) context.getString(R.string.string_admob_test_id) else context.getString(R.string.string_admob_real_id)
+                if (Const.IS_DEBUG) context.getString(R.string.str_admob_test_id) else context.getString(
+                    R.string.str_admob_real_id
+                )
 
-            adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, width))
+            adView.setAdSize(
+                AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+                    context,
+                    width
+                )
+            )
             return adView
         }
-
 
         /**
          * confirm 다이얼로그 만들기
@@ -654,7 +718,7 @@ class Utils {
                     activity.finish()
                 }
                 setPositiveButton("수락") { _, _ ->
-                    createPermission(permission)
+                    createPermission(permission, null)
                 }
             }
             builder.create().show()

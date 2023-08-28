@@ -6,9 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.model.AlarmDatabase
-import com.grusie.miraclealarm.model.AlarmTurnOffDao
+import com.grusie.miraclealarm.model.dao.AlarmTurnOffDao
+import com.grusie.miraclealarm.model.data.AlarmData
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -28,7 +28,6 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
     private val resources = getApplication<Application>().applicationContext.resources
     private val offWayArray = resources.getStringArray(R.array.off_way_array)
     private val offWayCountArray = resources.getIntArray(R.array.off_way_count_array)
-    private val _quicknessFlag = MutableLiveData<Boolean>()
 
     val offWay: LiveData<String> = _offWay
     val offWayCount: LiveData<Int> = _offWayCount
@@ -38,7 +37,6 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
     val turnOffFlag: LiveData<Boolean> = _turnOffFlag
     val randomXY: LiveData<Pair<Float, Float>> = _randomXY
     val btnQuickEnabled: LiveData<Boolean> = _btnQuickEnabled
-    val quicknessFlag: LiveData<Boolean> = _quicknessFlag
 
     init {
         alarmTurnOffDao = AlarmDatabase.getDatabase(application).alarmTurnOffDao()
@@ -87,6 +85,10 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
         _answer.value = calculate(tempProblem)
     }
 
+
+    /**
+     * 수학문제 계산
+     **/
     private fun calculate(tempProblem: Array<String>): Int {
         var result = tempProblem[0].toInt()
 
@@ -109,7 +111,6 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
      **/
     fun startQuickness(leftTop: Pair<Int, Int>, rightBottom: Pair<Int, Int>, width: Int) {
         job = viewModelScope.launch {
-            _quicknessFlag.value = true
             while (_turnOffFlag.value == false) {
 
                 val randomX = (leftTop.first..(rightBottom.first - width)).random()
@@ -121,15 +122,25 @@ class AlarmTurnOffViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    /**
+     * 순발력 게임 정지
+     **/
     fun stopQuickness() {
-        _quicknessFlag.value = false
         job?.cancel()
     }
 
+
+    /**
+     * 순발력 게임 버튼 Enabled 조절
+     **/
     fun changeEnabled(enabled: Boolean) {
         _btnQuickEnabled.value = enabled
     }
 
+
+    /**
+     * 현재 카운트 증가
+     **/
     fun increaseCurrentCount() {
         _currentCount.value = _currentCount.value!! + 1
 

@@ -24,31 +24,8 @@ class OffWayCountActivity : AppCompatActivity() {
         offWayCount = intent.getIntExtra("offWayCount", 0)
 
         binding.offWay = offWay
-        val min: Int
-        val max: Int
-        val step: Int
 
-        when (offWay) {
-            offWayArray[1] -> {
-                min = 1
-                max = 7
-                step = 1
-            }
-
-            offWayArray[2] -> {
-                min = 4
-                max = 20
-                step = 2
-            }
-
-            else -> {
-                min = 10
-                max = 70
-                step = 5
-            }
-        }
-
-        val values = (min..max step step).map { it.toString() }.toTypedArray()
+        val values = initNumPickerValues()
 
         binding.npOffWayCount.apply {
             minValue = 1
@@ -76,5 +53,33 @@ class OffWayCountActivity : AppCompatActivity() {
 
             startActivity(intent)
         }
+    }
+
+    private fun initNumPickerValues(): Array<String> {
+        val min: Int
+        val max: Int
+        val step: Int
+
+        when (offWay) {
+            offWayArray[1] -> {
+                min = 1
+                max = 7
+                step = 1
+            }
+
+            offWayArray[2] -> {
+                min = 4
+                max = 20
+                step = 2
+            }
+
+            else -> {
+                min = 10
+                max = 70
+                step = 5
+            }
+        }
+
+        return (min..max step step).map { it.toString() }.toTypedArray()
     }
 }

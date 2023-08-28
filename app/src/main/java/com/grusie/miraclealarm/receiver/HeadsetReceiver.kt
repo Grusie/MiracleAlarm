@@ -1,4 +1,4 @@
-package com.grusie.miraclealarm.function
+package com.grusie.miraclealarm.receiver
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
@@ -6,13 +6,10 @@ import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.grusie.miraclealarm.interfaces.HeadsetConnectionListener
 
 class HeadsetReceiver : BroadcastReceiver() {
     private var listener: HeadsetConnectionListener? = null
-
-    interface HeadsetConnectionListener {
-        fun onHeadsetConnected(isConnected: Boolean)
-    }
 
     fun setConnectionListener(listener: HeadsetConnectionListener) {
         this.listener = listener

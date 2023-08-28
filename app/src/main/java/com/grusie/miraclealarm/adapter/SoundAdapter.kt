@@ -2,13 +2,12 @@ package com.grusie.miraclealarm.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ItemAlarmValueListBinding
-import com.grusie.miraclealarm.function.GetSelectedItem
-import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.interfaces.GetSelectedItem
+import com.grusie.miraclealarm.viewHolder.SoundViewHolder
 
 class SoundAdapter(
     val context: Context,
@@ -65,41 +64,3 @@ class SoundAdapter(
     }
 }
 
-class SoundViewHolder(private val binding: ItemAlarmValueListBinding) :
-    RecyclerView.ViewHolder(binding.root) {
-    fun bind(
-        context: Context,
-        sound: String,
-        listener: GetSelectedItem,
-        position: Int,
-        selectedPosition: Int,
-        selectedSoundPosition: Int
-    ) {
-
-        binding.apply {
-            checkedFlag = selectedPosition == position
-            this.value = sound
-            visible = true
-            soundFlag = selectedSoundPosition == position
-
-            val clickListener = View.OnClickListener {
-                listener.getSelectedItem(true, position)
-            }
-
-            binding.rbAlarmSound.setOnClickListener(clickListener)
-            itemView.setOnClickListener(clickListener)
-
-            btnAlarmSound.setOnClickListener {
-                if (!soundFlag!!) {
-                    val playSound = Utils.getAlarmSound(context, sound)
-                    Utils.stopAlarmSound(context)
-                    Utils.playAlarmSound(context, playSound)
-                } else {
-                    Utils.stopAlarmSound(context)
-                }
-                soundFlag = !soundFlag!!
-                listener.getSelectedItem(false, position)
-            }
-        }
-    }
-}

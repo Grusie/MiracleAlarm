@@ -45,7 +45,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginTop="40dp"
                 android:textAlignment="center"
-                android:text="@string/string_next_alarm"/>
+                android:text="@string/str_next_alarm"/>
 
             <TextView
                 android:id="@+id/tv_min_alarm"
@@ -89,7 +89,7 @@
             android:id="@+id/tv_empty_alarm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/string_empty_alarm"
+            android:text="@string/str_empty_alarm"
             android:textSize="@dimen/text_large"
             android:textColor="@color/dark_gray"
             android:visibility="@{viewModel.allAlarms.size() == 0 ? View.VISIBLE : View.GONE}"
@@ -112,7 +112,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/string_delete" />
+                android:text="@string/str_delete" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>

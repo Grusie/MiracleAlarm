@@ -11,14 +11,12 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.activity.CreateAlarmActivity
 import com.grusie.miraclealarm.databinding.ItemAlarmListBinding
-import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.data.AlarmData
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 
 class AlarmListAdapter(
-    private val viewModel: AlarmViewModel,
-    private val lifecycleOwner: LifecycleOwner
-) :
-    RecyclerView.Adapter<AlarmListAdapter.AlarmListViewHolder>() {
+    private val viewModel: AlarmViewModel, private val lifecycleOwner: LifecycleOwner
+) : RecyclerView.Adapter<AlarmListAdapter.AlarmListViewHolder>() {
     var alarmList: MutableList<AlarmData> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmListViewHolder {
@@ -39,47 +37,40 @@ class AlarmListAdapter(
         return alarmList.size
     }
 
-    inner class AlarmListViewHolder(val binding: ItemAlarmListBinding) :
-        ViewHolder(binding.root) {
+    inner class AlarmListViewHolder(val binding: ItemAlarmListBinding) : ViewHolder(binding.root) {
         fun bind(alarm: AlarmData, viewModel: AlarmViewModel, lifecycleOwner: LifecycleOwner) {
             binding.viewModel = viewModel
             binding.alarm = alarm
             if (binding.alarm?.enabled == false) {
                 binding.tvAlarmTime.setTextColor(
                     ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.dark_gray
+                        binding.root.context, R.color.dark_gray
                     )
                 )
                 binding.tvAlarmDate.setTextColor(
                     ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.dark_gray
+                        binding.root.context, R.color.dark_gray
                     )
                 )
                 binding.tvAlarmTitle.setTextColor(
                     ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.dark_gray
+                        binding.root.context, R.color.dark_gray
                     )
                 )
             } else {
                 binding.tvAlarmTime.setTextColor(
                     ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.black
+                        binding.root.context, R.color.black
                     )
                 )
                 binding.tvAlarmDate.setTextColor(
                     ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.black
+                        binding.root.context, R.color.black
                     )
                 )
                 binding.tvAlarmTitle.setTextColor(
                     ContextCompat.getColor(
-                        binding.root.context,
-                        R.color.black
+                        binding.root.context, R.color.black
                     )
                 )
             }

@@ -4,6 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.grusie.miraclealarm.model.dao.AlarmDao
+import com.grusie.miraclealarm.model.dao.AlarmTimeDao
+import com.grusie.miraclealarm.model.dao.AlarmTurnOffDao
+import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.model.data.AlarmTimeData
+import com.grusie.miraclealarm.model.data.AlarmTurnOffData
 
 @Database(entities = [AlarmData::class, AlarmTimeData::class, AlarmTurnOffData::class], version = 3)
 abstract class AlarmDatabase : RoomDatabase() {

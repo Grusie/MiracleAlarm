@@ -40,7 +40,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             style="@style/customButtonStyle"
-            android:text="@{soundFlag ? @string/string_stop : @string/string_play}"
+            android:text="@{soundFlag ? @string/str_stop : @string/str_play}"
             android:visibility="@{visible ? View.VISIBLE : View.GONE}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>

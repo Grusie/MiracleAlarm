@@ -88,10 +88,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_sunday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_sunday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_sunday, true)}"
-                            android:text="@string/string_sunday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_sunday, true)}"
+                            android:text="@string/str_sunday"
                             android:textColor="@drawable/sunday_text_selector" />
 
                         <CheckBox
@@ -100,10 +100,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_monday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_monday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_monday, true)}"
-                            android:text="@string/string_monday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_monday, true)}"
+                            android:text="@string/str_monday"
                             android:textColor="@drawable/weekday_text_selector" />
 
                         <CheckBox
@@ -112,10 +112,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_tuesday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_tuesday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_tuesday, true)}"
-                            android:text="@string/string_tuesday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_tuesday, true)}"
+                            android:text="@string/str_tuesday"
                             android:textColor="@drawable/weekday_text_selector" />
 
                         <CheckBox
@@ -124,10 +124,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_wednesday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_wednesday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_wednesday, true)}"
-                            android:text="@string/string_wednesday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_wednesday, true)}"
+                            android:text="@string/str_wednesday"
                             android:textColor="@drawable/weekday_text_selector" />
 
                         <CheckBox
@@ -136,10 +136,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_thursday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_thursday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_thursday, true)}"
-                            android:text="@string/string_thursday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_thursday, true)}"
+                            android:text="@string/str_thursday"
                             android:textColor="@drawable/weekday_text_selector" />
 
                         <CheckBox
@@ -148,10 +148,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_friday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_friday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_friday, true)}"
-                            android:text="@string/string_friday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_friday, true)}"
+                            android:text="@string/str_friday"
                             android:textColor="@drawable/weekday_text_selector" />
 
                         <CheckBox
@@ -160,10 +160,10 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/date_border_selector"
                             android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/string_saturday)}"
+                            android:checked="@{viewModel.dateList.contains(@string/str_saturday)}"
                             android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/string_saturday, true)}"
-                            android:text="@string/string_saturday"
+                            android:onClick="@{()->viewModel.onDateClicked(@string/str_saturday, true)}"
+                            android:text="@string/str_saturday"
                             android:textColor="@drawable/saturday_text_selector" />
 
                     </com.google.android.flexbox.FlexboxLayout>
@@ -181,7 +181,7 @@
                         android:id="@+id/tv_holiday_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/holiday_title"
+                        android:text="@string/str_holiday_title"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -189,7 +189,7 @@
                         android:id="@+id/tv_holiday_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/holiday_sub"
+                        android:text="@string/str_holiday_sub"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -219,7 +219,7 @@
                         android:id="@+id/et_alarm_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/title_hint"
+                        android:hint="@string/str_title_hint"
                         android:text="@{viewModel.alarm.title}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -238,7 +238,7 @@
                         android:id="@+id/tv_offWay_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/offWay_title"
+                        android:text="@string/str_offWay_title"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -246,13 +246,13 @@
                         android:id="@+id/tv_offWay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagOffWay ? viewModel.offWay : @string/string_disabled}"
+                        android:text="@{viewModel.flagOffWay ? viewModel.offWay : @string/str_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_offWay_title" />
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/sw_offWay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -284,13 +284,13 @@
                         android:id="@+id/tv_sound_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagSound ? viewModel.sound : @string/string_disabled}"
+                        android:text="@{viewModel.flagSound ? viewModel.sound : @string/str_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_sound_title" />
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/sw_sound"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -323,13 +323,13 @@
                         android:id="@+id/tv_vibe_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagVibe ? viewModel.vibrate : @string/string_disabled}"
+                        android:text="@{viewModel.flagVibe ? viewModel.vibrate : @string/str_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_vibe_title" />
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/sw_vibe"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -362,13 +362,13 @@
                         android:id="@+id/tv_delay_sub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@{viewModel.flagDelay ? viewModel.delay : @string/string_disabled}"
+                        android:text="@{viewModel.flagDelay ? viewModel.delay : @string/str_disabled}"
                         android:textColor="@color/blue"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tv_delay_title" />
 
-                    <Switch
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/sw_delay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -394,7 +394,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/string_cancel" />
+                android:text="@string/str_cancel" />
 
             <Button
                 android:id="@+id/btn_save"
@@ -402,7 +402,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/string_save" />
+                android:text="@string/str_save" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

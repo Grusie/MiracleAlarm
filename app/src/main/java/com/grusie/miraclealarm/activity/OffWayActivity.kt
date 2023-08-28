@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.OffWayAdapter
 import com.grusie.miraclealarm.databinding.ActivityOffWayBinding
-import com.grusie.miraclealarm.function.GetSelectedItem
-import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.interfaces.GetSelectedItem
+import com.grusie.miraclealarm.util.Utils
 
 class OffWayActivity : AppCompatActivity(), GetSelectedItem {
     private lateinit var binding: ActivityOffWayBinding
@@ -39,7 +39,7 @@ class OffWayActivity : AppCompatActivity(), GetSelectedItem {
         offWayCount = intent.getIntExtra("param2", defaultCount)
 
         adapter = OffWayAdapter(this, offWayArray)
-        binding.icToolbar.title = "끄는 방법"
+        binding.icToolbar.title = getString(R.string.str_offWay_title)
         setSupportActionBar(binding.icToolbar.tbTitle)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowTitleEnabled(false)

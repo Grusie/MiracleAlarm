@@ -1,4 +1,4 @@
-package com.grusie.miraclealarm.function
+package com.grusie.miraclealarm.interfaces
 
 interface GetSelectedItem {
     fun getSelectedItem(selectFlag: Boolean, position: Int)

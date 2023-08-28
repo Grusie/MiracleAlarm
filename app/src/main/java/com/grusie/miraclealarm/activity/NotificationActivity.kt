@@ -16,16 +16,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.google.android.gms.ads.AdRequest
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityNotificationBinding
-import com.grusie.miraclealarm.function.AlarmNotiReceiver
-import com.grusie.miraclealarm.function.ForegroundAlarmService
-import com.grusie.miraclealarm.function.Utils
-import com.grusie.miraclealarm.function.Utils.Companion.getWidthInDp
-import com.grusie.miraclealarm.function.Utils.Companion.initAdView
-import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.service.ForegroundAlarmService
+import com.grusie.miraclealarm.util.Utils
+import com.grusie.miraclealarm.util.Utils.Companion.getAlarmData
+import com.grusie.miraclealarm.util.Utils.Companion.getWidthInDp
+import com.grusie.miraclealarm.util.Utils.Companion.loadAdView
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import java.util.Calendar
 
@@ -37,7 +36,6 @@ class NotificationActivity : AppCompatActivity() {
     private lateinit var preferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var keyguardManager: KeyguardManager
-    private lateinit var alarmNotiReceiver: AlarmNotiReceiver
     private lateinit var currentTime: Calendar
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +46,8 @@ class NotificationActivity : AppCompatActivity() {
 
     /**
      * 메인 액티비티로 넘겨야 하는지 결정
-     *  */
+     * 알람을 끈 뒤 다시 이 페이지로 접근하려고 했을 경우.
+     **/
     private fun compareMainActivity() {
         preferences = getSharedPreferences("sharedPreferences", Context.MODE_PRIVATE)
         editor = preferences.edit()
@@ -76,73 +75,69 @@ class NotificationActivity : AppCompatActivity() {
 
     private fun initUi() {
         initKeyguard()
-        alarmNotiReceiver = AlarmNotiReceiver()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_notification)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
-        alarm =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent?.getParcelableExtra(
-                "alarmData", AlarmData::class.java
-            ) ?: AlarmData()
-            else intent?.getParcelableExtra("alarmData") ?: AlarmData()
-        binding.viewModel?.initAlarmData(alarm)
+        initAlarmData()
 
-        if (intent.action == Const.ACTION_NOTIFICATION) binding.btnDelay.visibility = View.GONE
+        binding.apply {
+            if (intent.action == Const.ACTION_NOTIFICATION)
+                btnDelay.visibility = View.GONE
 
-        binding.llAdViewContainer.viewTreeObserver.addOnGlobalLayoutListener(object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                val widthInDp = binding.llAdViewContainer.getWidthInDp()
-                loadAdView(widthInDp)
-                binding.llAdViewContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
-            }
-        })
+            llAdViewContainer.viewTreeObserver.addOnGlobalLayoutListener(adViewWidthObserver)
 
-        currentTime = Calendar.getInstance()
+            initTime()
 
-        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
-        val minute = currentTime.get(Calendar.MINUTE)
-        binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
-
-        if (!alarm.dateRepeat) {
-            binding.viewModel?.onAlarmFlagClicked(alarm)
-        }
-
-        binding.btnTurnOff.setOnClickListener {
-            binding.viewModel?.changeDelayCount(alarm, false)
-            turnOffFlag = false
-
-            if(!alarm.flagOffWay){
-                turnOffAlarm()
-            }
-            else {
-                val intent = Intent(this, TurnOffAlarmActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                intent.putExtra("alarm", alarm)
-                startActivity(intent)
-                finish()
-            }
-        }
-
-        /**
-         * 알람 미루기
-         **/
-
-        binding.btnDelay.setOnClickListener {
             if (!alarm.dateRepeat) {
-                binding.viewModel?.onAlarmFlagClicked(alarm)
+                viewModel?.onAlarmFlagClicked(alarm)
+            }
+
+            btnTurnOff.setOnClickListener {
+                if (!alarm.flagOffWay) {
+                    turnOffAlarm(false)
+                } else {
+                    startTurnOffActivity()
+                }
+            }
+
+            btnDelay.setOnClickListener {
+                delayAlarm()
+            }
+        }
+    }
+
+
+    /**
+     * 알람 끄는 액티비티 실행
+     **/
+    private fun startTurnOffActivity() {
+        val intent = Intent(this@NotificationActivity, TurnOffAlarmActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        intent.putExtra("alarmData", alarm)
+        startActivity(intent)
+        finish()
+    }
+
+    /**
+     * 알람 미루기
+     **/
+    private fun delayAlarm() {
+        binding.apply {
+            if (!alarm.dateRepeat) {
+                viewModel?.onAlarmFlagClicked(alarm)
             }
 
             if (alarm.delayCount > 0) {
-                binding.viewModel?.changeDelayCount(alarm, true)
-                turnOffAlarm()
+                viewModel?.changeDelayCount(alarm, true)
+                turnOffAlarm(true)
                 val minutes = alarm.delay.replace("분", "").toInt()
                 currentTime.add(Calendar.MINUTE, minutes)
-                val alarmTimeData = Utils.setAlarm(this, currentTime.timeInMillis, alarm)
+                val alarmTimeData =
+                    Utils.setAlarm(this@NotificationActivity, currentTime.timeInMillis, alarm)
 
-                binding.viewModel?.insertAlarmTime(alarmTimeData)
+                viewModel?.insertAlarmTime(alarmTimeData)
 
                 Toast.makeText(
                     this@NotificationActivity, Utils.createAlarmMessage(
@@ -151,36 +146,58 @@ class NotificationActivity : AppCompatActivity() {
                 ).show()
             } else {
                 Toast.makeText(
-                    this@NotificationActivity, "남은 미루기 횟수가 없습니다.", Toast.LENGTH_SHORT
+                    this@NotificationActivity,
+                    getString(R.string.str_delay_over),
+                    Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
+
+
+    /**
+     * 알람 데이터 초기화
+     **/
+    private fun initAlarmData() {
+        alarm = getAlarmData(intent)
+        binding.viewModel?.initAlarmData(alarm)
+    }
+
+    /**
+     * 시간 초기화
+     **/
+    private fun initTime() {
+        currentTime = Calendar.getInstance()
+
+        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val minute = currentTime.get(Calendar.MINUTE)
+        binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
+    }
+
+    /**
+     * AdView 로드
+     **/
+    private val adViewWidthObserver = object : ViewTreeObserver.OnGlobalLayoutListener {
+        override fun onGlobalLayout() {
+            val widthInDp = binding.llAdViewContainer.getWidthInDp()
+            loadAdView(this@NotificationActivity, widthInDp, binding.llAdViewContainer)
+            binding.llAdViewContainer.viewTreeObserver.removeOnGlobalLayoutListener(this)
         }
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        alarm = intent?.getParcelableExtra("alarmData") ?: AlarmData()
-        binding.viewModel?.initAlarmData(alarm)
-
-        currentTime = Calendar.getInstance()
-
-        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
-        val minute = currentTime.get(Calendar.MINUTE)
-
-
-        binding.tvNotificationTime.text = binding.viewModel?.timePickerToTime(hour, minute)
+        initAlarmData()
+        initTime()
     }
 
-    private fun loadAdView(width: Int) {
-        val adView = initAdView(this, width)
 
-        binding.llAdViewContainer.addView(adView)
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-    }
-
-    private fun turnOffAlarm() {
+    /**
+     * 알람 끄기
+     **/
+    private fun turnOffAlarm(reduce: Boolean) {
+        binding.viewModel?.changeDelayCount(alarm, reduce)
         Utils.stopAlarm(this)
         turnOffFlag = false
 

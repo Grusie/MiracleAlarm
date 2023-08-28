@@ -1,7 +1,8 @@
-package com.grusie.miraclealarm.model
+package com.grusie.miraclealarm.model.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.grusie.miraclealarm.model.data.AlarmData
 
 @Dao
 interface AlarmDao {

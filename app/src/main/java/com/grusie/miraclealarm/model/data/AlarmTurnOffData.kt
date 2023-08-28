@@ -1,4 +1,4 @@
-package com.grusie.miraclealarm.model
+package com.grusie.miraclealarm.model.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

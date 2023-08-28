@@ -16,9 +16,9 @@ import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
 import com.grusie.miraclealarm.fragment.DelayBottomFragment
-import com.grusie.miraclealarm.fragment.OnDelayDataPassListener
-import com.grusie.miraclealarm.function.Utils
-import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.interfaces.OnDelayDataPassListener
+import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -56,38 +56,21 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel
 
-        resultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Const.RESULT_CODE_SOUND) {
-                    val sound = result.data?.getStringExtra("sound")
-                    val volume = result.data?.getIntExtra("volume", -1)
-                    if (sound != null) {
-                        binding.viewModel?.changeSound(sound)
-                    }
-                    if (volume != null && volume != -1) {
-                        binding.viewModel?.changeVolume(volume)
-                    }
-                } else if (result.resultCode == Const.RESULT_CODE_VIBRATION) {
-                    val vibration = result.data?.getStringExtra("vibration")
-                    if (vibration != null) {
-                        binding.viewModel?.changeVibration(vibration)
-                    }
-                }
-            }
+        resultLauncher = initResultLauncher()
 
         alarmViewModel.initAlarmData(alarmId)
 
-        binding.tpAlarmTime.hour = alarmCal.get(Calendar.HOUR_OF_DAY)
-        binding.tpAlarmTime.minute = alarmCal.get(Calendar.MINUTE)
-
-        binding.viewModel?.changeTime(
-            binding.viewModel?.timePickerToTime(
-                binding.tpAlarmTime.hour,
-                binding.tpAlarmTime.minute
-            )!!
-        )
-
         binding.apply {
+
+            tpAlarmTime.hour = alarmCal.get(Calendar.HOUR_OF_DAY)
+            tpAlarmTime.minute = alarmCal.get(Calendar.MINUTE)
+
+            viewModel?.changeTime(
+                viewModel?.timePickerToTime(
+                    tpAlarmTime.hour,
+                    tpAlarmTime.minute
+                )!!
+            )
 
             initTime()
             initDate()
@@ -138,6 +121,34 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }
     }
 
+
+    /**
+     * ResultLauncher 초기화
+     **/
+    private fun initResultLauncher(): ActivityResultLauncher<Intent> {
+        return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Const.RESULT_CODE_SOUND) {
+                val sound = result.data?.getStringExtra("sound")
+                val volume = result.data?.getIntExtra("volume", -1)
+                if (sound != null) {
+                    binding.viewModel?.changeSound(sound)
+                }
+                if (volume != null && volume != -1) {
+                    binding.viewModel?.changeVolume(volume)
+                }
+            } else if (result.resultCode == Const.RESULT_CODE_VIBRATION) {
+                val vibration = result.data?.getStringExtra("vibration")
+                if (vibration != null) {
+                    binding.viewModel?.changeVibration(vibration)
+                }
+            }
+        }
+    }
+
+
+    /**
+     * param을 담은 startActivity
+     **/
     private fun startOptionActivity(intent: Intent, param1: String, param2: Int?) {
         intent.putExtra("param1", param1)
         if (param2 != null) intent.putExtra("param2", param2)
@@ -145,6 +156,9 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         resultLauncher.launch(intent)
     }
 
+    /**
+     * 날짜 초기화
+     **/
     private fun initDate() {
         binding.apply {
             viewModel?.date?.observe(this@CreateAlarmActivity) {
@@ -159,9 +173,13 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }
     }
 
+
+    /**
+     * 알람 저장
+     **/
     private fun saveAlarm() {
         if (binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()) {
-            Toast.makeText(this, "이미 지난 시간은 선택할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.str_past_alarm), Toast.LENGTH_SHORT).show()
         } else {
             binding.apply {
                 viewModel?.alarm?.value?.apply {
@@ -219,6 +237,10 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }
     }
 
+
+    /**
+     * 테스트 알람 저장(지난 시간 가능)
+     **/
     /*    private fun testSaveAlarm() {
                 binding.apply {
                     viewModel?.alarm?.value?.apply {
@@ -276,6 +298,9 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }*/
 
 
+    /**
+     * 캘린더 보여주기
+     **/
     private fun showCalendar() {
         val datePickerDialog = DatePickerDialog(
             this,
@@ -295,6 +320,10 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         datePickerDialog.show()
     }
 
+
+    /**
+     * 시간 초기화
+     **/
     private fun initTime() {
         binding.apply {
             viewModel?.time?.observe(this@CreateAlarmActivity) {
@@ -329,11 +358,18 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         }
     }
 
+    /**
+     * 미루기 데이터 받기
+     **/
     override fun onDelayDataPass(data: String?) {
         if (data != null)
             binding.viewModel?.changeDelay(data)
     }
 
+
+    /**
+     * 키보드 숨기기
+     **/
     private fun hideKeyboard() {
         binding.etAlarmTitle.clearFocus()
         val inputManager: InputMethodManager =

@@ -10,7 +10,7 @@
 
         <variable
             name="alarm"
-            type="com.grusie.miraclealarm.model.AlarmData" />
+            type="com.grusie.miraclealarm.model.data.AlarmData" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -61,7 +61,7 @@
             app:layout_constraintEnd_toStartOf="@id/sw_alarm"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/sw_alarm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1,6 +1,8 @@
 package com.grusie.miraclealarm.model
 
 import androidx.lifecycle.LiveData
+import com.grusie.miraclealarm.model.dao.AlarmDao
+import com.grusie.miraclealarm.model.data.AlarmData
 
 class AlarmRepository(private val alarmDao: AlarmDao) {
     val allAlarms: LiveData<MutableList<AlarmData>> = alarmDao.getAllAlarms()

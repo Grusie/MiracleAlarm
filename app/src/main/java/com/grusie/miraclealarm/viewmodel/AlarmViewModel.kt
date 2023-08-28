@@ -7,13 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.model.AlarmData
 import com.grusie.miraclealarm.model.AlarmDatabase
 import com.grusie.miraclealarm.model.AlarmRepository
-import com.grusie.miraclealarm.model.AlarmTimeDao
-import com.grusie.miraclealarm.model.AlarmTimeData
-import com.grusie.miraclealarm.model.AlarmTurnOffDao
-import com.grusie.miraclealarm.model.AlarmTurnOffData
+import com.grusie.miraclealarm.model.dao.AlarmTimeDao
+import com.grusie.miraclealarm.model.dao.AlarmTurnOffDao
+import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.model.data.AlarmTimeData
+import com.grusie.miraclealarm.model.data.AlarmTurnOffData
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,7 +68,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     val clearAlarm: LiveData<AlarmData> = _clearAlarm
     private val daysOfWeek: Array<String>
     private val dayOfWeekMap: Map<String, Int>
-    val minAlarmTime: LiveData<AlarmTimeData>
+    val minAlarmTime: LiveData<AlarmTimeData?>?
 
     /**
      * 초기화 작업
@@ -85,22 +85,22 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         _modifyMode.value = false
         _modifyList.value = mutableSetOf()
         daysOfWeek = arrayOf(
-            getString(R.string.string_sunday),
-            getString(R.string.string_monday),
-            getString(R.string.string_tuesday),
-            getString(R.string.string_wednesday),
-            getString(R.string.string_thursday),
-            getString(R.string.string_friday),
-            getString(R.string.string_saturday)
+            getString(R.string.str_sunday),
+            getString(R.string.str_monday),
+            getString(R.string.str_tuesday),
+            getString(R.string.str_wednesday),
+            getString(R.string.str_thursday),
+            getString(R.string.str_friday),
+            getString(R.string.str_saturday)
         )
         dayOfWeekMap = mapOf(
-            getString(R.string.string_sunday) to 1,
-            getString(R.string.string_monday) to 2,
-            getString(R.string.string_tuesday) to 3,
-            getString(R.string.string_wednesday) to 4,
-            getString(R.string.string_thursday) to 5,
-            getString(R.string.string_friday) to 6,
-            getString(R.string.string_saturday) to 7
+            getString(R.string.str_sunday) to 1,
+            getString(R.string.str_monday) to 2,
+            getString(R.string.str_tuesday) to 3,
+            getString(R.string.str_wednesday) to 4,
+            getString(R.string.str_thursday) to 5,
+            getString(R.string.str_friday) to 6,
+            getString(R.string.str_saturday) to 7
         )
         _alarmTurnOffData.value = AlarmTurnOffData()
     }
@@ -345,12 +345,12 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         val day = cal.get(Calendar.DAY_OF_MONTH)
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
 
-        if (year == Calendar.getInstance().get(Calendar.YEAR)) {
-            return String.format(
+        return if (year == Calendar.getInstance().get(Calendar.YEAR)) {
+            String.format(
                 "%02d월 %02d일 (%s)", month + 1, day, daysOfWeek[dayOfWeek - 1]
             )
         } else {
-            return String.format(
+            String.format(
                 "%04d년 %02d월 %02d일 (%s)", year, month + 1, day, daysOfWeek[dayOfWeek - 1]
             )
         }

@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -19,15 +17,16 @@ import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.SoundAdapter
 import com.grusie.miraclealarm.databinding.ActivitySoundBinding
-import com.grusie.miraclealarm.function.GetSelectedItem
-import com.grusie.miraclealarm.function.HeadsetReceiver
-import com.grusie.miraclealarm.function.Utils
-import com.grusie.miraclealarm.function.Utils.Companion.audioFocus
-import com.grusie.miraclealarm.function.Utils.Companion.changeVolume
-import com.grusie.miraclealarm.function.Utils.Companion.hasAudioFocus
+import com.grusie.miraclealarm.interfaces.GetSelectedItem
+import com.grusie.miraclealarm.receiver.HeadsetReceiver
+import com.grusie.miraclealarm.util.Utils
+import com.grusie.miraclealarm.util.Utils.Companion.audioFocus
+import com.grusie.miraclealarm.util.Utils.Companion.changeVolume
+import com.grusie.miraclealarm.util.Utils.Companion.hasAudioFocus
+import com.grusie.miraclealarm.interfaces.HeadsetConnectionListener
 
 class SoundActivity : AppCompatActivity(), GetSelectedItem,
-    HeadsetReceiver.HeadsetConnectionListener {
+    HeadsetConnectionListener {
     private lateinit var binding: ActivitySoundBinding
     private lateinit var soundArray: Array<String>
     private lateinit var adapter: SoundAdapter
@@ -46,19 +45,15 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
     private fun initUi() {
         binding.lifecycleOwner = this
 
-        if (VERSION.SDK_INT >= VERSION_CODES.S) {
-            Utils.createPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
-        } else {
-            Utils.createPermission(android.Manifest.permission.BLUETOOTH)
-            Utils.createPermission(android.Manifest.permission.BLUETOOTH_ADMIN)
-        }
+        Utils.createBlueToothPermission(this) { headsetCheck() }
 
         selectedItem = intent.getStringExtra("param1")
 
         soundArray = resources.getStringArray(R.array.sound_array)
 
         setSupportActionBar(binding.icToolbar.tbTitle)
-        binding.icToolbar.title = "소리"
+        binding.icToolbar.title = getString(R.string.sound_title)
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
@@ -72,7 +67,6 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
         binding.sbSoundVolume.setProgress(volume, true)
 
         Utils.initVolume(this)
-        headsetCheck()
 
         binding.sbSoundVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
@@ -81,7 +75,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
                     audioFocus(this@SoundActivity)
                 changeVolume(this@SoundActivity, volume, isConnected)
                 changeVolumeFlag = true
-                binding.sbSoundVolume.setProgress(volume, true)
+                //binding.sbSoundVolume.setProgress(volume, true)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -118,7 +112,11 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
         isConnected =
             audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothScoOn
 
-        if (isConnected) Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
+        if (isConnected) Toast.makeText(
+            this,
+            getString(R.string.str_headset_connected),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     override fun onDestroy() {
@@ -132,7 +130,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
 
     override fun onHeadsetConnected(isConnected: Boolean) {
         this.isConnected = isConnected
-        Toast.makeText(this, "이어폰 착용으로 최대 소리가 줄어듭니다.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.str_headset_connected), Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
@@ -141,7 +139,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             android.R.id.home -> {
                 finish()
                 return true
@@ -149,6 +147,7 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
         }
         return super.onOptionsItemSelected(item)
     }
+
     override fun getSelectedItem(selectFlag: Boolean, position: Int) {
         selectedItem = soundArray[position]
         if (!selectFlag && changeVolumeFlag) {

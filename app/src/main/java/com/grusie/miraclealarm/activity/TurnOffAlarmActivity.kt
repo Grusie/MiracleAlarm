@@ -14,10 +14,15 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnKeyListener
+import android.view.View.OnTouchListener
 import android.view.ViewTreeObserver
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -25,8 +30,8 @@ import com.bumptech.glide.Glide
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityTurnOffAlarmBinding
-import com.grusie.miraclealarm.function.Utils
-import com.grusie.miraclealarm.model.AlarmData
+import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.viewmodel.AlarmTurnOffViewModel
 import kotlin.math.sqrt
 
@@ -77,57 +82,15 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         offWayArray = resources.getStringArray(R.array.off_way_array)
         binding.offWayArray = offWayArray
 
-        alarm =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent.getParcelableExtra(
-                "alarm",
-                AlarmData::class.java
-            ) ?: AlarmData() else intent.getParcelableExtra("alarm") ?: AlarmData()
+        alarm = Utils.getAlarmData(intent)
 
         observing()
 
         binding.apply {
             viewModel?.initOffWayById(alarm)
 
-            etProblem.setOnKeyListener { _, keyCode, _ ->
-                when (keyCode) {
-                    KeyEvent.KEYCODE_ENTER -> {
-                        val answer = viewModel?.answer?.value
-                        val inputText = etProblem.text.toString()
-
-                        try {
-                            val inputNumber = inputText.toInt()
-                            if (answer == inputNumber) {
-                                viewModel?.increaseCurrentCount()
-                                viewModel?.createProblem()
-                            } else {
-                                clOffWayProblem.startAnimation(
-                                    AnimationUtils.loadAnimation(
-                                        this@TurnOffAlarmActivity,
-                                        R.anim.wrong_answer_anim
-                                    )
-                                )
-                            }
-                            etProblem.setText("")
-                        } catch (e: NumberFormatException) {
-                            // 입력값을 정수로 파싱할 수 없는 경우의 예외 처리
-                            // 이 부분에 적절한 오류 처리를 추가하세요.
-                        }
-                        true
-                    }
-                    else -> false
-                }
-            }
-            btnQuickness.setOnTouchListener { _, motionEvent ->
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        viewModel?.increaseCurrentCount()
-                        viewModel?.changeEnabled(false)
-                        true
-                    }
-
-                    else -> false
-                }
-            }
+            etProblem.setOnKeyListener(problemKeyListener)
+            btnQuickness.setOnTouchListener(quicknessTouchListener)
 
             tvOffWayChange.setOnClickListener {
                 viewModel?.changeOffWay()
@@ -135,6 +98,63 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
 
             setSupportActionBar(icToolbar.tbTitle)
             supportActionBar?.setDisplayShowTitleEnabled(false)
+
+            /*
+                btnTurnOff.setOnClickListener {
+                    turnOffAlarm()
+                }
+            */
+        }
+    }
+
+
+    /**
+     * 수학문제 에딧 텍스트 Enter키 이벤트 리스너
+     **/
+    private val problemKeyListener = OnKeyListener { view, keyCode, _ ->
+        when (keyCode) {
+            KeyEvent.KEYCODE_ENTER -> {
+                val answer = binding.viewModel?.answer?.value
+                val inputText = binding.etProblem.text.toString()
+
+                try {
+                    val inputNumber = inputText.toInt()
+                    if (answer == inputNumber) {
+                        binding.viewModel?.increaseCurrentCount()
+                        binding.viewModel?.createProblem()
+                    } else {
+                        binding.clOffWayProblem.startAnimation(
+                            AnimationUtils.loadAnimation(
+                                this@TurnOffAlarmActivity,
+                                R.anim.wrong_answer_anim
+                            )
+                        )
+                    }
+                    (view as EditText).setText("")
+                } catch (e: NumberFormatException) {
+                    // 입력값을 정수로 파싱할 수 없는 경우의 예외 처리
+                    // 이 부분에 적절한 오류 처리를 추가하세요.
+                }
+                true
+            }
+
+            else -> false
+        }
+    }
+
+
+    /**
+     * 순발력 게임 버튼 터치 리스너
+     **/
+    private val quicknessTouchListener = OnTouchListener { _, motionEvent ->
+        when (motionEvent.action) {
+            MotionEvent.ACTION_DOWN -> {
+                binding.viewModel?.increaseCurrentCount()
+                binding.viewModel?.changeEnabled(false)
+                true
+            }
+
+            else -> false
         }
     }
 
@@ -167,26 +187,9 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
                     offWayArray[2] -> {
                         binding.btnQuickness.visibility = View.VISIBLE
 
-                        binding.btnQuickness.viewTreeObserver.addOnGlobalLayoutListener(object :
-                            ViewTreeObserver.OnGlobalLayoutListener {
-                            override fun onGlobalLayout() {
-                                binding.btnQuickness.viewTreeObserver.removeOnGlobalLayoutListener(
-                                    this
-                                )
-
-                                binding.viewModel?.startQuickness(
-                                    Pair(
-                                        binding.clOffWayContentInner.left,
-                                        binding.clOffWayContentInner.top
-                                    ),
-                                    Pair(
-                                        binding.clOffWayContentInner.right,
-                                        binding.clOffWayContentInner.bottom
-                                    ),
-                                    binding.btnQuickness.width
-                                )
-                            }
-                        })
+                        binding.btnQuickness.viewTreeObserver.addOnGlobalLayoutListener(
+                            quicknessObserver
+                        )
                         observeQuickness()
                     }
                 }
@@ -197,6 +200,33 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    /**
+     * 순발력 게임 버튼 크기 옵저버
+     **/
+    private val quicknessObserver = object :
+        ViewTreeObserver.OnGlobalLayoutListener {
+        override fun onGlobalLayout() {
+            binding.btnQuickness.viewTreeObserver.removeOnGlobalLayoutListener(
+                this
+            )
+
+            binding.viewModel?.startQuickness(
+                Pair(
+                    binding.clOffWayContentInner.left,
+                    binding.clOffWayContentInner.top
+                ),
+                Pair(
+                    binding.clOffWayContentInner.right,
+                    binding.clOffWayContentInner.bottom
+                ),
+                binding.btnQuickness.width
+            )
+        }
+    }
+
+    /**
+     * 흔들림 센서 초기화
+     **/
     private fun observeShaking() {
         shakeSensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         shakeAccelerometer = shakeSensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -208,6 +238,9 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         )
     }
 
+    /**
+     * 순발력 게임 옵저버
+     **/
     private fun observeQuickness() {
         binding.viewModel?.randomXY?.observe(this) {
             binding.btnQuickness.x = it.first
@@ -217,6 +250,9 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    /**
+     * 알람 끄기
+     **/
     private fun turnOffAlarm() {
         Utils.stopAlarm(this)
 
@@ -271,6 +307,9 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
+    /**
+     * 키보드 숨기기
+     **/
     private fun hideKeyboard() {
         binding.etProblem.clearFocus()
         val inputManager: InputMethodManager =
@@ -281,6 +320,9 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         )
     }
 
+    /**
+     * 흔들림 센서 감지 이벤트
+     **/
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
             val x = event.values?.get(0)!!
@@ -304,6 +346,29 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
                 shakeTime = currentTime
                 binding.viewModel?.increaseCurrentCount()
             }
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemUI()
+    }
+
+    /**
+     * 전체화면 설정
+     * */
+    private fun hideSystemUI() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+            val controller = window.insetsController
+            if (controller != null) {
+                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                controller.systemBarsBehavior =
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            window.decorView.systemUiVisibility =
+                (View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
     }
 

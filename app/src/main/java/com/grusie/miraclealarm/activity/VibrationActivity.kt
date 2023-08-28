@@ -10,8 +10,8 @@ import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.VibrationAdapter
 import com.grusie.miraclealarm.databinding.ActivityVibrationBinding
-import com.grusie.miraclealarm.function.GetSelectedItem
-import com.grusie.miraclealarm.function.Utils
+import com.grusie.miraclealarm.interfaces.GetSelectedItem
+import com.grusie.miraclealarm.util.Utils
 
 class VibrationActivity : AppCompatActivity(), GetSelectedItem {
     lateinit var binding: ActivityVibrationBinding
@@ -32,7 +32,7 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem {
         adapter = VibrationAdapter(this, vibrationArray)
 
         setSupportActionBar(binding.icToolbar.tbTitle)
-        binding.icToolbar.title = "진동"
+        binding.icToolbar.title = getString(R.string.vibe_title)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 

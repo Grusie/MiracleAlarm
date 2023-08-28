@@ -1,32 +1,32 @@
 package com.grusie.miraclealarm.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ItemAlarmValueListBinding
-import com.grusie.miraclealarm.function.GetSelectedItem
+import com.grusie.miraclealarm.interfaces.GetSelectedItem
+import com.grusie.miraclealarm.viewHolder.SingleDataViewHolder
 
 class OffWayAdapter(
     private val listener: GetSelectedItem,
     private val offWayList: Array<String>
-) : RecyclerView.Adapter<DelayViewHolder>() {
+) : RecyclerView.Adapter<SingleDataViewHolder>() {
     lateinit var binding: ItemAlarmValueListBinding
     var selectedPosition = 0
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DelayViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SingleDataViewHolder {
         binding = ItemAlarmValueListBinding.bind(
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.item_alarm_value_list, parent, false)
         )
-        return DelayViewHolder(binding)
+        return SingleDataViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
         return offWayList.size
     }
 
-    override fun onBindViewHolder(holder: DelayViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SingleDataViewHolder, position: Int) {
         holder.onBind(offWayList[position], listener, selectedPosition, position)
     }
 
@@ -39,26 +39,5 @@ class OffWayAdapter(
 
         notifyItemChanged(prePosition)
         notifyItemChanged(selectedPosition)
-    }
-}
-
-class OffWayViewHolder(private val binding: ItemAlarmValueListBinding) :
-    RecyclerView.ViewHolder(binding.root) {
-    fun onBind(
-        offWay: String,
-        listener: GetSelectedItem,
-        selectedPosition: Int,
-        position: Int
-    ) {
-        binding.value = offWay
-        binding.checkedFlag = selectedPosition == position
-        binding.visible = false
-
-        val clickListener = View.OnClickListener {
-            listener.getSelectedItem(true, position)
-        }
-
-        binding.rbAlarmSound.setOnClickListener(clickListener)
-        itemView.setOnClickListener(clickListener)
     }
 }

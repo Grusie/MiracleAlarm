@@ -1,7 +1,8 @@
-package com.grusie.miraclealarm.model
+package com.grusie.miraclealarm.model.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.grusie.miraclealarm.model.data.AlarmTimeData
 
 @Dao
 interface AlarmTimeDao {
@@ -18,7 +19,7 @@ interface AlarmTimeDao {
     suspend fun deleteByAlarmId(alarmId: Int)
 
     @Query("SELECT * FROM alarm_time_table ORDER BY timeInMillis ASC LIMIT 1")
-    fun getMinAlarmTime(): LiveData<AlarmTimeData>
+    fun getMinAlarmTime(): LiveData<AlarmTimeData?>?
 
     @Query("SELECT * FROM alarm_time_table WHERE timeInMillis <= :currentTime")
     suspend fun getMissedAlarms(currentTime: Long): List<AlarmTimeData>
