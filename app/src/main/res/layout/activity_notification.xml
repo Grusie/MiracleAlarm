@@ -56,28 +56,32 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <Button
+            <TextView
                 android:id="@+id/btn_delay"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/light_blue"
+                style="@style/customPlayTextButtonStyle"
+                android:paddingVertical="@dimen/padding_default"
                 android:text="미루기"
-                android:padding="4dp"
-                android:visibility="@{viewModel.flagDelay ? View.VISIBLE : View.GONE}"
+                android:visibility="@{viewModel.flagDelay ? View.VISIBLE : View.INVISIBLE}"
+                android:layout_marginBottom="@dimen/margin_half"
                 app:layout_constraintBottom_toTopOf="@id/btn_turnOff"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"></Button>
+                app:layout_constraintStart_toStartOf="parent"
+                android:background="@drawable/edittext_rounded_corner"/>
 
-            <Button
+            <TextView
                 android:id="@+id/btn_turnOff"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/light_blue"
                 android:text="끄기"
+                style="@style/customPlayTextButtonStyle"
+                android:paddingVertical="@dimen/padding_default"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"></Button>
+                app:layout_constraintTop_toTopOf="parent"
+                android:background="@drawable/edittext_rounded_corner"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.appcompat.widget.LinearLayoutCompat

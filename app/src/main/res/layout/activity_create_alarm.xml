@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
@@ -18,7 +19,7 @@
             android:id="@+id/tp_alarm_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/gray"
+            style="@style/MainBackground"
             android:timePickerMode="spinner"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -27,7 +28,8 @@
             android:layout_height="0dp"
             android:fillViewport="true"
             app:layout_constraintBottom_toTopOf="@id/ll_btns"
-            app:layout_constraintTop_toBottomOf="@id/tp_alarm_time">
+            app:layout_constraintTop_toBottomOf="@id/tp_alarm_time"
+            style="@style/LightBackground">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -57,7 +59,7 @@
 
                         <ImageButton
                             android:id="@+id/iv_calendar"
-                            style="?android:attr/borderlessButtonStyle"
+                            style="@style/customLightImageButtonStyle"
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:scaleType="fitCenter"
@@ -66,15 +68,6 @@
                             app:layout_constraintTop_toTopOf="parent" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <!--                    <androidx.recyclerview.widget.RecyclerView
-                                            android:id="@+id/rv_alarm_date"
-                                            android:layout_width="match_parent"
-                                            android:layout_height="wrap_content"
-                                            app:layout_constraintEnd_toEndOf="parent"
-                                            app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toBottomOf="@id/cl_nextAlarm"
-                                            tools:listitem="@layout/item_alarm_date" />-->
-
                     <com.google.android.flexbox.FlexboxLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -82,130 +75,186 @@
                         app:layout_constraintTop_toBottomOf="@id/cl_nextAlarm"
                         tools:layout_editor_absoluteX="0dp">
 
-                        <CheckBox
-                            android:id="@+id/cb_date_1"
+                        <androidx.cardview.widget.CardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_sunday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_sunday, true)}"
-                            android:text="@string/str_sunday"
-                            android:textColor="@drawable/sunday_text_selector" />
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
 
-                        <CheckBox
-                            android:id="@+id/cb_date_2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_monday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_monday, true)}"
-                            android:text="@string/str_monday"
-                            android:textColor="@drawable/weekday_text_selector" />
+                            <CheckBox
+                                android:id="@+id/cb_date_1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_sunday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_sunday, true)}"
+                                android:text="@string/str_sunday"
+                                android:textColor="@color/red" />
+                        </androidx.cardview.widget.CardView>
 
-                        <CheckBox
-                            android:id="@+id/cb_date_3"
+                        <androidx.cardview.widget.CardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_tuesday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_tuesday, true)}"
-                            android:text="@string/str_tuesday"
-                            android:textColor="@drawable/weekday_text_selector" />
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
 
-                        <CheckBox
-                            android:id="@+id/cb_date_4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_wednesday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_wednesday, true)}"
-                            android:text="@string/str_wednesday"
-                            android:textColor="@drawable/weekday_text_selector" />
+                            <CheckBox
+                                android:id="@+id/cb_date_2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_monday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_monday, true)}"
+                                android:text="@string/str_monday" />
+                        </androidx.cardview.widget.CardView>
 
-                        <CheckBox
-                            android:id="@+id/cb_date_5"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_thursday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_thursday, true)}"
-                            android:text="@string/str_thursday"
-                            android:textColor="@drawable/weekday_text_selector" />
 
-                        <CheckBox
-                            android:id="@+id/cb_date_6"
+                        <androidx.cardview.widget.CardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_friday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_friday, true)}"
-                            android:text="@string/str_friday"
-                            android:textColor="@drawable/weekday_text_selector" />
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
 
-                        <CheckBox
-                            android:id="@+id/cb_date_7"
+                            <CheckBox
+                                android:id="@+id/cb_date_3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_tuesday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_tuesday, true)}"
+                                android:text="@string/str_tuesday" />
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/date_border_selector"
-                            android:button="@null"
-                            android:checked="@{viewModel.dateList.contains(@string/str_saturday)}"
-                            android:gravity="center"
-                            android:onClick="@{()->viewModel.onDateClicked(@string/str_saturday, true)}"
-                            android:text="@string/str_saturday"
-                            android:textColor="@drawable/saturday_text_selector" />
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
+
+
+                            <CheckBox
+                                android:id="@+id/cb_date_4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_wednesday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_wednesday, true)}"
+                                android:text="@string/str_wednesday"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
+
+
+                            <CheckBox
+                                android:id="@+id/cb_date_5"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_thursday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_thursday, true)}"
+                                android:text="@string/str_thursday"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
+
+
+                            <CheckBox
+                                android:id="@+id/cb_date_6"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_friday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_friday, true)}"
+                                android:text="@string/str_friday"/>
+                        </androidx.cardview.widget.CardView>
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:cardCornerRadius="30dp"
+                            app:cardElevation="0dp"
+                            style="@style/LightBackground">
+
+
+                            <CheckBox
+                                android:id="@+id/cb_date_7"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/date_border_selector"
+                                android:button="@null"
+                                android:checked="@{viewModel.dateList.contains(@string/str_saturday)}"
+                                android:gravity="center"
+                                android:onClick="@{()->viewModel.onDateClicked(@string/str_saturday, true)}"
+                                android:text="@string/str_saturday"
+                                android:textColor="@color/light_blue" />
+                        </androidx.cardview.widget.CardView>
 
                     </com.google.android.flexbox.FlexboxLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/cl_holiday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="@dimen/padding_half"
-                    android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_date">
+                <!--                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/cl_holiday"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:paddingHorizontal="@dimen/padding_half"
+                                    android:paddingVertical="@dimen/padding_default"
+                                    app:layout_constraintTop_toBottomOf="@id/cl_date">
 
-                    <TextView
-                        android:id="@+id/tv_holiday_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/str_holiday_title"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                                    <TextView
+                                        android:id="@+id/tv_holiday_title"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/str_holiday_title"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                        android:id="@+id/tv_holiday_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/str_holiday_sub"
-                        android:textColor="@color/blue"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tv_holiday_title" />
+                                    <TextView
+                                        android:id="@+id/tv_holiday_sub"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/str_holiday_sub"
+                                        android:textColor="@color/blue"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@id/tv_holiday_title" />
 
-                    <Switch
-                        android:id="@+id/sw_holiday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="@{viewModel.alarm.holiday}"
-                        android:onClick="@{() -> viewModel.onSwHolidayClicked()}"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                                    <Switch
+                                        android:id="@+id/sw_holiday"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:checked="@{viewModel.alarm.holiday}"
+                                        android:onClick="@{() -> viewModel.onSwHolidayClicked()}"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>-->
+                                </androidx.constraintlayout.widget.ConstraintLayout>-->
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/cl_alarm_title"
@@ -229,10 +278,10 @@
                     android:id="@+id/cl_alarm_offWay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_title"
-                    android:background="?attr/selectableItemBackground">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_title">
 
                     <TextView
                         android:id="@+id/tv_offWay_title"
@@ -267,10 +316,10 @@
                     android:id="@+id/cl_alarm_sound"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_offWay"
-                    android:background="?attr/selectableItemBackground">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_offWay">
 
                     <TextView
                         android:id="@+id/tv_sound_title"
@@ -306,10 +355,10 @@
                     android:id="@+id/cl_alarm_vibe"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_sound"
-                    android:background="?attr/selectableItemBackground">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_sound">
 
                     <TextView
                         android:id="@+id/tv_vibe_title"
@@ -345,10 +394,10 @@
                     android:id="@+id/cl_alarm_delay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
                     android:paddingHorizontal="@dimen/padding_half"
                     android:paddingVertical="@dimen/padding_default"
-                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_vibe"
-                    android:background="?attr/selectableItemBackground">
+                    app:layout_constraintTop_toBottomOf="@id/cl_alarm_vibe">
 
                     <TextView
                         android:id="@+id/tv_delay_title"
@@ -388,17 +437,17 @@
             android:weightSum="2"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <Button
+            <TextView
                 android:id="@+id/btn_cancel"
-                style="@style/customButtonStyle"
+                style="@style/customTextButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/str_cancel" />
 
-            <Button
+            <TextView
                 android:id="@+id/btn_save"
-                style="@style/customButtonStyle"
+                style="@style/customTextButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

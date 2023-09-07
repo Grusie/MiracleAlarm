@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -722,6 +723,14 @@ class Utils {
                 }
             }
             builder.create().show()
+        }
+
+        /**
+         * 다크모드 확인
+         **/
+        fun isDarkModeEnabled(context: Context): Boolean {
+            val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            return currentNightMode == Configuration.UI_MODE_NIGHT_YES
         }
     }
 }

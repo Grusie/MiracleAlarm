@@ -1,6 +1,8 @@
 package com.grusie.miraclealarm.activity
 
 import android.Manifest
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
@@ -8,8 +10,13 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.ViewTreeObserver
+import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
+import android.window.SplashScreen
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +34,7 @@ import com.grusie.miraclealarm.util.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.util.Utils.Companion.createPermission
 import com.grusie.miraclealarm.util.Utils.Companion.getWidthInDp
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
+import kotlinx.coroutines.NonCancellable.start
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Collections
@@ -39,12 +47,33 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
     private var backpressedTime: Long = 0
     private lateinit var currentCal: Calendar
     private lateinit var timeChangeReceiver: TimeChangeReceiver
+    private lateinit var splashScreen: androidx.core.splashscreen.SplashScreen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        splashScreen = installSplashScreen()
+        startSplash()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         initUi()
+    }
+    private fun startSplash(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            splashScreen.setOnExitAnimationListener { splashScreenView ->
+                val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 5f, 1f)
+                val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 5f, 1f)
+
+                ObjectAnimator.ofPropertyValuesHolder(splashScreenView.iconView, scaleX, scaleY)
+                    .run {
+                        interpolator = AnticipateInterpolator()
+                        duration = 1000L
+                        doOnEnd {
+                            splashScreenView.remove()
+                        }
+                        start()
+                    }
+            }
+        }
     }
 
     private fun initUi() {
@@ -53,7 +82,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         initPermission()
 
         layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
-        adapter = AlarmListAdapter(alarmViewModel, this@MainActivity)
+        adapter = AlarmListAdapter(this, alarmViewModel, this@MainActivity)
 
         binding.lifecycleOwner = this
         binding.viewModel = alarmViewModel

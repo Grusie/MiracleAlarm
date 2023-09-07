@@ -34,12 +34,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
+        <TextView
             android:id="@+id/btn_save"
-            style="@style/customButtonStyle"
+            style="@style/customTextButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/margin_default"
+            android:layout_marginTop="@dimen/margin_default"
             android:text="@string/str_save"
             app:layout_constraintBottom_toBottomOf="parent"/>
 

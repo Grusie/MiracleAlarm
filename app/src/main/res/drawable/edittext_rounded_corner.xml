@@ -8,8 +8,6 @@
                 android:width="1dp"
                 android:color="@color/blue" />
             <corners android:radius="16dp" />
-            <solid
-                android:color="@color/white" />
         </shape>
     </item>
 
@@ -19,8 +17,6 @@
                 android:width="1dp"
                 android:color="@color/dark_gray" />
             <corners android:radius="16dp" />
-            <solid
-                android:color="@color/white" />
         </shape>
     </item>
 

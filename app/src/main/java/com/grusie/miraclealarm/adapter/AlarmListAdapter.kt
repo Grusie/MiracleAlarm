@@ -1,5 +1,6 @@
 package com.grusie.miraclealarm.adapter
 
+import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -12,10 +13,13 @@ import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.activity.CreateAlarmActivity
 import com.grusie.miraclealarm.databinding.ItemAlarmListBinding
 import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 
 class AlarmListAdapter(
-    private val viewModel: AlarmViewModel, private val lifecycleOwner: LifecycleOwner
+    private val context: Context,
+    private val viewModel: AlarmViewModel,
+    private val lifecycleOwner: LifecycleOwner
 ) : RecyclerView.Adapter<AlarmListAdapter.AlarmListViewHolder>() {
     var alarmList: MutableList<AlarmData> = arrayListOf()
 
@@ -30,7 +34,7 @@ class AlarmListAdapter(
         val alarm = alarmList[position]
         holder.binding.cbAlarmSelect.isChecked =
             holder.binding.viewModel?.modifyList?.value?.contains(alarm) ?: false
-        holder.bind(alarm, viewModel, lifecycleOwner)
+        holder.bind(context, alarm, viewModel, lifecycleOwner)
     }
 
     override fun getItemCount(): Int {
@@ -38,43 +42,27 @@ class AlarmListAdapter(
     }
 
     inner class AlarmListViewHolder(val binding: ItemAlarmListBinding) : ViewHolder(binding.root) {
-        fun bind(alarm: AlarmData, viewModel: AlarmViewModel, lifecycleOwner: LifecycleOwner) {
+        fun bind(
+            context: Context,
+            alarm: AlarmData,
+            viewModel: AlarmViewModel,
+            lifecycleOwner: LifecycleOwner
+        ) {
             binding.viewModel = viewModel
             binding.alarm = alarm
-            if (binding.alarm?.enabled == false) {
-                binding.tvAlarmTime.setTextColor(
-                    ContextCompat.getColor(
-                        binding.root.context, R.color.dark_gray
-                    )
-                )
-                binding.tvAlarmDate.setTextColor(
-                    ContextCompat.getColor(
-                        binding.root.context, R.color.dark_gray
-                    )
-                )
-                binding.tvAlarmTitle.setTextColor(
-                    ContextCompat.getColor(
-                        binding.root.context, R.color.dark_gray
-                    )
-                )
+
+            val isDarkMode = Utils.isDarkModeEnabled(context)
+            val textColorRes = if (binding.alarm?.enabled == true) {
+                if (isDarkMode) R.color.white else R.color.black
             } else {
-                binding.tvAlarmTime.setTextColor(
-                    ContextCompat.getColor(
-                        binding.root.context, R.color.black
-                    )
-                )
-                binding.tvAlarmDate.setTextColor(
-                    ContextCompat.getColor(
-                        binding.root.context, R.color.black
-                    )
-                )
-                binding.tvAlarmTitle.setTextColor(
-                    ContextCompat.getColor(
-                        binding.root.context, R.color.black
-                    )
-                )
+                R.color.dark_gray
             }
-            binding.executePendingBindings()
+
+            binding.apply {
+                tvAlarmTime.setTextColor(ContextCompat.getColor(context, textColorRes))
+                tvAlarmTitle.setTextColor(ContextCompat.getColor(context, textColorRes))
+                tvAlarmDate.setTextColor(ContextCompat.getColor(context, textColorRes))
+            }
 
             binding.viewModel?.modifyMode?.observe(lifecycleOwner) {
                 if (it) binding.cbAlarmSelect.visibility =

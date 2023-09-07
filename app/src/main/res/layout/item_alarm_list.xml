@@ -13,64 +13,70 @@
             type="com.grusie.miraclealarm.model.data.AlarmData" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_marginBottom="@dimen/margin_default"
         android:layout_marginHorizontal="@dimen/margin_half"
-        android:background="@drawable/item_alarm_list_effect"
-        android:backgroundTint="@color/white"
-        android:paddingHorizontal="@dimen/padding_half"
-        android:paddingVertical="@dimen/padding_half">
+        android:layout_marginBottom="@dimen/margin_default"
+        android:foreground="?android:attr/selectableItemBackground"
+        app:cardCornerRadius="10dp">
 
-        <CheckBox
-            android:id="@+id/cb_alarm_select"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="@{viewModel.modifyList.contains(alarm)}"
-            android:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCheckAlarmList(alarm, isChecked)}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            style="@style/LowLightBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/padding_half"
+            android:paddingVertical="@dimen/padding_half">
 
-        <TextView
-            android:id="@+id/tv_alarm_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{alarm.title}"
-            app:layout_constraintStart_toEndOf="@id/cb_alarm_select"
-            app:layout_constraintTop_toTopOf="parent" />
+            <CheckBox
+                android:id="@+id/cb_alarm_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="@{viewModel.modifyList.contains(alarm)}"
+                android:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCheckAlarmList(alarm, isChecked)}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tv_alarm_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{alarm.time}"
-            android:textSize="@dimen/text_large"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/cb_alarm_select"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/tv_alarm_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{alarm.title}"
+                app:layout_constraintStart_toEndOf="@id/cb_alarm_select"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tv_alarm_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{alarm.date}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/sw_alarm"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/tv_alarm_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{alarm.time}"
+                android:textSize="@dimen/text_large"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/cb_alarm_select"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/sw_alarm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="@{alarm.enabled}"
-            android:onClick="@{() -> viewModel.onAlarmFlagClicked(alarm)}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/tv_alarm_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{alarm.date}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/sw_alarm"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/sw_alarm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="@{alarm.enabled}"
+                android:onClick="@{() -> viewModel.onAlarmFlagClicked(alarm)}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
 </layout>

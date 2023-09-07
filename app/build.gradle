@@ -12,15 +12,15 @@ android {
         applicationId 'com.grusie.miraclealarm'
         minSdk 26
         targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -75,4 +75,7 @@ dependencies {
 
     //AdMob
     implementation 'com.google.android.gms:play-services-ads:22.2.0'
+
+    //SplashScreen
+    implementation 'androidx.core:core-splashscreen:1.0.1'
 }
