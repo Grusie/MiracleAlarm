@@ -4,7 +4,7 @@
 
 <a href="https://acoustic-station-8c0.notion.site/MiracleAlarm-fa1202369b1042e7b00d77a0a1b75dae?pvs=4"><img src = "https://github.com/Grusie/MiracleAlarm/assets/75468060/e724806c-a914-4270-a3c9-43c6bba5711e" width= "700" height = "300"/></a>
 
-**[앱 다운로드 링크](https://acoustic-station-8c0.notion.site/MiracleAlarm-fa1202369b1042e7b00d77a0a1b75dae?pvs=4)**
+**[앱 다운로드 링크]([https://acoustic-station-8c0.notion.site/MiracleAlarm-fa1202369b1042e7b00d77a0a1b75dae?pvs=4](https://play.google.com/store/apps/details?id=com.grusie.miraclealarm))**
 
 
 <a href="https://acoustic-station-8c0.notion.site/MiracleAlarm-fa1202369b1042e7b00d77a0a1b75dae?pvs=4"><img src="https://img.shields.io/badge/Notion-black?style=flat-square&amp;logo=Notion&amp;logoColor=white" /></a>
@@ -13,11 +13,12 @@
 
 ## 개요
 - 알람 어플리케이션
-- 알람 생성 | 삭제 기능을 제공한다.
-- 미션을 통한 알람 끄기 기능을 제공한다.
-- 부재중 알람 표시 기능을 제공한다.
-
-## 버전 1.0
+- 알람 생성 | 삭제 기능을 제공
+- 미션을 통한 알람 끄기 기능을 제공
+- 부재중 알람 표시 기능을 제공
+- 다크모드 지원
+- 
+## 버전 1.1.0
 - 미라클 알람 출시
 
 
@@ -28,6 +29,7 @@
 - 시간 뿐 아니라 날짜 및 요일까지도 알람 생성이 가능하도록 구현
 - AlarmManager, AudioManager, Vibration을 활용한 알람 기능
 - BroadcastReceiver, ForegroundService, Notification을 활용한 알람 및 부재중 알람 표시 기능
+- 다크모드 지원
 
 ## skills
 - Room
