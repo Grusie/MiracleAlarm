@@ -65,8 +65,13 @@ class AlarmListAdapter(
             }
 
             binding.viewModel?.modifyMode?.observe(lifecycleOwner) {
-                if (it) binding.cbAlarmSelect.visibility =
-                    View.VISIBLE else binding.cbAlarmSelect.visibility = View.GONE
+                if (it) {
+                    binding.cbAlarmSelect.visibility = View.VISIBLE
+                    binding.swAlarm.visibility = View.GONE
+                } else {
+                    binding.cbAlarmSelect.visibility = View.GONE
+                    binding.swAlarm.visibility = View.VISIBLE
+                }
             }
 
             itemView.setOnClickListener {

@@ -102,7 +102,6 @@
             android:id="@+id/ll_modify_tab"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:weightSum="1"
             app:layout_constraintBottom_toBottomOf="parent">
 

@@ -102,7 +102,8 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             observing()
 
             btnDelete.setOnClickListener {
-                deleteAlarm()
+                if(viewModel?.modifyList?.value!!.size > 0)
+                    deleteAlarm()
             }
         }
     }
@@ -183,6 +184,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
                     viewModel?.modifyList?.value?.clear()
                 }
             }
+
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
                 currentCal = Calendar.getInstance()
                 viewModel?.initAlarmData(alarm)
@@ -263,6 +265,11 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             }
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            if(!Utils.checkPermission(this, Manifest.permission.SCHEDULE_EXACT_ALARM)){
+                createPermission(Manifest.permission.SCHEDULE_EXACT_ALARM, null)
+            }
+        }
         if (!Settings.canDrawOverlays(this))
             createConfirm(
                 this,

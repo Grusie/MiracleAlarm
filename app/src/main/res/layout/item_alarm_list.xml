@@ -11,6 +11,8 @@
         <variable
             name="alarm"
             type="com.grusie.miraclealarm.model.data.AlarmData" />
+
+        <import type="android.view.View"/>
     </data>
 
     <androidx.cardview.widget.CardView
@@ -36,7 +38,7 @@
                 android:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCheckAlarmList(alarm, isChecked)}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
                 android:id="@+id/tv_alarm_title"
@@ -72,6 +74,7 @@
                 android:layout_height="wrap_content"
                 android:checked="@{alarm.enabled}"
                 android:onClick="@{() -> viewModel.onAlarmFlagClicked(alarm)}"
+                android:visibility="@{viewModel.modifyMode? View.GONE : View.VISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
