@@ -35,6 +35,6 @@
     <string name="str_headset_connected">이어폰 착용으로 최대 소리가 줄어듭니다.</string>
     <string name="str_missed_alarm">부재중 알람이 %d개 있습니다.</string>
 
-    <string name="str_admob_test_id">ca-app-pub-3940256099942544/6300978111</string>
-    <string name="str_admob_real_id">ca-app-pub-6416226231409915/8655035663</string>
+    <string name="str_new_version">새로운 앱 버전이 나왔습니다.</string>
+    <string name="str_new_version_content">원할한 이용을 위해 업데이트를 진행해주세요.</string>
 </resources>

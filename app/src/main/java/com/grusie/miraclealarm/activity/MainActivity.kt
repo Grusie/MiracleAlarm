@@ -5,9 +5,11 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.AnticipateInterpolator
@@ -19,6 +21,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.adapter.AlarmListAdapter
@@ -31,10 +37,12 @@ import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.util.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.util.Utils.Companion.createPermission
 import com.grusie.miraclealarm.util.Utils.Companion.getWidthInDp
+import com.grusie.miraclealarm.util.Utils.Companion.showConfirmDialog
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Collections
+
 
 class MainActivity : AppCompatActivity(), MessageUpdateListener {
     private lateinit var binding: ActivityMainBinding
@@ -50,7 +58,8 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         super.onCreate(savedInstanceState)
         splashScreen = installSplashScreen()
         startSplash()
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding =
+            DataBindingUtil.setContentView(this, com.grusie.miraclealarm.R.layout.activity_main)
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         initUi()
     }
@@ -75,6 +84,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
     }
 
     private fun initUi() {
+        checkVersion()
         stopMissedAlarmService()
         initTimeChangeReceiver()
         initPermission()
@@ -103,6 +113,34 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
                 if (viewModel?.modifyList?.value!!.size > 0)
                     deleteAlarm()
             }
+        }
+    }
+
+    private fun checkVersion() {
+        //플레이스토어의 버전과 비교
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo: AppUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                showConfirmDialog(
+                    supportFragmentManager,
+                    title = getString(R.string.str_new_version),
+                    content = getString(R.string.str_new_version_content),
+                    positiveCallback = {
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.setData(Uri.parse("market://details?id=$packageName"))
+                        startActivity(intent)
+
+                        finish()
+                    },
+                    negativeCallback = {
+                        finish()
+                    }
+                )
+            }
+        }.addOnFailureListener { e: java.lang.Exception ->
+            Log.e("confirm version playStore error", "${e.message}")
         }
     }
 
@@ -146,7 +184,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             viewModel?.changeModifyMode()
             Toast.makeText(
                 this@MainActivity,
-                getString(R.string.str_delete_alarm),
+                getString(com.grusie.miraclealarm.R.string.str_delete_alarm),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -172,7 +210,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             viewModel?.minAlarmTime?.observe(this@MainActivity) {
                 tvMinAlarm.text = if (it != null) {
                     Utils.createAlarmMessage(false, it.timeInMillis)
-                } else getString(R.string.str_turn_off_all)
+                } else getString(com.grusie.miraclealarm.R.string.str_turn_off_all)
             }
 
             viewModel?.modifyMode?.observe(this@MainActivity) {
@@ -267,8 +305,8 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             if (!Utils.checkPermission(this, Manifest.permission.SCHEDULE_EXACT_ALARM)) {
                 Utils.showConfirmDialog(
                     supportFragmentManager = supportFragmentManager,
-                    title = getString(R.string.str_permission_title),
-                    content = getString(R.string.str_schedule_exact_alarms),
+                    title = getString(com.grusie.miraclealarm.R.string.str_permission_title),
+                    content = getString(com.grusie.miraclealarm.R.string.str_schedule_exact_alarms),
                     positiveCallback = {
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         startActivity(intent)
@@ -284,8 +322,8 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             createConfirm(
                 this,
                 Manifest.permission.SYSTEM_ALERT_WINDOW,
-                getString(R.string.str_permission_title),
-                getString(R.string.str_can_draw_overlays)
+                getString(com.grusie.miraclealarm.R.string.str_permission_title),
+                getString(com.grusie.miraclealarm.R.string.str_can_draw_overlays)
             )
     }
 
@@ -300,7 +338,11 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         } else {
             if (System.currentTimeMillis() > backpressedTime + 2000) {
                 backpressedTime = System.currentTimeMillis()
-                Toast.makeText(this, getString(R.string.str_back_press), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    getString(com.grusie.miraclealarm.R.string.str_back_press),
+                    Toast.LENGTH_SHORT
+                ).show()
             } else if (System.currentTimeMillis() <= backpressedTime + 2000) {
                 finish()
             }
