@@ -24,15 +24,17 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentManager
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.receiver.AlarmNotiReceiver
 import com.grusie.miraclealarm.model.data.AlarmData
 import com.grusie.miraclealarm.model.data.AlarmTimeData
+import com.grusie.miraclealarm.receiver.AlarmNotiReceiver
 import com.grusie.miraclealarm.service.ForegroundAlarmService
+import com.grusie.miraclealarm.view.ConfirmDialog
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.normal.TedPermission
 import java.text.SimpleDateFormat
@@ -339,6 +341,12 @@ class Utils {
          * 퍼미션 체크
          **/
         fun checkPermission(context: Context, permission: String): Boolean {
+            if (permission == Manifest.permission.SCHEDULE_EXACT_ALARM) {
+                alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    alarmManager.canScheduleExactAlarms()
+                } else false
+            }
             return ContextCompat.checkSelfPermission(
                 context,
                 permission
@@ -376,6 +384,27 @@ class Utils {
                 .setDeniedMessage("알람을 사용하려면 권한을 허용하여 주셔야 합니다.")
                 .setPermissions(permission)
                 .check()
+        }
+
+        fun showConfirmDialog(
+            supportFragmentManager: FragmentManager,
+            title: String,
+            content: String = "",
+            positiveButton: String = "확인",
+            negativeButton: String = "취소",
+            positiveCallback: () -> Unit = {},
+            negativeCallback: () -> Unit = {}
+        ) {
+            val dialog = ConfirmDialog(
+                title,
+                content,
+                positiveButton,
+                negativeButton,
+                positiveCallback,
+                negativeCallback
+            )
+
+            dialog.show(supportFragmentManager, ConfirmDialog.CONFIRM_DIALOG)
         }
 
         /**
@@ -729,7 +758,8 @@ class Utils {
          * 다크모드 확인
          **/
         fun isDarkModeEnabled(context: Context): Boolean {
-            val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            val currentNightMode =
+                context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
             return currentNightMode == Configuration.UI_MODE_NIGHT_YES
         }
     }

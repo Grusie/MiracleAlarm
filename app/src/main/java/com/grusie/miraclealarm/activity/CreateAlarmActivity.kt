@@ -1,8 +1,11 @@
 package com.grusie.miraclealarm.activity
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -178,6 +181,23 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
      * 알람 저장
      **/
     private fun saveAlarm() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!Utils.checkPermission(this, Manifest.permission.SCHEDULE_EXACT_ALARM)) {
+                Utils.showConfirmDialog(
+                    supportFragmentManager = supportFragmentManager,
+                    title = getString(R.string.str_permission_title),
+                    content = getString(R.string.str_schedule_exact_alarms),
+                    positiveCallback = {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        startActivity(intent)
+                    },
+                    negativeCallback = {
+                    }
+                )
+                return
+            }
+        }
+
         if (binding.viewModel?.alarm?.value?.dateRepeat == false && alarmCal < Calendar.getInstance()) {
             Toast.makeText(this, getString(R.string.str_past_alarm), Toast.LENGTH_SHORT).show()
         } else {

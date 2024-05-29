@@ -30,6 +30,7 @@
     <string name="str_delay_over">미루기는 3번까지만 가능합니다.</string>
     <string name="str_back_press">\'뒤로\' 버튼을 한번 더 누르시면 종료됩니다.</string>
     <string name="str_can_draw_overlays">알람을 사용하려면 다른 앱 위에 표시권한을 허용해주세요.</string>
+    <string name="str_schedule_exact_alarms">알람을 사용하려면 알람 및 리마인더 권한을 허용해주세요.</string>
     <string name="str_permission_title">권한 허용</string>
     <string name="str_headset_connected">이어폰 착용으로 최대 소리가 줄어듭니다.</string>
     <string name="str_missed_alarm">부재중 알람이 %d개 있습니다.</string>

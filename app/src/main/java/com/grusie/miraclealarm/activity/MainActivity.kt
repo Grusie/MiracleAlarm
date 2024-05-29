@@ -12,8 +12,6 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
-import android.window.SplashScreen
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -23,18 +21,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.receiver.TimeChangeReceiver
 import com.grusie.miraclealarm.adapter.AlarmListAdapter
 import com.grusie.miraclealarm.databinding.ActivityMainBinding
 import com.grusie.miraclealarm.interfaces.MessageUpdateListener
 import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.receiver.TimeChangeReceiver
 import com.grusie.miraclealarm.service.ForegroundAlarmService
 import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.util.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.util.Utils.Companion.createPermission
 import com.grusie.miraclealarm.util.Utils.Companion.getWidthInDp
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
-import kotlinx.coroutines.NonCancellable.start
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Collections
@@ -57,8 +54,9 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         initUi()
     }
-    private fun startSplash(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+    private fun startSplash() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             splashScreen.setOnExitAnimationListener { splashScreenView ->
                 val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 5f, 1f)
                 val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 5f, 1f)
@@ -102,7 +100,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             observing()
 
             btnDelete.setOnClickListener {
-                if(viewModel?.modifyList?.value!!.size > 0)
+                if (viewModel?.modifyList?.value!!.size > 0)
                     deleteAlarm()
             }
         }
@@ -265,11 +263,23 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-            if(!Utils.checkPermission(this, Manifest.permission.SCHEDULE_EXACT_ALARM)){
-                createPermission(Manifest.permission.SCHEDULE_EXACT_ALARM, null)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!Utils.checkPermission(this, Manifest.permission.SCHEDULE_EXACT_ALARM)) {
+                Utils.showConfirmDialog(
+                    supportFragmentManager = supportFragmentManager,
+                    title = getString(R.string.str_permission_title),
+                    content = getString(R.string.str_schedule_exact_alarms),
+                    positiveCallback = {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        startActivity(intent)
+                    },
+                    negativeCallback = {
+                        finish()
+                    }
+                )
             }
         }
+
         if (!Settings.canDrawOverlays(this))
             createConfirm(
                 this,

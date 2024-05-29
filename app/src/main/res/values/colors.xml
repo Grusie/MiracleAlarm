@@ -14,4 +14,11 @@
     <color name="blue">#FF3163C9</color>
     <color name="red">#FFFF0000</color>
     <color name="light_black">#212121</color>
+
+    <color name="blue_667FFF">#667FFF</color>
+    <color name="black_13131B">#13131B</color>
+    <color name="white_F6F6F6">#F6F6F6</color>
+
+    <!-- alpha color -->
+    <color name="blue_33667FFF">#33667FFF</color>
 </resources>
