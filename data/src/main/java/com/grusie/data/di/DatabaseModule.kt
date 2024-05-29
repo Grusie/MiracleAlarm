@@ -1,4 +1,4 @@
-package com.grusie.data.di.database
+package com.grusie.data.di
 
 import android.content.Context
 import com.grusie.data.database.AlarmDao
