@@ -12,10 +12,15 @@ android {
         applicationId 'com.grusie.miraclealarm'
         minSdk 26
         targetSdk 33
-        versionCode 7
-        versionName "1.1.1"
+        versionCode 8
+        versionName "1.1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        def localProperties = new Properties()
+        localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+        buildConfigField("String", "ADMOB_TEST_ID_KEY",  localProperties['ADMOB_TEST_ID_KEY'])
+        buildConfigField("String", "ADMOB_REAL_ID_KEY",  localProperties['ADMOB_REAL_ID_KEY'])
     }
 
     buildTypes {
@@ -81,4 +86,7 @@ dependencies {
 
     //SplashScreen
     implementation 'androidx.core:core-splashscreen:1.0.1'
+
+    //play-store
+    implementation 'com.google.android.play:app-update:2.1.0'
 }

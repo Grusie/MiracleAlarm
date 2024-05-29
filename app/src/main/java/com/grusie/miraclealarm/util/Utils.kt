@@ -28,6 +28,7 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.grusie.miraclealarm.BuildConfig
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.model.data.AlarmData
@@ -721,10 +722,7 @@ class Utils {
          **/
         private fun initAdView(context: Context, width: Int): AdView {
             val adView = AdView(context)
-            adView.adUnitId =
-                if (Const.IS_DEBUG) context.getString(R.string.str_admob_test_id) else context.getString(
-                    R.string.str_admob_real_id
-                )
+            adView.adUnitId = if (Const.IS_DEBUG) BuildConfig.ADMOB_TEST_ID_KEY else BuildConfig.ADMOB_REAL_ID_KEY
 
             adView.setAdSize(
                 AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
