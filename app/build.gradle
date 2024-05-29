@@ -48,51 +48,49 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
 
 
     //라이프사이클, 뷰모델
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    kapt 'androidx.lifecycle:lifecycle-compiler:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+    implementation libs.androidx.lifecycle.extensions
+    kapt libs.androidx.lifecycle.compiler
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.livedata.ktx
+    implementation libs.androidx.navigation.fragment.ktx
+    implementation libs.androidx.navigation.ui.ktx
 
 
     //룸 데이터베이스
-    implementation 'androidx.room:room-runtime:2.5.1'
-    kapt 'androidx.room:room-compiler:2.5.1'
-    implementation 'androidx.room:room-ktx:2.5.1'
-    androidTestImplementation 'androidx.room:room-testing:2.5.1'
+    implementation libs.androidx.room.runtime
+    kapt libs.androidx.room.compiler
+    implementation libs.androidx.room.ktx
 
 
     //TedPermission
-    implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
+    implementation libs.tedpermission.normal
 
     //flexbox Layout
-    implementation 'com.google.android.flexbox:flexbox:3.0.0'
+    implementation libs.flexbox
 
     //Glide
-    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    implementation libs.glide
 
     //AdMob
-    implementation 'com.google.android.gms:play-services-ads:22.2.0'
+    implementation libs.play.services.ads
 
     //SplashScreen
-    implementation 'androidx.core:core-splashscreen:1.0.1'
+    implementation libs.androidx.core.splashscreen
 
     //play-store
-    implementation 'com.google.android.play:app-update:2.1.0'
+    implementation libs.app.update
 
     // hilt
-    implementation 'com.google.dagger:hilt-android:2.48'
-    kapt 'com.google.dagger:hilt-android-compiler:2.48'
+    implementation libs.hilt.android
+    kapt libs.hilt.android.compiler
 }
