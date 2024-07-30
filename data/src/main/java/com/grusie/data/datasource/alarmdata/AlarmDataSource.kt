@@ -9,5 +9,5 @@ interface AlarmDataSource {
     suspend fun insertAlarmData(alarmData: AlarmData): Result<Long>
 
     suspend fun deleteAlarmData(alarmData: AlarmData): Result<Unit>
-    suspend fun getAlarmById(id: Int): Result<AlarmData>
+    suspend fun getAlarmById(id: Long): Result<AlarmData>
 }

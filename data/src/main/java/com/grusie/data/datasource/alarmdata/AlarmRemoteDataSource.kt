@@ -31,7 +31,7 @@ class AlarmRemoteDataSource @Inject constructor(
         }
     }
 
-    override suspend fun getAlarmById(id: Int): Result<AlarmData> {
+    override suspend fun getAlarmById(id: Long): Result<AlarmData> {
         return try {
             Result.success(alarmDao.getAlarmById(id))
         } catch (e: Exception) {
