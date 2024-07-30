@@ -1,6 +1,6 @@
 package com.grusie.domain.model
 
-data class AlarmDataDomainModel(
+data class AlarmDomainModel(
     val id: Long?,
     val title: String,              //알람 제목
     val time: String,               //알람 시간

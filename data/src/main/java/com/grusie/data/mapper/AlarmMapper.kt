@@ -1,10 +1,10 @@
 package com.grusie.data.mapper
 
 import com.grusie.data.model.AlarmData
-import com.grusie.domain.model.AlarmDataDomainModel
+import com.grusie.domain.model.AlarmDomainModel
 
-fun AlarmData.toDomainModel(): AlarmDataDomainModel {
-    return AlarmDataDomainModel(
+fun AlarmData.toDomainModel(): AlarmDomainModel {
+    return AlarmDomainModel(
         id = this.id,
         title = this.title,
         time = this.time,
@@ -24,7 +24,7 @@ fun AlarmData.toDomainModel(): AlarmDataDomainModel {
     )
 }
 
-fun AlarmDataDomainModel.toDataModel(): AlarmData {
+fun AlarmDomainModel.toDataModel(): AlarmData {
     return AlarmData(
         id = this.id,
         title = this.title,

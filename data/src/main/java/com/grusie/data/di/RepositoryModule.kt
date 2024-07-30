@@ -1,6 +1,6 @@
 package com.grusie.data.di
 
-import com.grusie.data.repository.AlarmDataRepositoryImpl
+import com.grusie.data.repository.AlarmRepositoryImpl
 import com.grusie.domain.repository.AlarmDataRepository
 import dagger.Binds
 import dagger.Module
@@ -13,5 +13,5 @@ import javax.inject.Singleton
 abstract class RepositoryModule {
     @Singleton
     @Binds
-    abstract fun bindAlarmDataRepository(alarmDataRepositoryImpl: AlarmDataRepositoryImpl): AlarmDataRepository
+    abstract fun bindAlarmDataRepository(alarmDataRepositoryImpl: AlarmRepositoryImpl): AlarmDataRepository
 }

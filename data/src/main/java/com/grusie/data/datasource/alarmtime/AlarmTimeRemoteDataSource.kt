@@ -23,7 +23,7 @@ class AlarmTimeRemoteDataSource @Inject constructor(
         }
     }
 
-    override suspend fun getAlarmTimesByAlarmId(alarmId: Int): Result<List<AlarmTimeData>> {
+    override suspend fun getAlarmTimesByAlarmId(alarmId: Long): Result<List<AlarmTimeData>> {
         return try {
             Result.success(alarmTimeDao.getAlarmTimesByAlarmId(alarmId))
         } catch (e: Exception) {
@@ -31,7 +31,7 @@ class AlarmTimeRemoteDataSource @Inject constructor(
         }
     }
 
-    override suspend fun deleteByAlarmId(alarmId: Int): Result<Unit> {
+    override suspend fun deleteByAlarmId(alarmId: Long): Result<Unit> {
         return try {
             Result.success(alarmTimeDao.deleteByAlarmId(alarmId))
         } catch (e: Exception) {

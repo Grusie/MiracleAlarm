@@ -16,10 +16,10 @@ interface AlarmTimeDao {
     suspend fun delete(alarm: AlarmTimeData)
 
     @Query("SELECT * FROM alarm_time_table WHERE alarmId = :alarmId")
-    suspend fun getAlarmTimesByAlarmId(alarmId: Int): List<AlarmTimeData>
+    suspend fun getAlarmTimesByAlarmId(alarmId: Long): List<AlarmTimeData>
 
     @Query("DELETE FROM alarm_time_table WHERE alarmId = :alarmId")
-    suspend fun deleteByAlarmId(alarmId: Int)
+    suspend fun deleteByAlarmId(alarmId: Long)
 
     @Query("SELECT * FROM alarm_time_table ORDER BY timeInMillis ASC LIMIT 1")
     fun getMinAlarmTime(): AlarmTimeData?
