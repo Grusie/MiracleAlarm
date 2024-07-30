@@ -4,9 +4,9 @@ import com.grusie.data.model.AlarmTurnOffData
 
 interface TurnOffWayDataSource {
 
-    suspend fun insert(alarmTurnOffData: AlarmTurnOffData): Result<Long>
+    suspend fun insertTurnOffWay(alarmTurnOffData: AlarmTurnOffData): Result<Long>
 
-    suspend fun delete(alarmId: Int): Result<Unit>
+    suspend fun deleteTurnOffWay(alarmId: Long): Result<Unit>
 
-    suspend fun getOffWayById(alarmId: Int): Result<AlarmTurnOffData?>
+    suspend fun getOffWayById(alarmId: Long): Result<AlarmTurnOffData?>
 }
