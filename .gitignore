@@ -19,6 +19,8 @@ local.properties
 
 ### Android ###
 # Gradle files
+gradlew
+gradlew.bat
 .gradle/
 build/
 
