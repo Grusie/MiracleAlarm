@@ -14,11 +14,10 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -38,17 +37,18 @@ import com.grusie.miraclealarm.util.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.util.Utils.Companion.createPermission
 import com.grusie.miraclealarm.util.Utils.Companion.getWidthInDp
 import com.grusie.miraclealarm.util.Utils.Companion.showConfirmDialog
-import com.grusie.miraclealarm.viewmodel.AlarmViewModel
+import com.grusie.miraclealarm.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Collections
 
 
 class MainActivity : AppCompatActivity(), MessageUpdateListener {
-    private lateinit var binding: ActivityMainBinding
+    private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+    private val viewModel: MainViewModel by viewModels()
+
     private lateinit var adapter: AlarmListAdapter
     private lateinit var layoutManager: LinearLayoutManager
-    private lateinit var alarmViewModel: AlarmViewModel
     private var backpressedTime: Long = 0
     private lateinit var currentCal: Calendar
     private lateinit var timeChangeReceiver: TimeChangeReceiver
@@ -58,9 +58,6 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         super.onCreate(savedInstanceState)
         splashScreen = installSplashScreen()
         startSplash()
-        binding =
-            DataBindingUtil.setContentView(this, com.grusie.miraclealarm.R.layout.activity_main)
-        alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
         initUi()
     }
 
@@ -92,10 +89,6 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
         adapter = AlarmListAdapter(this, alarmViewModel, this@MainActivity)
 
-        binding.lifecycleOwner = this
-        binding.viewModel = alarmViewModel
-
-
         binding.apply {
             rvAlarmList.adapter = adapter
             rvAlarmList.layoutManager = layoutManager
@@ -110,8 +103,8 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
             observing()
 
             btnDelete.setOnClickListener {
-                if (viewModel?.modifyList?.value!!.size > 0)
-                    deleteAlarm()
+                if (viewModel.deleteAlarmList.size > 0)
+                    viewModel.deleteAlarm()
             }
         }
     }
