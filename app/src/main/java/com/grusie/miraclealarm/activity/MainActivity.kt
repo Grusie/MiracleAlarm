@@ -32,11 +32,16 @@ import com.grusie.miraclealarm.interfaces.MessageUpdateListener
 import com.grusie.miraclealarm.model.data.AlarmData
 import com.grusie.miraclealarm.receiver.TimeChangeReceiver
 import com.grusie.miraclealarm.service.ForegroundAlarmService
+import com.grusie.miraclealarm.uistate.BaseEventState
+import com.grusie.miraclealarm.uistate.BaseUiState
 import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.util.Utils.Companion.createConfirm
 import com.grusie.miraclealarm.util.Utils.Companion.createPermission
 import com.grusie.miraclealarm.util.Utils.Companion.getWidthInDp
 import com.grusie.miraclealarm.util.Utils.Companion.showConfirmDialog
+import com.grusie.miraclealarm.util.collectStateFlow
+import com.grusie.miraclealarm.util.makeSnackbar
+import com.grusie.miraclealarm.util.setOnSingleClickListener
 import com.grusie.miraclealarm.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -59,6 +64,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         splashScreen = installSplashScreen()
         startSplash()
         initUi()
+        collectData()
     }
 
     private fun startSplash() {
@@ -87,7 +93,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
         initPermission()
 
         layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
-        adapter = AlarmListAdapter(this, alarmViewModel, this@MainActivity)
+        //adapter = AlarmListAdapter(this, alarmViewModel, this@MainActivity)
 
         binding.apply {
             rvAlarmList.adapter = adapter
@@ -102,10 +108,53 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
 
             observing()
 
-            btnDelete.setOnClickListener {
+            tvBtnDelete.setOnSingleClickListener {
                 if (viewModel.deleteAlarmList.size > 0)
                     viewModel.deleteAlarm()
             }
+        }
+    }
+
+    private fun collectData() {
+        collectStateFlow(viewModel.baseUiState) { uiState ->
+            when (uiState) {
+                is BaseUiState.Loading -> {
+                    binding.isLoading = true
+                }
+
+                else -> {
+                    binding.isLoading = false
+                }
+            }
+        }
+
+        collectStateFlow(viewModel.baseEventState) { eventState ->
+            when (eventState) {
+                is BaseEventState.Alert -> {
+                    val toastMsg = when (eventState.msgType) {
+                        MainViewModel.MSG_TYPE_SUCCESS_DELETE -> {
+                            getString(R.string.str_delete_alarm)
+                        }
+
+                        else -> {
+                            getString(R.string.str_delete_alarm)
+                        }
+                    }
+                    Toast.makeText(this@MainActivity, toastMsg, Toast.LENGTH_SHORT).show()
+                }
+
+                is BaseEventState.Error -> {
+                    binding.root.makeSnackbar(eventState.description)
+                }
+            }
+        }
+
+        collectStateFlow(viewModel.minAlarmTimeData) { alarmTimeData ->
+            alarmTimeData?.let { binding.minAlarmTime = it.timeInMillis }
+        }
+
+        collectStateFlow(viewModel.isDeleteMode) {
+            binding.isDeleteMode = it
         }
     }
 
@@ -162,25 +211,11 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
      * 알람 삭제
      **/
     private fun deleteAlarm() {
-        binding.apply {
-            for (alarm in viewModel?.modifyList?.value!!) {
-                viewModel?.delete(alarm)
-
-                lifecycleScope.launch {
-                    viewModel?.getAlarmTimesByAlarmId(alarm)?.forEach {
-                        Utils.delAlarm(this@MainActivity, it.id)
-                    }
-                    viewModel?.deleteAlarmTimeById(alarm)
-                }
-            }
-            viewModel?.modifyList?.value?.clear()
-            viewModel?.changeModifyMode()
-            Toast.makeText(
-                this@MainActivity,
-                getString(com.grusie.miraclealarm.R.string.str_delete_alarm),
-                Toast.LENGTH_SHORT
-            ).show()
+        viewModel.deleteAlarm()
+        viewModel.deleteAlarmList.forEach { alarmUiModel ->
+            alarmUiModel.id?.let { Utils.delAlarm(this@MainActivity, it.toInt()) }
         }
+        viewModel.changeModifyMode(false)
     }
 
     /**
@@ -200,20 +235,6 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
      **/
     private fun observing() {
         binding.apply {
-            viewModel?.minAlarmTime?.observe(this@MainActivity) {
-                tvMinAlarm.text = if (it != null) {
-                    Utils.createAlarmMessage(false, it.timeInMillis)
-                } else getString(com.grusie.miraclealarm.R.string.str_turn_off_all)
-            }
-
-            viewModel?.modifyMode?.observe(this@MainActivity) {
-                llModifyTab.visibility = if (it) View.VISIBLE else View.GONE
-
-                if (!it) {
-                    viewModel?.modifyList?.value?.clear()
-                }
-            }
-
             viewModel?.clearAlarm?.observe(this@MainActivity) { alarm ->
                 currentCal = Calendar.getInstance()
                 viewModel?.initAlarmData(alarm)
@@ -324,9 +345,8 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener {
      * 뒤로가기 버튼
      **/
     override fun onBackPressed() {
-        if (binding.viewModel?.modifyMode?.value == true) {
-            binding.viewModel?.changeModifyMode()
-            binding.viewModel?.modifyList?.value?.clear()
+        if (viewModel.isDeleteMode.value) {
+            viewModel.changeModifyMode(false)
             adapter.notifyDataSetChanged()
         } else {
             if (System.currentTimeMillis() > backpressedTime + 2000) {

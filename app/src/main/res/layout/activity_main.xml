@@ -10,6 +10,18 @@
             name="isEmpty"
             type="Boolean" />
 
+        <variable
+            name="isLoading"
+            type="Boolean" />
+
+        <variable
+            name="minAlarmTime"
+            type="Long" />
+
+        <variable
+            name="isDeleteMode"
+            type="Boolean" />
+
         <import type="android.view.View" />
     </data>
 
@@ -49,6 +61,7 @@
 
             <TextView
                 android:id="@+id/tv_min_alarm"
+                leftTimeString="@{minAlarmTime}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_large"
@@ -80,7 +93,7 @@
             android:id="@+id/rv_alarm_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@id/ll_modify_tab"
+            app:layout_constraintBottom_toTopOf="@id/tv_btn_delete"
             app:layout_constraintTop_toBottomOf="@id/cl_alarm_function"
             tools:listitem="@layout/item_alarm_list" />
 
@@ -97,21 +110,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/rv_alarm_list" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/ll_modify_tab"
-            android:layout_width="match_parent"
+
+        <TextView
+            android:id="@+id/tv_btn_delete"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:weightSum="1"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:background="@color/white"
+            android:paddingVertical="20dp"
+            android:text="@string/str_delete"
+            android:textAlignment="center"
+            android:visibility="@{isModifyMode ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/btn_delete"
-                style="@style/customTextButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/str_delete" />
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
