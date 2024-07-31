@@ -1,7 +1,7 @@
 package com.grusie.miraclealarm.uistate
 
 sealed class BaseUiState {
-    object Success : BaseUiState()
+    object Init: BaseUiState()
     object Loading : BaseUiState()
-    data class Error(val description: String) : BaseUiState()
+    object Success: BaseUiState()
 }
