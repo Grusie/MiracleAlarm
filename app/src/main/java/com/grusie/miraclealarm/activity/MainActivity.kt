@@ -46,10 +46,11 @@ import com.grusie.miraclealarm.util.collectStateFlow
 import com.grusie.miraclealarm.util.makeSnackbar
 import com.grusie.miraclealarm.util.setOnSingleClickListener
 import com.grusie.miraclealarm.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Collections
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickListener {
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private val viewModel: MainViewModel by viewModels()
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
         DayOfWeekProvider.initialize(this)
         initUi()
         collectData()
+        setContentView(binding.root)
     }
 
     private fun startSplash() {

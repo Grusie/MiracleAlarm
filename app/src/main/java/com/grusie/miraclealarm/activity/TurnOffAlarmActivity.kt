@@ -30,6 +30,7 @@ import com.bumptech.glide.Glide
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityTurnOffAlarmBinding
+import com.grusie.miraclealarm.mapper.toData
 import com.grusie.miraclealarm.model.data.AlarmData
 import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.viewmodel.AlarmTurnOffViewModel
@@ -82,7 +83,7 @@ class TurnOffAlarmActivity : AppCompatActivity(), SensorEventListener {
         offWayArray = resources.getStringArray(R.array.off_way_array)
         binding.offWayArray = offWayArray
 
-        alarm = Utils.getAlarmData(intent)
+        alarm = Utils.getAlarmData(intent).toData()
 
         observing()
 
