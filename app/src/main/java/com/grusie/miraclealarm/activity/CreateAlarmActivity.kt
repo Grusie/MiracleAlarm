@@ -404,4 +404,8 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
         hideKeyboard()
         return super.dispatchTouchEvent(ev)
     }
+
+    companion object {
+        const val EXTRA_ALARM_ID = "extra_alarm_id"
+    }
 }

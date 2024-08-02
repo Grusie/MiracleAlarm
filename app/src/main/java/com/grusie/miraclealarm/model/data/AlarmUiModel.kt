@@ -22,5 +22,5 @@ data class AlarmUiModel(
     var flagVibrate: Boolean = true,       //알람 진동 사용 여부
     var flagOffWay: Boolean = true,        //알람 끄는 방법 사용 여부
     var flagDelay: Boolean = true,        //알람 미루기 사용 여부
-    var isChecked: Boolean = false
+    var isChecked: Boolean = false,
 ) : Parcelable
