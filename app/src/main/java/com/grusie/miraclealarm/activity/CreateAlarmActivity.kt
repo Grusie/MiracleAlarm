@@ -20,6 +20,8 @@ import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityCreateAlarmBinding
 import com.grusie.miraclealarm.fragment.DelayBottomFragment
 import com.grusie.miraclealarm.interfaces.OnDelayDataPassListener
+import com.grusie.miraclealarm.mapper.toData
+import com.grusie.miraclealarm.mapper.toUiModel
 import com.grusie.miraclealarm.model.data.AlarmData
 import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.viewmodel.AlarmViewModel
@@ -237,9 +239,10 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
 
                         viewModel?.updateAlarmTurnOff(Const.INSERT_ALARM_TURN_OFF, alarmData)
 
-                        val alarmTimeList = Utils.setAlarm(this@CreateAlarmActivity, alarmData)
+                        val alarmTimeList =
+                            Utils.setAlarm(this@CreateAlarmActivity, alarmData.toUiModel())
                         alarmTimeList.forEach {
-                            viewModel?.insertAlarmTime(it)
+                            viewModel?.insertAlarmTime(it.toData())
                         }
 
                         Toast.makeText(
@@ -403,5 +406,9 @@ class CreateAlarmActivity : AppCompatActivity(), OnDelayDataPassListener {
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         hideKeyboard()
         return super.dispatchTouchEvent(ev)
+    }
+
+    companion object {
+        const val EXTRA_ALARM_ID = "extra_alarm_id"
     }
 }

@@ -5,14 +5,14 @@
     <data>
 
         <variable
-            name="viewModel"
-            type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
+            name="alarm"
+            type="com.grusie.miraclealarm.model.data.AlarmUiModel" />
 
         <variable
-            name="alarm"
-            type="com.grusie.miraclealarm.model.data.AlarmData" />
+            name="isDeleteMode"
+            type="Boolean" />
 
-        <import type="android.view.View"/>
+        <import type="android.view.View" />
     </data>
 
     <androidx.cardview.widget.CardView
@@ -34,11 +34,11 @@
                 android:id="@+id/cb_alarm_select"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="@{viewModel.modifyList.contains(alarm)}"
-                android:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCheckAlarmList(alarm, isChecked)}"
+                android:checked="@{alarm.isChecked}"
+                android:visibility="@{isDeleteMode ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tv_alarm_title"
@@ -73,8 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="@{alarm.enabled}"
-                android:onClick="@{() -> viewModel.onAlarmFlagClicked(alarm)}"
-                android:visibility="@{viewModel.modifyMode? View.GONE : View.VISIBLE}"
+                android:visibility="@{isDeleteMode? View.GONE : View.VISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

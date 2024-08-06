@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.grusie.miraclealarm.Const
+import com.grusie.miraclealarm.mapper.toData
+import com.grusie.miraclealarm.mapper.toUiModel
 import com.grusie.miraclealarm.model.AlarmDatabase
 import com.grusie.miraclealarm.model.AlarmRepository
 import com.grusie.miraclealarm.model.dao.AlarmDao
@@ -39,7 +41,7 @@ class AlarmNotiReceiver : BroadcastReceiver() {
         repository = AlarmRepository(alarmDao)
         alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        alarm = Utils.getAlarmData(intent)
+        alarm = Utils.getAlarmData(intent).toData()
 
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             bootComplete(context)
@@ -60,11 +62,13 @@ class AlarmNotiReceiver : BroadcastReceiver() {
             // 다음 알람 설정
             val nextAlarmTimeMillis = System.currentTimeMillis() + intervalMillis
             CoroutineScope(Dispatchers.IO).launch {
-                alarmTimeDao.insert(Utils.setAlarm(context, nextAlarmTimeMillis, alarm))
+                alarmTimeDao.insert(
+                    Utils.setAlarm(context, nextAlarmTimeMillis, alarm.toUiModel()).toData()
+                )
             }
         }
         val alarmTimeData = AlarmTimeData().apply {
-            id = Utils.generateAlarmId(alarm, System.currentTimeMillis())
+            id = Utils.generateAlarmId(alarm.toUiModel(), System.currentTimeMillis()).toInt()
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -93,7 +97,7 @@ class AlarmNotiReceiver : BroadcastReceiver() {
                 for (alarmData in alarmList) {
                     if (alarmData.enabled && !missedAlarmList.map { it.alarmId }
                             .contains(alarmData.id)) {
-                        Utils.setAlarm(context, alarmData)
+                        Utils.setAlarm(context, alarmData.toUiModel())
                     }
                 }
             }

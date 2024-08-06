@@ -32,7 +32,9 @@ import com.grusie.miraclealarm.BuildConfig
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.model.data.AlarmData
-import com.grusie.miraclealarm.model.data.AlarmTimeData
+import com.grusie.miraclealarm.model.data.AlarmTimeUiModel
+import com.grusie.miraclealarm.model.data.AlarmUiModel
+import com.grusie.miraclealarm.model.data.DayOfWeekProvider.daysOfWeek
 import com.grusie.miraclealarm.receiver.AlarmNotiReceiver
 import com.grusie.miraclealarm.service.ForegroundAlarmService
 import com.grusie.miraclealarm.view.ConfirmDialog
@@ -57,26 +59,26 @@ class Utils {
         /**
          * 알람 생성하기
          * */
-        fun setAlarm(context: Context, alarm: AlarmData): MutableList<AlarmTimeData> {
+        fun setAlarm(context: Context, alarm: AlarmUiModel): MutableList<AlarmTimeUiModel> {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val alarmTimeList = mutableListOf<AlarmTimeData>()
+            val alarmTimeList = mutableListOf<AlarmTimeUiModel>()
 
             getAlarmTime(alarm).forEach { alarmTime ->
 
                 val pendingIntentId = generateAlarmId(alarm, alarmTime.timeInMillis)
-                val alarmTimeData = AlarmTimeData().apply {
+                val alarmTimeData = AlarmTimeUiModel().apply {
                     id = pendingIntentId
                     timeInMillis = alarmTime.timeInMillis
-                    alarmId = alarm.id
+                    alarmId = alarm.id!!
                 }
 
                 receiverIntent.putExtra("alarmData", alarm)
 
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
-                    pendingIntentId,
+                    pendingIntentId.toInt(),
                     receiverIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
@@ -108,11 +110,11 @@ class Utils {
         /**
          *액티비티에서 알람데이터 가져오기
          **/
-        fun getAlarmData(intent: Intent?): AlarmData {
+        fun getAlarmData(intent: Intent?): AlarmUiModel {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) intent?.getParcelableExtra(
                 "alarmData",
-                AlarmData::class.java
-            ) ?: AlarmData() else intent?.getParcelableExtra("alarmData") ?: AlarmData()
+                AlarmUiModel::class.java
+            ) ?: AlarmUiModel() else intent?.getParcelableExtra("alarmData") ?: AlarmUiModel()
         }
 
 
@@ -192,9 +194,29 @@ class Utils {
 
 
         /**
+         * 날짜 포맷
+         * **/
+        fun dateFormat(cal: Calendar): String {
+            val year = cal.get(Calendar.YEAR)
+            val month = cal.get(Calendar.MONTH)
+            val day = cal.get(Calendar.DAY_OF_MONTH)
+            val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+
+            return if (year == Calendar.getInstance().get(Calendar.YEAR)) {
+                String.format(
+                    "%02d월 %02d일 (%s)", month + 1, day, daysOfWeek[dayOfWeek - 1]
+                )
+            } else {
+                String.format(
+                    "%04d년 %02d월 %02d일 (%s)", year, month + 1, day, daysOfWeek[dayOfWeek - 1]
+                )
+            }
+        }
+
+        /**
          * 알람 개별 생성하기
          * */
-        fun setAlarm(context: Context, timeMillis: Long, alarm: AlarmData): AlarmTimeData {
+        fun setAlarm(context: Context, timeMillis: Long, alarm: AlarmUiModel): AlarmTimeUiModel {
 
             receiverIntent = Intent(context, AlarmNotiReceiver::class.java)
             alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -204,7 +226,7 @@ class Utils {
 
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                pendingIntentId,
+                pendingIntentId.toInt(),
                 receiverIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -225,14 +247,14 @@ class Utils {
                 )
             }
 
-            return AlarmTimeData(pendingIntentId, timeMillis, alarm.id)
+            return AlarmTimeUiModel(pendingIntentId, timeMillis, alarm.id!!)
         }
 
 
         /**
          * 알람을 고유하게 식별하기 위한 requestCode 생성 함수
          **/
-        fun generateAlarmId(alarm: AlarmData, timeMillis: Long): Int {
+        fun generateAlarmId(alarm: AlarmUiModel, timeMillis: Long): Long {
             val cal = Calendar.getInstance().apply {
                 timeInMillis = timeMillis
             }
@@ -240,7 +262,7 @@ class Utils {
             val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
 
             // 요일과 시간, 그리고 알람의 고유한 id를 순차적으로 결합하여 고유한 requestCode 생성
-            return (dayOfWeek * 10000) + (cal.get(Calendar.HOUR_OF_DAY) * 100) + cal.get(Calendar.MINUTE) + alarm.id
+            return (dayOfWeek * 10000) + (cal.get(Calendar.HOUR_OF_DAY) * 100) + cal.get(Calendar.MINUTE) + alarm.id!!
         }
 
         /**
@@ -264,7 +286,7 @@ class Utils {
         /**
          * 알람 울릴 시간 가져오기
          * **/
-        private fun getAlarmTime(alarm: AlarmData): ArrayList<Calendar> {
+        private fun getAlarmTime(alarm: AlarmUiModel): ArrayList<Calendar> {
             val inputFormat = SimpleDateFormat("a hh:mm", Locale.KOREAN)
             val calList = ArrayList<Calendar>()
 
@@ -311,6 +333,26 @@ class Utils {
             }
 
             return calList
+        }
+
+        /**
+         * 날짜 포맷
+         * **/
+        fun calendarToString(cal: Calendar): String {
+            val year = cal.get(Calendar.YEAR)
+            val month = cal.get(Calendar.MONTH)
+            val day = cal.get(Calendar.DAY_OF_MONTH)
+            val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+
+            return if (year == Calendar.getInstance().get(Calendar.YEAR)) {
+                String.format(
+                    "%02d월 %02d일 (%s)", month + 1, day, daysOfWeek[dayOfWeek - 1]
+                )
+            } else {
+                String.format(
+                    "%04d년 %02d월 %02d일 (%s)", year, month + 1, day, daysOfWeek[dayOfWeek - 1]
+                )
+            }
         }
 
         /**
@@ -716,13 +758,13 @@ class Utils {
             return (width / density).toInt()
         }
 
-
         /**
          * adView 초기화
          **/
         private fun initAdView(context: Context, width: Int): AdView {
             val adView = AdView(context)
-            adView.adUnitId = if (Const.IS_DEBUG) BuildConfig.ADMOB_TEST_ID_KEY else BuildConfig.ADMOB_REAL_ID_KEY
+            adView.adUnitId =
+                if (Const.IS_DEBUG) BuildConfig.ADMOB_TEST_ID_KEY else BuildConfig.ADMOB_REAL_ID_KEY
 
             adView.setAdSize(
                 AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(

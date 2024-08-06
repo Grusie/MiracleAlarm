@@ -18,11 +18,12 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
-import com.grusie.miraclealarm.receiver.HeadsetReceiver
 import com.grusie.miraclealarm.activity.MainActivity
 import com.grusie.miraclealarm.activity.NotificationActivity
 import com.grusie.miraclealarm.interfaces.HeadsetConnectionListener
+import com.grusie.miraclealarm.mapper.toData
 import com.grusie.miraclealarm.model.data.AlarmData
+import com.grusie.miraclealarm.receiver.HeadsetReceiver
 import com.grusie.miraclealarm.util.Utils
 import com.grusie.miraclealarm.util.Utils.Companion.changeVolume
 import com.grusie.miraclealarm.util.Utils.Companion.checkPermission
@@ -74,7 +75,7 @@ class ForegroundAlarmService : Service(), HeadsetConnectionListener,
             return START_NOT_STICKY
         }
 
-        alarm = getAlarmData(intent)
+        alarm = getAlarmData(intent).toData()
 
         // NotificationActivity에서 MainActivity로 넘길지에 대한 값 초기화
         preferences = getSharedPreferences("sharedPreferences", Context.MODE_PRIVATE)

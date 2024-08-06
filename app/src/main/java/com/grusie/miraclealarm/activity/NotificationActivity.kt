@@ -19,6 +19,8 @@ import com.bumptech.glide.Glide
 import com.grusie.miraclealarm.Const
 import com.grusie.miraclealarm.R
 import com.grusie.miraclealarm.databinding.ActivityNotificationBinding
+import com.grusie.miraclealarm.mapper.toData
+import com.grusie.miraclealarm.mapper.toUiModel
 import com.grusie.miraclealarm.model.data.AlarmData
 import com.grusie.miraclealarm.service.ForegroundAlarmService
 import com.grusie.miraclealarm.util.Utils
@@ -135,9 +137,13 @@ class NotificationActivity : AppCompatActivity() {
                 val minutes = alarm.delay.replace("분", "").toInt()
                 currentTime.add(Calendar.MINUTE, minutes)
                 val alarmTimeData =
-                    Utils.setAlarm(this@NotificationActivity, currentTime.timeInMillis, alarm)
+                    Utils.setAlarm(
+                        this@NotificationActivity,
+                        currentTime.timeInMillis,
+                        alarm.toUiModel()
+                    )
 
-                viewModel?.insertAlarmTime(alarmTimeData)
+                viewModel?.insertAlarmTime(alarmTimeData.toData())
 
                 Toast.makeText(
                     this@NotificationActivity, Utils.createAlarmMessage(
@@ -159,7 +165,7 @@ class NotificationActivity : AppCompatActivity() {
      * 알람 데이터 초기화
      **/
     private fun initAlarmData() {
-        alarm = getAlarmData(intent)
+        alarm = getAlarmData(intent).toData()
         binding.viewModel?.initAlarmData(alarm)
     }
 

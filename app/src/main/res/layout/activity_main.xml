@@ -5,27 +5,39 @@
     tools:context=".activity.MainActivity">
 
     <data>
+
         <variable
-            name="viewModel"
-            type="com.grusie.miraclealarm.viewmodel.AlarmViewModel" />
+            name="isEmpty"
+            type="Boolean" />
+
+        <variable
+            name="isLoading"
+            type="Boolean" />
+
+        <variable
+            name="minAlarmTime"
+            type="Long" />
+
+        <variable
+            name="isDeleteMode"
+            type="Boolean" />
 
         <import type="android.view.View" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        style="@style/MainBackground"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        style="@style/MainBackground">
+        android:layout_height="match_parent">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/ll_ad_view_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_centerHorizontal="true"
             android:gravity="center"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_main_toolbar"
@@ -40,15 +52,16 @@
                 android:id="@+id/tv_min_alarm_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:text="@string/str_next_alarm"
+                android:textAlignment="center"
                 android:textColor="?android:attr/textColorSecondary"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginTop="40dp"
-                android:textAlignment="center"
-                android:text="@string/str_next_alarm"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tv_min_alarm"
+                leftTimeString="@{minAlarmTime}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_large"
@@ -63,25 +76,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@id/rv_alarm_list"
-            app:layout_constraintTop_toBottomOf="@id/cl_main_toolbar"
-            >
+            app:layout_constraintTop_toBottomOf="@id/cl_main_toolbar">
 
             <ImageButton
                 android:id="@+id/ib_alarm_add"
+                style="@style/customImageButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/plus_svgrepo_com"
-                style="@style/customImageButtonStyle"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_alarm_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@id/ll_modify_tab"
+            app:layout_constraintBottom_toTopOf="@id/tv_btn_delete"
             app:layout_constraintTop_toBottomOf="@id/cl_alarm_function"
             tools:listitem="@layout/item_alarm_list" />
 
@@ -90,29 +102,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/str_empty_alarm"
-            android:textSize="@dimen/text_large"
             android:textColor="?android:attr/textColorSecondary"
-            android:visibility="@{viewModel.allAlarms.size() == 0 ? View.VISIBLE : View.GONE}"
+            android:textSize="@dimen/text_large"
+            android:visibility="@{isEmpty ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/rv_alarm_list" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/ll_modify_tab"
-            android:layout_width="match_parent"
+
+        <TextView
+            android:id="@+id/tv_btn_delete"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:weightSum="1"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:background="@color/white"
+            android:paddingVertical="20dp"
+            android:text="@string/str_delete"
+            android:textAlignment="center"
+            android:visibility="@{isDeleteMode ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/btn_delete"
-                style="@style/customTextButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/str_delete" />
 
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{isLoading ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
