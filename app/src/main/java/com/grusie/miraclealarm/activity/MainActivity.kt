@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
      * 알람 삭제
      **/
     private fun changeDeleteMode(isDeleteMode: Boolean) {
-        if (!isDeleteMode) viewModel.deleteAlarm()
+        if (!isDeleteMode) viewModel.clearDeleteAlarmList()
 
         viewModel.changeDeleteMode(isDeleteMode)
     }

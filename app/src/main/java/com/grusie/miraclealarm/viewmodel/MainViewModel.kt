@@ -95,7 +95,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun clearDeleteAlarmList() {
+    fun clearDeleteAlarmList() {
         deleteAlarmList.clear()
     }
 
