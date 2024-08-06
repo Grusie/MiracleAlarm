@@ -99,10 +99,6 @@ class MainViewModel @Inject constructor(
         deleteAlarmList.clear()
     }
 
-    fun setDeleteAlarmList(deleteAlarmList: List<AlarmUiModel>) {
-        this.deleteAlarmList.addAll(deleteAlarmList)
-    }
-
     suspend fun changeAlarmEnable(alarmUiModel: AlarmUiModel) {
         val replaceAlarm = alarmUiModel.copy(enabled = !alarmUiModel.enabled)
         val tempAlarmList = _allAlarmList.value.toMutableList()
@@ -115,10 +111,12 @@ class MainViewModel @Inject constructor(
 
     fun getMinAlarmTime() {
         viewModelScope.launch {
-            alarmTimeUseCases.getMinAlarmTimeUseCase().onSuccess {
-                it
+            alarmTimeUseCases.getMinAlarmTimeUseCase().onSuccess { alarmTimeDomainModel ->
+                alarmTimeDomainModel?.toUiModel()?.let {
+                    _minAlarmTimeData.emit(it)
+                }
             }.onFailure {
-
+                handleError(it)
             }
         }
     }

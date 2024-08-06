@@ -7,7 +7,6 @@ import android.util.Log
 import com.grusie.domain.usecase.alarmtime.AlarmTimeUseCases
 import com.grusie.miraclealarm.interfaces.MessageUpdateListener
 import com.grusie.miraclealarm.mapper.toUiModel
-import com.grusie.miraclealarm.util.Utils.Companion.createAlarmMessage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +35,7 @@ class TimeChangeReceiver : BroadcastReceiver() {
                     val alarmTimeUiModel = alarmTimeDomainModel?.toUiModel()
                     alarmTimeUiModel?.let {
                         (context as? MessageUpdateListener)?.onMessageUpdated(
-                            createAlarmMessage(false, it.timeInMillis)
+                            it.timeInMillis
                         )
                     }
                 }.onFailure { exception ->

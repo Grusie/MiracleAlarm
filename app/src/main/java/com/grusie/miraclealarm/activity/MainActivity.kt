@@ -57,8 +57,6 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
     private val alarmListAdapter: AlarmListAdapter by lazy {
         AlarmListAdapter(this)
     }
-
-    private lateinit var layoutManager: LinearLayoutManager
     private var backpressedTime: Long = 0
     private lateinit var timeChangeReceiver: TimeChangeReceiver
     private lateinit var splashScreen: androidx.core.splashscreen.SplashScreen
@@ -73,7 +71,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
                     backpressedTime = System.currentTimeMillis()
                     Toast.makeText(
                         this@MainActivity,
-                        getString(com.grusie.miraclealarm.R.string.str_back_press),
+                        getString(R.string.str_back_press),
                         Toast.LENGTH_SHORT
                     ).show()
                 } else if (System.currentTimeMillis() <= backpressedTime + 2000) {
@@ -115,6 +113,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
     override fun onStart() {
         super.onStart()
         viewModel.getAllAlarmList()
+        viewModel.getMinAlarmTime()
     }
 
     private fun initUi() {
@@ -126,12 +125,9 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
         initTimeChangeReceiver()
         initPermission()
 
-        layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
-        //adapter = AlarmListAdapter(this, alarmViewModel, this@MainActivity)
-
         binding.apply {
             rvAlarmList.adapter = alarmListAdapter
-            rvAlarmList.layoutManager = layoutManager
+            rvAlarmList.layoutManager = LinearLayoutManager(this@MainActivity)
 
             llAdViewContainer.viewTreeObserver.addOnGlobalLayoutListener(adViewWidthObserver)
 
@@ -149,6 +145,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
 
     private fun collectData() {
         collectStateFlow(viewModel.allAlarmList) {
+            binding.isEmpty = it.isEmpty()
             alarmListAdapter.submitList(it)
         }
 
@@ -229,7 +226,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
                 )
             }
         }.addOnFailureListener { e: java.lang.Exception ->
-            Log.e("confirm version playStore error", "${e.message}")
+            Log.e("${this::class.simpleName}", "confirm version playStore error : ${e.message}")
         }
     }
 
@@ -241,7 +238,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
             addAction(Intent.ACTION_TIME_TICK)
         }
 
-        val timeChangeReceiver = TimeChangeReceiver()
+        timeChangeReceiver = TimeChangeReceiver()
         registerReceiver(timeChangeReceiver, intentFilter)
     }
 
@@ -251,6 +248,7 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
         try {
             unregisterReceiver(timeChangeReceiver)
         } catch (e: Exception) {
+            Log.e("${this::class.simpleName}", "confirm unRegisterReceiver error : ${e.message}")
         }
     }
 
@@ -296,10 +294,10 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!Utils.checkPermission(this, Manifest.permission.SCHEDULE_EXACT_ALARM)) {
-                Utils.showConfirmDialog(
+                showConfirmDialog(
                     supportFragmentManager = supportFragmentManager,
-                    title = getString(com.grusie.miraclealarm.R.string.str_permission_title),
-                    content = getString(com.grusie.miraclealarm.R.string.str_schedule_exact_alarms),
+                    title = getString(R.string.str_permission_title),
+                    content = getString(R.string.str_schedule_exact_alarms),
                     positiveCallback = {
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         startActivity(intent)
@@ -315,16 +313,16 @@ class MainActivity : AppCompatActivity(), MessageUpdateListener, AlarmListClickL
             createConfirm(
                 this,
                 Manifest.permission.SYSTEM_ALERT_WINDOW,
-                getString(com.grusie.miraclealarm.R.string.str_permission_title),
-                getString(com.grusie.miraclealarm.R.string.str_can_draw_overlays)
+                getString(R.string.str_permission_title),
+                getString(R.string.str_can_draw_overlays)
             )
     }
 
     /**
      * 현재 시간이 변경되었을 때, 다음 알람 시간 수정
      **/
-    override fun onMessageUpdated(message: String) {
-        binding.tvMinAlarm.text = message
+    override fun onMessageUpdated(minAlarmTime: Long) {
+        binding.minAlarmTime = minAlarmTime
     }
 
     override fun alarmOnClickListener(alarmUiModel: AlarmUiModel) {
