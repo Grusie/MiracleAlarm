@@ -37,7 +37,7 @@ class DelayBottomFragment : BottomSheetDialogFragment(), GetSelectedItem {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         delayArray = resources.getStringArray(R.array.delay_array)
-        selectedItem = arguments?.getString("delay")
+        selectedItem = arguments?.getString(EXTRA_DELAY)
 
         adapter = DelayAdapter(this, delayArray)
         binding?.rvAlarmDelay?.adapter = adapter
@@ -55,6 +55,17 @@ class DelayBottomFragment : BottomSheetDialogFragment(), GetSelectedItem {
         adapter.changeSelectedPosition(position)
         listener.onDelayDataPass(selectedItem)
         dismiss()
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(delay: String): DelayBottomFragment {
+            return DelayBottomFragment().apply {
+                arguments?.putString(EXTRA_DELAY, delay)
+            }
+        }
+
+        const val EXTRA_DELAY = "extra_delay"
     }
 }
 

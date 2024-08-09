@@ -73,4 +73,9 @@ class OffWayActivity : AppCompatActivity(), GetSelectedItem {
         super.onStop()
         Utils.stopVibrator()
     }
+
+    companion object {
+        const val EXTRA_TURN_OFF_WAY = "extra_turn_off_way"
+        const val EXTRA_TURN_OFF_COUNT = "extra_turn_off_count"
+    }
 }

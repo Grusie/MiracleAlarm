@@ -42,7 +42,7 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem {
 
         binding.btnSave.setOnClickListener {
             val resultIntent = Intent()
-            resultIntent.putExtra("vibration", selectedItem)
+            resultIntent.putExtra(EXTRA_VIBRATION, selectedItem)
             setResult(Const.RESULT_CODE_VIBRATION, resultIntent)
             finish()
         }
@@ -67,5 +67,9 @@ class VibrationActivity : AppCompatActivity(), GetSelectedItem {
     override fun onStop() {
         super.onStop()
         Utils.stopVibrator()
+    }
+
+    companion object {
+        const val EXTRA_VIBRATION ="extra_vibration"
     }
 }

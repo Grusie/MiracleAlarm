@@ -87,8 +87,8 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
 
         binding.btnSave.setOnClickListener {
             val resultIntent = Intent()
-            resultIntent.putExtra("sound", selectedItem)
-            resultIntent.putExtra("volume", volume)
+            resultIntent.putExtra(EXTRA_SOUND, selectedItem)
+            resultIntent.putExtra(EXTRA_VOLUME, volume)
             setResult(Const.RESULT_CODE_SOUND, resultIntent)
             finish()
         }
@@ -155,5 +155,10 @@ class SoundActivity : AppCompatActivity(), GetSelectedItem,
             changeVolumeFlag = false
         }
         adapter.changeSelectedPosition(selectFlag, position)
+    }
+
+    companion object {
+        const val EXTRA_SOUND = "extra_sound"
+        const val EXTRA_VOLUME = "extra_volume"
     }
 }

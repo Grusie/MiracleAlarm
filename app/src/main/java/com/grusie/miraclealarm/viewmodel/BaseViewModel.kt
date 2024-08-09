@@ -19,6 +19,7 @@ abstract class BaseViewModel : ViewModel() {
             "${this::class.simpleName}",
             error.message ?: "",
         )
+        setUiState(BaseUiState.Error)
         setEventState(BaseEventState.Error(error.message ?: ""))
     }
 

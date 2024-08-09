@@ -8,6 +8,7 @@ import com.grusie.miraclealarm.mapper.toUiModel
 import com.grusie.miraclealarm.model.data.AlarmTimeUiModel
 import com.grusie.miraclealarm.model.data.AlarmUiModel
 import com.grusie.miraclealarm.uistate.BaseEventState
+import com.grusie.miraclealarm.uistate.BaseUiState
 import com.grusie.miraclealarm.util.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -74,6 +75,7 @@ class MainViewModel @Inject constructor(
     fun deleteAlarm() {
         viewModelScope.launch {
             var allSuccess = true
+            setUiState(BaseUiState.Loading)
             deleteAlarmList.forEach { alarmUiModel ->
                 val result = async {
                     alarmTimeUseCases.getAlarmTimesByAlarmIdUseCase(alarmUiModel.id!!)
@@ -87,6 +89,9 @@ class MainViewModel @Inject constructor(
                     allSuccess = false
                 }
             }
+
+            setUiState(BaseUiState.Success)
+
             if (allSuccess) {
                 clearDeleteAlarmList()
                 clearDeleteAlarmTimeList()
